@@ -1,11 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
-import { StatusBar } from "expo-status-bar";
-import { getTodos } from "../api/testRequest";
-import { Text, View } from "react-native";
+import { useQuery } from '@tanstack/react-query';
+import { StatusBar } from 'expo-status-bar';
+import { getTodos } from '../api/testRequest';
+import { Text, View } from 'react-native';
 
 const MainPage = () => {
 	const todos = useQuery({
-		queryKey: ["todos"],
+		queryKey: ['todos'],
 		queryFn: getTodos,
 	});
 	return (
