@@ -10,7 +10,7 @@ const MainPage = () => {
 	});
 	return (
 		<View className="flex-1 items-center justify-center bg-gray-100">
-			<Text className="bg-red-500 text-white p-4 rounded-lg">
+			<Text className="bg-green-500 text-white p-4 rounded-lg">
 				Willkommen im Aal
 			</Text>
 			{todos.isLoading && <Text>Loading...</Text>}
