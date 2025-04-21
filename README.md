@@ -1,6 +1,6 @@
 # aal-frontend
 
-Repo for frontend of out app.
+Repo for frontend of our app.
 
 ---
 
