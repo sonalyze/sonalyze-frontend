@@ -1,9 +1,21 @@
 import { useQuery } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import { getTodos } from '../api/testRequest';
-import { Text, View } from 'react-native';
+import { Button, Text, View } from 'react-native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../App';
+import { FC } from 'react';
 
-const MainPage = () => {
+type HomeScreenNavigationProp = NativeStackNavigationProp<
+	RootStackParamList,
+	'HomeScreen'
+>;
+
+type HomeScreenProps = {
+	navigation: HomeScreenNavigationProp;
+};
+
+const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 	const todos = useQuery({
 		queryKey: ['todos'],
 		queryFn: getTodos,
@@ -20,8 +32,12 @@ const MainPage = () => {
 			)}
 
 			<StatusBar style="auto" />
+			<Button
+				title="Zu Seite 2"
+				onPress={() => props.navigation.navigate('OtherScreen')}
+			/>
 		</View>
 	);
 };
 
-export default MainPage;
+export default HomeScreen;
