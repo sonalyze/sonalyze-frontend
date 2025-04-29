@@ -5,6 +5,7 @@ import { enableScreens } from 'react-native-screens';
 import { NavigationContainer } from '@react-navigation/native';
 import OtherScreen from './screens/OtherScreen';
 import HomeScreen from './screens/HomeScreen';
+import { SocketProvider } from './contexts/SocketContext';
 
 enableScreens();
 
@@ -13,9 +14,11 @@ const queryClient = new QueryClient();
 export default function App() {
 	return (
 		<QueryClientProvider client={queryClient}>
-			<NavigationContainer>
-				<RootStack />
-			</NavigationContainer>
+			<SocketProvider>
+				<NavigationContainer>
+					<RootStack />
+				</NavigationContainer>
+			</SocketProvider>
 		</QueryClientProvider>
 	);
 }
