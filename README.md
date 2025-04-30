@@ -12,6 +12,7 @@ Repo for frontend of our app.
 - [Tanstack-Query](https://tanstack.com/query/latest) for api connection
 - ESLint and Prettier configured
 - [react-navigation](https://reactnavigation.org/docs/native-stack-navigator) for navigation
+- [socket-io](https://socket.io/docs/v4/client-api/) for bidirectional async communication
 
 ---
 
@@ -50,6 +51,7 @@ src/
   api/              # Api models and functions
   assets/           # Images, fonts
   components/       # UI components
+  contexts/         # React Contexts
   screens/          # App screens / pages
   hooks/            # Custom hooks
   tools/            # Utility functions
