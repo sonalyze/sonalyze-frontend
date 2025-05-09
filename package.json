@@ -17,9 +17,7 @@
     "@tanstack/react-query": "^5.74.4",
     "axios": "^1.8.4",
     "expo": "^53.0.9",
-    "expo-av": "~15.1.4",
     "expo-file-system": "~18.1.9",
-    "expo-sharing": "~13.1.5",
     "expo-status-bar": "~2.2.3",
     "fs": "^0.0.1-security",
     "nativewind": "^4.1.23",
@@ -31,7 +29,8 @@
     "react-native-screens": "~4.10.0",
     "react-native-web": "^0.20.0",
     "socket.io-client": "^4.8.1",
-    "tailwindcss": "3.4.17"
+    "tailwindcss": "3.4.17",
+    "expo-audio": "~0.4.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
