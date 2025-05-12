@@ -7,11 +7,6 @@ import AudioRecorder from '../components/AudioRecorder';
 const TestAudio: FC = () => {
     return (
         <>
-        
-            <View className="flex-1 items-center justify-center bg-gray-100">
-                <TestAudioComponent />
-            </View>
-
             <View className="flex-row flex-1 items-center justify-center bg-gray-100 space-x-4">
                 <View className="items-center">
                     <AudioPlayer />
@@ -21,9 +16,7 @@ const TestAudio: FC = () => {
                     <AudioRecorder />
                 </View>
             </View>
-
         </>
-
     );
 };
 
