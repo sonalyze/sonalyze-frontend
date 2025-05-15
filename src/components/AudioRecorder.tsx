@@ -9,7 +9,11 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
-export default function AudioRecorder() {
+type Props = {
+  onLatencyResult: (result: { latency_seconds: number; lag_samples: number }) => void;
+};
+
+export default function AudioRecorder({ onLatencyResult}: Props) {
   const [isRecording, setIsRecording] = useState(false);
   const [floatData, setFloatData] = useState<Float32Array | null>(null);
   const [sampleRate, setSampleRate] = useState<number>(44100);
@@ -18,6 +22,11 @@ export default function AudioRecorder() {
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+
+  const [latencyResult, setLatencyResult] = useState<null | {
+    latency_seconds: number;
+    lag_samples: number;
+  }>(null);
 
   // Lade Mikrofone (nur Web)
   useEffect(() => {
@@ -82,31 +91,31 @@ export default function AudioRecorder() {
   // Sende an Backend
   const sendRecordingToBackend = async (floatData: Float32Array, sampleRate: number) => 
     {
-    // Payload vorbereiten
+    const original = new Float32Array(floatData.length).fill(0);
+    original[10] = 1.0; // Einfacher Impuls für Test
+    
     const payload = {
       sampleRate,
-      signal: Array.from(floatData),
+      original: Array.from(original),
+      recorded: Array.from(floatData),
     };
-
+    
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/impulse-response', {
+      const response = await fetch('http://127.0.0.1:8000/api/calibration/latency', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
       });
-
-      if (!response.ok) {
-        throw new Error(`Serverfehler: ${response.status}`);
-      }
-
+    
+      if (!response.ok) throw new Error(`Serverfehler: ${response.status}`);
       const result = await response.json();
-      console.log('Backend-Antwort:', result);
-      Alert.alert(`📊 ${result.samples} Samples, Dauer: ${result.duration_s}s`);
+      setLatencyResult(result); // ✅ Hier wird das Ergebnis gesetzt
+      onLatencyResult?.(result); // Callback an den Elternkomponenten
     } catch (error) {
       console.error('Fehler beim Senden:', error);
-      Alert.alert('❌ Fehler beim Senden ans Backend');
+      Alert.alert('❌ Fehler bei der Latenzberechnung');
     }
   };
 
@@ -132,18 +141,6 @@ export default function AudioRecorder() {
         onPress={isRecording ? stopRecording : startRecording}
       />
 
-      {floatData && (
-        <View style={styles.resultBox}>
-          <Text style={styles.resultTitle}>✅ Aufnahme abgeschlossen</Text>
-          <Text>📏 Länge: {floatData.length} Samples</Text>
-          <Text>🔍 Erste 5 Werte:</Text>
-          <Text>
-            {Array.from(floatData.slice(0, 5)).map((v) =>
-              v.toFixed(5)
-            ).join(', ')}
-          </Text>
-        </View>
-      )}
     </View>
   );
 }
