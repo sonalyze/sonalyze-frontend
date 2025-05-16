@@ -11,24 +11,27 @@ import { Picker } from '@react-native-picker/picker';
 
 type Props = {
   onLatencyResult: (result: { latency_seconds: number; lag_samples: number }) => void;
+  onCorrelationData: (data: number[]) => void;
+  onOriginalData?: (original: number[]) => void;
+  onRecordedData?: (recorded: number[]) => void;
 };
 
-export default function AudioRecorder({ onLatencyResult}: Props) {
+export default function AudioRecorder({
+  onLatencyResult,
+  onCorrelationData,
+  onOriginalData,
+  onRecordedData,
+}: Props) {
   const [isRecording, setIsRecording] = useState(false);
-  const [floatData, setFloatData] = useState<Float32Array | null>(null);
   const [sampleRate, setSampleRate] = useState<number>(44100);
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | undefined>(undefined);
+  const [originalSweep, setOriginalSweep] = useState<Float32Array | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  const [latencyResult, setLatencyResult] = useState<null | {
-    latency_seconds: number;
-    lag_samples: number;
-  }>(null);
-
-  // Lade Mikrofone (nur Web)
+  // Lade Mikrofone und Sweep (nur Web)
   useEffect(() => {
     if (Platform.OS === 'web') {
       navigator.mediaDevices.getUserMedia({ audio: true }).then(() => {
@@ -41,9 +44,27 @@ export default function AudioRecorder({ onLatencyResult}: Props) {
         Alert.alert('Mikrofonfehler', err.message);
       });
     }
+
+    const loadSweep = async () => {
+      try {
+        const response = await fetch(require('../assets/audio/sweep_log_20Hz_20kHz.wav'));
+        const arrayBuffer = await response.arrayBuffer();
+
+        const audioCtx = new AudioContext();
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+        const sweepData = audioBuffer.getChannelData(0);
+        setOriginalSweep(new Float32Array(sweepData));
+        console.log("Sweep geladen:", sweepData.length, sweepData.slice(0, 10));
+      } catch (err) {
+        console.error('Sweep konnte nicht geladen werden:', err);
+      }
+    };
+
+    loadSweep();
   }, []);
 
-  // Starte Aufnahme
+  // Aufnahme starten
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
@@ -68,10 +89,8 @@ export default function AudioRecorder({ onLatencyResult}: Props) {
 
       const float32 = audioBuffer.getChannelData(0);
       setSampleRate(audioBuffer.sampleRate);
-      setFloatData(float32);
       audioChunksRef.current = [];
 
-      // Senden an Backend
       sendRecordingToBackend(float32, audioBuffer.sampleRate);
     };
 
@@ -80,7 +99,6 @@ export default function AudioRecorder({ onLatencyResult}: Props) {
     setIsRecording(true);
   };
 
-  // Stoppe Aufnahme
   const stopRecording = () => {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
@@ -88,34 +106,40 @@ export default function AudioRecorder({ onLatencyResult}: Props) {
     }
   };
 
-  // Sende an Backend
-  const sendRecordingToBackend = async (floatData: Float32Array, sampleRate: number) => 
-    {
-    const original = new Float32Array(floatData.length).fill(0);
-    original[10] = 1.0; // Einfacher Impuls für Test
-    
+  const sendRecordingToBackend = async (floatData: Float32Array, sampleRate: number) => {
+    if (!originalSweep) {
+      Alert.alert('Sweep fehlt', 'Das Original-Testsignal konnte nicht geladen werden.');
+      return;
+    }
+
     const payload = {
       sampleRate,
-      original: Array.from(original),
+      original: Array.from(originalSweep),
       recorded: Array.from(floatData),
     };
-    
+
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/calibration/latency', {
+      const response = await fetch('http://127.0.0.1:8000/api/calibration/correlation', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-    
+
       if (!response.ok) throw new Error(`Serverfehler: ${response.status}`);
+
       const result = await response.json();
-      setLatencyResult(result); // ✅ Hier wird das Ergebnis gesetzt
-      onLatencyResult?.(result); // Callback an den Elternkomponenten
+
+      onLatencyResult({
+        latency_seconds: result.latency_seconds,
+        lag_samples: result.lag_samples,
+      });
+
+      onCorrelationData(result.correlation);
+      onOriginalData?.(Array.from(originalSweep));
+      onRecordedData?.(Array.from(floatData));
     } catch (error) {
       console.error('Fehler beim Senden:', error);
-      Alert.alert('❌ Fehler bei der Latenzberechnung');
+      Alert.alert('❌ Fehler bei der Analyse im Backend');
     }
   };
 
@@ -140,7 +164,6 @@ export default function AudioRecorder({ onLatencyResult}: Props) {
         title={isRecording ? 'Stop Recording' : 'Start Recording'}
         onPress={isRecording ? stopRecording : startRecording}
       />
-
     </View>
   );
 }
@@ -159,15 +182,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 10,
-  },
-  resultBox: {
-    marginTop: 30,
-    backgroundColor: '#e0f7fa',
-    padding: 15,
-    borderRadius: 10,
-  },
-  resultTitle: {
-    fontWeight: 'bold',
-    marginBottom: 5,
   },
 });
