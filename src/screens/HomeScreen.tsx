@@ -1,10 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
-import { StatusBar } from 'expo-status-bar';
 import { getTodos } from '../api/testRequest';
-import { Button, Text, View } from 'react-native';
+import { Button, SafeAreaView, Text, TouchableHighlight, ScrollView, TouchableOpacity, View } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { FC } from 'react';
+import Icon from '@react-native-vector-icons/lucide';
+import Card from '../components/Card';
+import PrimaryButton from '../components/PrimaryButton';
+
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -20,23 +23,37 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 		queryKey: ['todos'],
 		queryFn: getTodos,
 	});
-	return (
-		<View className="flex-1 items-center justify-center bg-gray-100">
-			<Text className="bg-green-500 text-white p-4 rounded-lg">
-				Willkommen im Aal
-			</Text>
-			{todos.isLoading && <Text>Loading...</Text>}
-			{todos.isError && <Text>Error: {todos.error.message}</Text>}
-			{todos.isSuccess && (
-				<Text className="text-lg">{JSON.stringify(todos.data)}</Text>
-			)}
 
-			<StatusBar style="auto" />
-			<Button
-				title="Zu Seite 2"
-				onPress={() => props.navigation.navigate('OtherScreen')}
-			/>
-		</View>
+	return (
+		<SafeAreaView className="flex-1 bg-background">
+			{/* Header */}
+			<View className="px-3 py-2 h-25 flex-row items-top justify-between">
+				<View>
+					<Text className="text-2xl color-foreground">Welcome to Sonalyze!</Text>
+					<Text className="text-xl text-muted-foreground">What would you like to do?</Text>
+				</View>
+				<TouchableOpacity className="pt-0.5" onPress={() => { props.navigation.push("SettingsScreen") }}>
+					<Icon name="settings" size={24} />
+				</TouchableOpacity>
+			</View>
+
+			{/* Page Content */}
+			<ScrollView className="m-2">
+				<Card title="Cooperative Measurement" subtitle="Perform acoustic measurements using multiple devices as speakers or microphones for precise room analysis.">
+					<View className="flex-row justify-between">
+						<PrimaryButton label="Start" onPress={() => { }} />
+						<PrimaryButton label="Join" onPress={() => { }} />
+					</View>
+				</Card>
+				<View className="h-2" />
+				<Card title="3D Acoustics Simulation" subtitle="Simulate room acoustics in a virtual 3D space to analyze and optimize sound characteristics.">
+					<View className="flex-row">
+						<PrimaryButton label="Start" onPress={() => { }} />
+					</View>
+				</Card>
+			</ScrollView>
+
+		</SafeAreaView>
 	);
 };
 
