@@ -45,7 +45,7 @@ const QrCodeViewer: FC<QrCodeViewerProps> = (props: QrCodeViewerProps) => {
                 {/* Copy Button */}
                 <TouchableOpacity className="pt-2 flex-row items-center" onPress={() => copyToClipboard(value)}>
                     <Icon name="link" />
-                    <Text className="pl-1 text-sm">Copy Code to Clipboard</Text>
+                    <Text className="pl-1 text-sm">Copy to Clipboard</Text>
                 </TouchableOpacity>
             </View>
         </Card>

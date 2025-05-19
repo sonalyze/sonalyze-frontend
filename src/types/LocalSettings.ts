@@ -7,14 +7,4 @@ export type LocalSettings = Readonly<{
      * The token to authenticate the user with the server and used as owner token for their data.
      */
     userToken: string;
-
-    /**
-     * The share IDs of the rooms that the user has access to.
-     */
-    rooms: string[];
-
-    /**
-     * The share IDs of the rooms that the user has access to.
-     */
-    measurements: string[];
 }>;

@@ -1,10 +1,10 @@
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native'
 import { FC } from 'react'
-import { RootStackParamList } from '../App';
+import { RootStackParamList } from '../../App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from '@react-native-vector-icons/lucide';
-import Tile from '../components/Tile';
+import Tile from '../../components/Tile';
 
 type SettingsScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,
@@ -30,15 +30,16 @@ const SettingsScreen: FC<SettingsScreenProps> = (props: SettingsScreenProps) => 
             <ScrollView className="m-2 flex-grow">
                 <Tile
                     title="Show Account QR Code"
-                    subtitle="Show a QR code on this device to transfer your account to another device."
+                    subtitle="Display a QR code on this device to transfer your account to another device."
                     trailingIcon="qr-code"
                     onPress={() => props.navigation.push('QrViewScreen')}
                 />
                 <View className="h-3" />
                 <Tile
                     title="Scan Account QR Code"
-                    subtitle="Scan a QR code from another device to transfer the account to this device."
+                    subtitle="Transfer your account from another device to this device by scanning a QR code."
                     trailingIcon="camera"
+                    onPress={() => props.navigation.push('QrScanScreen')}
                 />
             </ScrollView>
         </SafeAreaView>

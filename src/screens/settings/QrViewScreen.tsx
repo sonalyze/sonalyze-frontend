@@ -1,9 +1,10 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { View, Text, SafeAreaView, TouchableOpacity, ScrollView, Image } from 'react-native'
-import { RootStackParamList } from '../App';
+import { View, Text, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native'
 import { FC } from 'react';
 import Icon from '@react-native-vector-icons/lucide';
-import QrCodeViewer from '../components/QrCodeViewer';
+import { RootStackParamList } from '../../App';
+import QrCodeViewer from '../../components/QrCodeViewer';
+import { useLocalSettings } from '../../contexts/LocalSettingsContext';
 
 type QrViewScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,
@@ -15,6 +16,8 @@ type QrViewScreenProps = {
 };
 
 const QrViewScreen: FC<QrViewScreenProps> = (props: QrViewScreenProps) => {
+    const {settings} = useLocalSettings();
+
     return (
         <SafeAreaView className="flex-1 bg-background">
             {/* Header */}
@@ -34,16 +37,13 @@ const QrViewScreen: FC<QrViewScreenProps> = (props: QrViewScreenProps) => {
                     <View className="py-6">
                         <QrCodeViewer
                             type='user-token'
-                            data='Auf der Heide blüht ein kleines Blümelein - und das heißt: Erika!'
+                            data={settings.userToken}
                         />
                     </View>
                 </View>
                 <Text className="text-center text-sm">
                     After scanning, your rooms and measurement history will be accessible on the new device.
-                    Alternatively, you can copy your account code to clipboard and handle the distribution manually.
-                </Text>
-                <Text className="text-center text-sm font-medium pt-2">
-                    Important Note: All existing data on the new device will be overwritten during the transfer!
+                    Alternatively, you can copy your Account ID to clipboard and handle the distribution manually.
                 </Text>
             </ScrollView>
         </SafeAreaView>

@@ -5,11 +5,13 @@ import { enableScreens } from 'react-native-screens';
 import { NavigationContainer } from '@react-navigation/native';
 import { SocketProvider } from './contexts/SocketContext';
 import HomeScreen from './screens/HomeScreen';
-import SettingsScreen from './screens/SettingsScreen';
-import QrViewScreen from './screens/QrViewScreen';
+import SettingsScreen from './screens/settings/SettingsScreen';
+import QrViewScreen from './screens/settings/QrViewScreen';
 import { Toaster } from 'sonner-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { LocalSettingsProvider } from './contexts/LocalSettingsContext';
+import QrScanScreen from './screens/settings/QrScanScreen';
 
 enableScreens();
 
@@ -19,18 +21,20 @@ export default function App() {
 	return (
 		<SafeAreaProvider>
 			<GestureHandlerRootView>
-				<QueryClientProvider client={queryClient}>
-					<SocketProvider>
-						<NavigationContainer>
-							<RootStack />
-						</NavigationContainer>
-						<Toaster
-							position='bottom-center'
-							closeButton={true}
-							swipeToDismissDirection='left'
-						/>
-					</SocketProvider>
-				</QueryClientProvider>
+				<LocalSettingsProvider>
+					<QueryClientProvider client={queryClient}>
+						<SocketProvider>
+							<NavigationContainer>
+								<RootStack />
+							</NavigationContainer>
+							<Toaster
+								position='bottom-center'
+								closeButton={true}
+								swipeToDismissDirection='left'
+							/>
+						</SocketProvider>
+					</QueryClientProvider>
+				</LocalSettingsProvider>
 			</GestureHandlerRootView>
 		</SafeAreaProvider>
 	);
@@ -55,6 +59,13 @@ const RootStack = () => (
 			}}
 		/>
 		<Stack.Screen
+			name="QrScanScreen"
+			component={QrScanScreen}
+			options={{
+				headerShown: false
+			}}
+		/>
+		<Stack.Screen
 			name="QrViewScreen"
 			component={QrViewScreen}
 			options={{
@@ -67,5 +78,6 @@ const RootStack = () => (
 export type RootStackParamList = {
 	HomeScreen: undefined;
 	SettingsScreen: undefined;
+	QrScanScreen: undefined;
 	QrViewScreen: undefined;
 };
