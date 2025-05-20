@@ -1,38 +1,35 @@
-import { View, Text, TouchableOpacity } from 'react-native'
-import { FC } from 'react'
-import Icon from "@react-native-vector-icons/lucide";
+import { View, Text, TouchableOpacity } from 'react-native';
+import { FC } from 'react';
+import Icon from '@react-native-vector-icons/lucide';
 
-/**
- * Props for Tile.
- */
 type TileProps = {
-    title: string;
-    subtitle: string;
-    trailingIcon: any,
-    onPress?: () => void;
+	title: string;
+	subtitle: string;
+	trailingIcon: any;
+	onPress?: () => void;
 };
 
-/**
- * Reusable tile that displays a title, subtitle, and a trailing icon.
- * 
- * Can be made touchable by providing an onPress function.
- */
-const Tile: FC<TileProps> = (props: TileProps) => {
-    return (
-        <TouchableOpacity onPress={props.onPress} disabled={!props.onPress}>
-            <View className="px-4 py-3 rounded-xl bg-tileBackground flex-row items-center">
-                {/* Title and Subtitle */}
-                <View className="flex-1">
-                    <Text className="text-lg font-semibold pb-1 color-tileForeground">{props.title}</Text>
-                    <Text className="pb-2 color-tileForeground">{props.subtitle}</Text>
-                </View>
-                {/* Trailing Icon */}
-                <View className="flex-0">
-                    <Icon name={props.trailingIcon} size={24} color="#2e2e2e" />
-                </View>
-            </View>
-        </TouchableOpacity>
-    );
-}
+const Tile: FC<TileProps> = ({ title, subtitle, trailingIcon, onPress }) => {
+	return (
+		<TouchableOpacity onPress={onPress} disabled={!onPress}>
+			<View className="bg-cardBackground px-5 py-4 rounded-xl flex-row items-center">
+				{/* Title + Subtitle block */}
+				<View className="flex-1 px-1 py-1">
+					<Text className="text-xl font-bold pb-1 color-cardForeground">
+						{title}
+					</Text>
+					<Text className="text-sm text-muted-foreground leading-relaxed">
+						{subtitle}
+					</Text>
+				</View>
+
+				{/* Trailing icon */}
+				<View className="pl-2">
+					<Icon name={trailingIcon} size={24} color="#2e2e2e" />
+				</View>
+			</View>
+		</TouchableOpacity>
+	);
+};
 
 export default Tile;

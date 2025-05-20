@@ -12,6 +12,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LocalSettingsProvider } from './contexts/LocalSettingsContext';
 import QrScanScreen from './screens/settings/QrScanScreen';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import LanguageScreen from './screens/settings/LanguageScreen'; 
+
 
 enableScreens();
 
@@ -20,23 +23,26 @@ const queryClient = new QueryClient();
 export default function App() {
 	return (
 		<SafeAreaProvider>
-			<GestureHandlerRootView>
+			<GestureHandlerRootView style={{ flex: 1 }}>
+				<SafeAreaView style={{ flex: 1 }}>
 				<LocalSettingsProvider>
 					<QueryClientProvider client={queryClient}>
-						<SocketProvider>
-							<NavigationContainer>
-								<RootStack />
-							</NavigationContainer>
-							<Toaster
-								position='bottom-center'
-								closeButton={true}
-								swipeToDismissDirection='left'
-							/>
-						</SocketProvider>
+					<SocketProvider>
+						<NavigationContainer>
+						<RootStack />
+						</NavigationContainer>
+						<Toaster
+						position="bottom-center"
+						closeButton={true}
+						swipeToDismissDirection="left"
+						/>
+					</SocketProvider>
 					</QueryClientProvider>
 				</LocalSettingsProvider>
+				</SafeAreaView>
 			</GestureHandlerRootView>
 		</SafeAreaProvider>
+
 	);
 }
 
@@ -72,6 +78,14 @@ const RootStack = () => (
 				headerShown: false
 			}}
 		/>
+		<Stack.Screen
+			name="LanguageScreen"
+			component={LanguageScreen}
+			options={{
+				headerShown: false
+			}}
+		/>
+
 	</Stack.Navigator>
 );
 
@@ -80,4 +94,6 @@ export type RootStackParamList = {
 	SettingsScreen: undefined;
 	QrScanScreen: undefined;
 	QrViewScreen: undefined;
+	LanguageScreen: undefined; 
 };
+

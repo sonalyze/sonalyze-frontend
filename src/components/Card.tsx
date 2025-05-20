@@ -1,8 +1,7 @@
-import Icon from "@react-native-vector-icons/lucide";
-import { FC } from "react";
-import { Text, View } from "react-native";
+import { FC } from 'react';
+import { Text, View } from 'react-native';
 
-// @TODO: Comment and clean up.
+//Tiles for HomeScreen
 
 type CardProps = {
 	title?: string;
@@ -10,15 +9,27 @@ type CardProps = {
 	children?: React.ReactNode;
 };
 
-const Card: FC<CardProps> = (props: CardProps) => {
+const Card: FC<CardProps> = ({ title, subtitle, children }) => {
 	return (
 		<View className="px-4 py-3 rounded-xl bg-cardBackground">
-			{/* Title and Subtitle */}
-			{props.title && <Text className="text-lg font-semibold pb-1 color-cardForeground">{props.title}</Text>}
-			{props.subtitle && <Text className="pb-2 color-cardForeground">{props.subtitle}</Text>}
+			{/* Title + Subtitle Group with space around */}
+			{(title || subtitle) && (
+				<View className="mb-2 px-2 py-2">
+					{title && (
+						<Text className="text-xl font-bold pb-1 color-cardForeground">
+							{title}
+						</Text>
+					)}
+					{subtitle && (
+						<Text className="text-sm text-muted-foreground leading-relaxed">
+							{subtitle}
+						</Text>
+					)}
+				</View>
+			)}
 
 			{/* Children */}
-			{props.children}
+			{children}
 		</View>
 	);
 };
