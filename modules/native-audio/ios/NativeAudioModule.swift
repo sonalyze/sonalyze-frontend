@@ -34,6 +34,12 @@ public class NativeAudioModule: Module {
   private var audioEngine: AVAudioEngine?
   private var inputNode: AVAudioInputNode?
   private var isStreamingActive = false
+
+  // MARK: - Playback Properties
+  private var audioPlayerNode: AVAudioPlayerNode?
+  private var audioFile: AVAudioFile?
+  private var isPlaybackActive = false
+  private var playbackEngine: AVAudioEngine?
   
   /**
    * Size of audio buffers for streaming (in frames)
@@ -367,6 +373,124 @@ public class NativeAudioModule: Module {
       }
       return false
     }
+
+    /**
+    * Plays an audio file with maximum fidelity
+    * 
+    * Optimized for precision playback of test signals and analytical audio
+    * 
+    * Parameters:
+    *   - filePath: String containing the system path to the audio file
+    *   - options: Optional dictionary with configuration options:
+    *     - "volume": Float between 0.0 and 1.0 (default: 1.0)
+    * 
+    * Returns:
+    *   - Dictionary with the following keys:
+    *     - "success": Boolean indicating if playback started successfully
+    *     - "error": String with error description (on failure)
+    */
+    AsyncFunction("playAudioFile") { (filePath: String, options: [String: Any]?) -> [String: Any] in
+      do {
+        // Stop any ongoing playback
+        if isPlaybackActive {
+          stopPlayback()
+        }
+        
+        let audioSession = AVAudioSession.sharedInstance()
+        
+        // Use .playback category for highest quality output with minimal interference
+        try audioSession.setCategory(.playback, mode: .default, options: [.duckOthers])
+        
+        // Activate audio session
+        try audioSession.setActive(true)
+        
+        // Create engine and nodes
+        playbackEngine = AVAudioEngine()
+        audioPlayerNode = AVAudioPlayerNode()
+        
+        guard let engine = playbackEngine, let playerNode = audioPlayerNode else {
+          return ["success": false, "error": "Failed to create audio engine"]
+        }
+        
+        // Create file URL from path
+        let fileURL = URL(fileURLWithPath: filePath)
+        
+        // Load audio file
+        audioFile = try AVAudioFile(forReading: fileURL)
+        
+        guard let file = audioFile else {
+          return ["success": false, "error": "Failed to load audio file"]
+        }
+        
+        // Get the file format
+        let fileFormat = file.processingFormat
+        
+        // Add player node to engine
+        engine.attach(playerNode)
+        
+        // Connect player to output using file's native format
+        // This avoids sample rate conversion when possible
+        engine.connect(playerNode, to: engine.mainMixerNode, format: fileFormat)
+        
+        // Set volume if specified
+        if let volume = options?["volume"] as? Float {
+          playerNode.volume = max(0.0, min(1.0, volume))
+        }
+        
+        // Prepare engine
+        engine.prepare()
+        
+        // Start the engine
+        try engine.start()
+        
+        // Schedule file for playback
+        playerNode.scheduleFile(file, at: nil) {
+          // Playback completion handler
+          self.isPlaybackActive = false
+        }
+        
+        // Start playback
+        playerNode.play()
+        isPlaybackActive = true
+        
+        return ["success": true]
+      } catch {
+        return ["success": false, "error": error.localizedDescription]
+      }
+    }
+
+    /**
+    * Stops audio playback and releases resources
+    * 
+    * Parameters:
+    *   - None
+    * 
+    * Returns:
+    *   - Dictionary with the following keys:
+    *     - "success": Boolean indicating if playback was stopped successfully
+    *     - "error": String with error description (if no active playback)
+    */
+    Function("stopAudioPlayback") { () -> [String: Any] in
+      if isPlaybackActive {
+        stopPlayback()
+        return ["success": true]
+      } else {
+        return ["success": false, "error": "No active playback"]
+      }
+    }
+
+    /**
+    * Checks if audio playback is currently active
+    * 
+    * Parameters:
+    *   - None
+    * 
+    * Returns:
+    *   - Boolean: true if playback is active, false otherwise
+    */
+    Function("isPlaying") { () -> Bool in
+      return isPlaybackActive
+    }
   }
   
   
@@ -389,6 +513,25 @@ public class NativeAudioModule: Module {
     audioEngine = nil
     inputNode = nil
     isStreamingActive = false
+    
+    do {
+      try AVAudioSession.sharedInstance().setActive(false)
+    } catch {
+      print("Error deactivating audio session: \(error)")
+    }
+  }
+
+  /**
+  * Helper method to clean up playback resources
+  */
+  private func stopPlayback() {
+    audioPlayerNode?.stop()
+    playbackEngine?.stop()
+    
+    audioPlayerNode = nil
+    audioFile = nil
+    playbackEngine = nil
+    isPlaybackActive = false
     
     do {
       try AVAudioSession.sharedInstance().setActive(false)

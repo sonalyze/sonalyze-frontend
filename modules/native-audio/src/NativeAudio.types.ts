@@ -2,6 +2,10 @@ export type AudioStreamingOptions = {
   bufferSize?: number;
 };
 
+export type AudioPlaybackOptions = {
+  volume?: number;
+};
+
 export type FileRecordingResult = {
   success: boolean;
   fileUri?: string;
@@ -10,6 +14,11 @@ export type FileRecordingResult = {
 };
 
 export type AudioStreamingResult = {
+  success: boolean;
+  error?: string;
+};
+
+export type AudioPlaybackResult = {
   success: boolean;
   error?: string;
 };

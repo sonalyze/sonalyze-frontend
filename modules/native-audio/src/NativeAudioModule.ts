@@ -2,8 +2,10 @@ import { NativeModule, requireNativeModule } from 'expo';
 import {
   NativeAudioModuleEvents,
   AudioStreamingOptions,
+  AudioPlaybackOptions,
   FileRecordingResult,
-  AudioStreamingResult
+  AudioStreamingResult,
+  AudioPlaybackResult
 } from './NativeAudio.types';
 
 declare class NativeAudioModule extends NativeModule<NativeAudioModuleEvents> {
@@ -22,6 +24,11 @@ declare class NativeAudioModule extends NativeModule<NativeAudioModuleEvents> {
   stopStreaming(): AudioStreamingResult;
   isStreaming(): boolean;
   setStreamingOptions(options: AudioStreamingOptions): boolean;
+
+  // Audio playback functions
+  playAudioFile(filePath: string, options?: AudioPlaybackOptions): Promise<AudioPlaybackResult>;
+  stopAudioPlayback(): AudioPlaybackResult;
+  isPlaying(): boolean;
 }
 
 export default requireNativeModule<NativeAudioModule>('NativeAudio');

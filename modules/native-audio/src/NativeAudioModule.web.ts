@@ -2,8 +2,10 @@ import { registerWebModule, NativeModule } from 'expo';
 import {
   AudioDataEvent,
   AudioStreamingOptions,
+  AudioPlaybackOptions,
   FileRecordingResult,
   AudioStreamingResult,
+  AudioPlaybackResult,
   NativeAudioModuleEvents
 } from './NativeAudio.types';
 
@@ -60,6 +62,21 @@ class NativeAudioModule extends NativeModule<NativeAudioModuleEvents> {
 
   setStreamingOptions(options: AudioStreamingOptions): boolean {
     console.warn('NativeAudio: Audio streaming is not implemented for web');
+    return false;
+  }
+
+  // Audio playback functions
+  async playAudioFile(filePath: string, options?: AudioPlaybackOptions): Promise<AudioPlaybackResult> {
+    console.warn('NativeAudio: Audio playback is not implemented for web');
+    return { success: false, error: 'Not implemented for web' };
+  }
+
+  stopAudioPlayback(): AudioPlaybackResult {
+    console.warn('NativeAudio: Audio playback is not implemented for web');
+    return { success: false, error: 'Not implemented for web' };
+  }
+
+  isPlaying(): boolean {
     return false;
   }
 }
