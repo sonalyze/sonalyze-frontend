@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.savebank.aalfrontend"
+      "bundleIdentifier": "com.savebank.aalfrontend",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "This app needs access to your microphone for audio recording."
+      }
     },
     "android": {
       "adaptiveIcon": {
