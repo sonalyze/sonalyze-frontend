@@ -1,19 +1,25 @@
-import type { StyleProp, ViewStyle } from 'react-native';
+export type AudioStreamingOptions = {
+  bufferSize?: number;
+};
 
-export type OnLoadEventPayload = {
-  url: string;
+export type FileRecordingResult = {
+  success: boolean;
+  fileUri?: string;
+  path?: string;
+  error?: string;
+};
+
+export type AudioStreamingResult = {
+  success: boolean;
+  error?: string;
+};
+
+export type AudioDataEvent = {
+  data: number[];
+  timestamp: number;
+  sampleRate: number;
 };
 
 export type NativeAudioModuleEvents = {
-  onChange: (params: ChangeEventPayload) => void;
-};
-
-export type ChangeEventPayload = {
-  value: string;
-};
-
-export type NativeAudioViewProps = {
-  url: string;
-  onLoad: (event: { nativeEvent: OnLoadEventPayload }) => void;
-  style?: StyleProp<ViewStyle>;
+  onAudioData: (event: AudioDataEvent) => void;
 };

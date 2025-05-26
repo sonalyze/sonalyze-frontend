@@ -1,8 +1,8 @@
 Pod::Spec.new do |s|
   s.name           = 'NativeAudio'
   s.version        = '1.0.0'
-  s.summary        = 'A sample project summary'
-  s.description    = 'A sample project description'
+  s.summary        = 'High-quality audio recording and streaming for iOS'
+  s.description    = 'Native module providing file-based recording and real-time audio streaming with high quality settings'
   s.author         = ''
   s.homepage       = 'https://docs.expo.dev/modules/'
   s.platforms      = {
@@ -13,6 +13,7 @@ Pod::Spec.new do |s|
   s.static_framework = true
 
   s.dependency 'ExpoModulesCore'
+  s.frameworks = 'AVFoundation'
 
   # Swift/Objective-C compatibility
   s.pod_target_xcconfig = {
