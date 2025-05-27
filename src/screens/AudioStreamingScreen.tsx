@@ -19,42 +19,109 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
 
     // Used to store the event subscription removal function
     const cleanupRef = useRef<(() => void) | null>(null);
+    // Track if we're receiving audio data
+    const dataReceivedRef = useRef<boolean>(false);
+    // Track last data reception time
+    const lastDataTimeRef = useRef<number>(0);
+    // Monitoring interval reference
+    const monitorRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     // Request microphone permission on component mount
     useEffect(() => {
+        console.log('[AudioStream] Component mounted');
+
         function requestPermission(): void {
+            console.log('[AudioStream] Requesting microphone permission...');
             NativeAudio.requestMicrophonePermission()
                 .then(granted => {
+                    console.log(`[AudioStream] Permission request result: ${granted ? 'GRANTED' : 'DENIED'}`);
                     setHasPermission(granted);
                 })
                 .catch(err => {
-                    setError('Failed to request permission: ' + err);
-                    console.error(err);
+                    const errorMessage = 'Failed to request permission: ' + err;
+                    console.error(`[AudioStream] ${errorMessage}`);
+                    setError(errorMessage);
                 });
         }
 
+
         requestPermission();
+
+        // Component cleanup
+        return () => {
+            console.log('[AudioStream] Component unmounting');
+            stopMonitoring();
+        };
     }, []);
 
     // Clean up event listeners when component unmounts
     useEffect(() => {
         return () => {
             if (isStreaming) {
+                console.log('[AudioStream] Component unmounting while streaming active, stopping stream');
                 stopAudioStream();
             }
             if (cleanupRef.current) {
+                console.log('[AudioStream] Removing event listeners on unmount');
                 cleanupRef.current();
             }
         };
     }, [isStreaming]);
 
+    // Start monitoring for audio data events
+    function startMonitoring(): void {
+        console.log('[AudioStream] Starting audio stream monitor');
+        dataReceivedRef.current = false;
+        lastDataTimeRef.current = Date.now();
+
+        // Check every second if we're receiving data
+        monitorRef.current = setInterval(() => {
+            const now = Date.now();
+            const timeSinceLastData = now - lastDataTimeRef.current;
+
+            console.log(`[AudioStream] Monitor check - Data received: ${dataReceivedRef.current}, Time since last: ${timeSinceLastData}ms`);
+
+            // If no data for 3 seconds and we're supposed to be streaming, something's wrong
+            if (isStreaming && !dataReceivedRef.current && timeSinceLastData > 3000) {
+                console.warn('[AudioStream] No audio data received in 3 seconds while streaming');
+            }
+
+            // Check if native module says we're streaming
+            try {
+                const nativeIsStreaming = NativeAudio.isStreaming();
+                console.log(`[AudioStream] Native streaming state: ${nativeIsStreaming}, JS state: ${isStreaming}`);
+
+                if (isStreaming !== nativeIsStreaming) {
+                    console.warn(`[AudioStream] Streaming state mismatch - JS: ${isStreaming}, Native: ${nativeIsStreaming}`);
+                }
+            } catch (err) {
+                console.error('[AudioStream] Error checking native streaming state:', err);
+            }
+
+        }, 1000);
+    }
+
+    // Stop monitoring
+    function stopMonitoring(): void {
+        if (monitorRef.current) {
+            console.log('[AudioStream] Stopping audio stream monitor');
+            clearInterval(monitorRef.current);
+            monitorRef.current = null;
+        }
+    }
+
     function startAudioStream(): void {
+        console.log('[AudioStream] Starting audio stream with buffer size:', bufferSize);
         try {
             setError(null);
 
             // Set up event listener for audio data
+            console.log('[AudioStream] Setting up audio data event listener');
             const subscription = NativeAudio.addListener('onAudioData', handleAudioData);
-            cleanupRef.current = () => subscription.remove();
+            cleanupRef.current = () => {
+                console.log('[AudioStream] Removing audio data listener');
+                subscription.remove();
+            };
 
             // Reset audio statistics
             setAudioStats({
@@ -62,30 +129,57 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
                 maxAmplitude: 0,
                 sampleRate: 0
             });
+            dataReceivedRef.current = false;
+
+            // Start monitoring
+            startMonitoring();
 
             // Start streaming
+            console.log('[AudioStream] Calling native startStreaming()');
             NativeAudio.startStreaming({ bufferSize })
                 .then(result => {
+                    console.log('[AudioStream] startStreaming result:', result);
                     if (result.success) {
                         setIsStreaming(true);
-                        console.log('Audio streaming started');
+                        console.log('[AudioStream] Audio streaming started successfully');
                     } else {
-                        setError(`Failed to start streaming: ${result.error}`);
+                        const errorMessage = `Failed to start streaming: ${result.error}`;
+                        console.error(`[AudioStream] ${errorMessage}`);
+                        setError(errorMessage);
+                        stopMonitoring();
                     }
                 })
                 .catch(err => {
-                    setError('Error starting audio stream: ' + err);
-                    console.error(err);
+                    const errorMessage = 'Error starting audio stream: ' + err;
+                    console.error(`[AudioStream] ${errorMessage}`);
+                    setError(errorMessage);
+                    stopMonitoring();
                 });
         } catch (err) {
-            setError('Error setting up audio stream: ' + err);
-            console.error(err);
+            const errorMessage = 'Error setting up audio stream: ' + err;
+            console.error(`[AudioStream] ${errorMessage}`);
+            setError(errorMessage);
+            stopMonitoring();
         }
     }
 
     function stopAudioStream(): void {
+        console.log('[AudioStream] Stopping audio stream');
         try {
+            // Check if native module thinks we're streaming
+            try {
+                const nativeIsStreaming = NativeAudio.isStreaming();
+                console.log(`[AudioStream] Native streaming state before stop: ${nativeIsStreaming}`);
+            } catch (err) {
+                console.error('[AudioStream] Error checking native streaming state:', err);
+            }
+
+            // Stop monitoring
+            stopMonitoring();
+
+            console.log('[AudioStream] Calling native stopStreaming()');
             const result = NativeAudio.stopStreaming();
+            console.log('[AudioStream] stopStreaming result:', result);
 
             // Clean up event listener
             if (cleanupRef.current) {
@@ -96,17 +190,30 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
             setIsStreaming(false);
 
             if (!result.success) {
-                setError(`Failed to stop streaming: ${result.error}`);
+                const errorMessage = `Failed to stop streaming: ${result.error}`;
+                console.error(`[AudioStream] ${errorMessage}`);
+                setError(errorMessage);
+            } else {
+                console.log('[AudioStream] Stream stopped successfully');
             }
         } catch (err) {
-            setError('Error stopping audio stream: ' + err);
-            console.error(err);
+            const errorMessage = 'Error stopping audio stream: ' + err;
+            console.error(`[AudioStream] ${errorMessage}`);
+            setError(errorMessage);
         }
     }
 
     function handleAudioData(event: AudioDataEvent): void {
+        // Update data received flag and time
+        dataReceivedRef.current = true;
+        lastDataTimeRef.current = Date.now();
+
+        // Throttle logging to every 20 events to avoid console spam
+        if (audioStats.samplesReceived % 20 === 0) {
+            console.log(`[AudioStream] Received audio data: ${event.data?.length} samples, sampleRate: ${event.sampleRate}`);
+        }
+
         // Calculate audio level from incoming samples
-        // (RMS - Root Mean Square is a common way to calculate audio level)
         if (event.data && event.data.length > 0) {
             // Calculate RMS of the audio samples
             let sum = 0;
@@ -130,17 +237,29 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
                 maxAmplitude: Math.max(prev.maxAmplitude, maxSample),
                 sampleRate: event.sampleRate
             }));
+
+            // Log first few samples occasionally
+            if (audioStats.samplesReceived % 50 === 0) {
+                const samplePreview = event.data.slice(0, 5).map(s => s.toFixed(3)).join(', ');
+                console.log(`[AudioStream] Sample preview: [${samplePreview}...]`);
+            }
+        } else {
+            console.warn('[AudioStream] Received empty audio data packet');
         }
     }
 
     function updateBufferSize(newSize: number): void {
+        console.log(`[AudioStream] Updating buffer size from ${bufferSize} to ${newSize}`);
         if (newSize >= 256 && newSize <= 16384) {
             const result = NativeAudio.setStreamingOptions({ bufferSize: newSize });
+            console.log('[AudioStream] setStreamingOptions result:', result);
             if (result) {
                 setBufferSize(newSize);
-                console.log(`Buffer size updated to ${newSize}`);
+                console.log(`[AudioStream] Buffer size updated successfully to ${newSize}`);
             } else {
-                setError('Failed to update buffer size');
+                const errorMessage = 'Failed to update buffer size';
+                console.error(`[AudioStream] ${errorMessage}`);
+                setError(errorMessage);
             }
         }
     }
@@ -173,7 +292,14 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
                     {hasPermission === false && (
                         <TouchableOpacity
                             className="mt-2 bg-blue-500 py-2 px-4 rounded-md"
-                            onPress={() => NativeAudio.requestMicrophonePermission()}>
+                            onPress={() => {
+                                console.log('[AudioStream] Requesting permission again');
+                                NativeAudio.requestMicrophonePermission()
+                                    .then(granted => {
+                                        console.log(`[AudioStream] Permission re-request result: ${granted ? 'GRANTED' : 'DENIED'}`);
+                                        setHasPermission(granted);
+                                    });
+                            }}>
                             <Text className="text-white text-center">Request Permission</Text>
                         </TouchableOpacity>
                     )}
@@ -198,6 +324,10 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
                             </TouchableOpacity>
                         </View>
                         <Text className="mb-2">Status: {isStreaming ? 'Streaming active' : 'Not streaming'}</Text>
+                        <Text className="mb-2 text-xs text-gray-500">
+                            Samples received: {audioStats.samplesReceived > 0 ? 'Yes' : 'No'}
+                            {audioStats.samplesReceived > 0 ? ` (${audioStats.samplesReceived} total)` : ''}
+                        </Text>
 
                         {/* Buffer size adjustment */}
                         <View className="mt-3 mb-2">
@@ -236,6 +366,7 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
                             <Text>Max amplitude: {audioStats.maxAmplitude.toFixed(4)}</Text>
                             <Text>Sample rate: {audioStats.sampleRate} Hz</Text>
                             <Text>Buffer size: {bufferSize} samples</Text>
+                            <Text>Data received: {dataReceivedRef.current ? 'Yes' : 'No'}</Text>
                         </View>
                     </View>
                 )}
@@ -244,8 +375,56 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
                 {error && (
                     <View className="p-2.5 bg-red-50 rounded border border-red-300">
                         <Text className="text-red-600">{error}</Text>
+                        <TouchableOpacity
+                            className="mt-1"
+                            onPress={() => setError(null)}>
+                            <Text className="text-blue-500 text-xs">Clear</Text>
+                        </TouchableOpacity>
                     </View>
                 )}
+
+                {/* Debug actions */}
+                <View className="mt-4 p-4 bg-white rounded-lg shadow">
+                    <Text className="text-lg font-bold mb-2.5">Debug Actions</Text>
+                    <View className="flex-row justify-around">
+                        <TouchableOpacity
+                            className="py-1 px-3 bg-purple-500 rounded"
+                            onPress={() => {
+                                console.log('[AudioStream] Checking native streaming state');
+                                try {
+                                    const nativeIsStreaming = NativeAudio.isStreaming();
+                                    console.log(`[AudioStream] Native streaming state: ${nativeIsStreaming}, JS state: ${isStreaming}`);
+                                    alert(`Native streaming state: ${nativeIsStreaming}\nJS streaming state: ${isStreaming}`);
+                                } catch (err) {
+                                    console.error('[AudioStream] Error checking streaming state:', err);
+                                    alert(`Error checking state: ${err}`);
+                                }
+                            }}>
+                            <Text className="text-white">Check State</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            className="py-1 px-3 bg-yellow-500 rounded"
+                            onPress={() => {
+                                console.log('[AudioStream] Forcing stream stop');
+                                try {
+                                    NativeAudio.stopStreaming();
+                                    setIsStreaming(false);
+                                    if (cleanupRef.current) {
+                                        cleanupRef.current();
+                                        cleanupRef.current = null;
+                                    }
+                                    stopMonitoring();
+                                    alert('Force stopped streaming');
+                                } catch (err) {
+                                    console.error('[AudioStream] Error force stopping stream:', err);
+                                    alert(`Error: ${err}`);
+                                }
+                            }}>
+                            <Text className="text-white">Force Stop</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </View>
         </ScrollView>
     );
