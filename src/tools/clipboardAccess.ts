@@ -30,8 +30,9 @@ export async function getFromClipboard(): Promise<string | undefined> {
     toast.error("Clipboard is empty or inaccessible.", {
       duration: 1500,
     });
+
+    return undefined;
   }
-  return value;
 
   return value;
 }

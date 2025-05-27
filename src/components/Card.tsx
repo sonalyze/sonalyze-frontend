@@ -7,29 +7,30 @@ type CardProps = {
 	title?: string;
 	subtitle?: string;
 	children?: React.ReactNode;
+	className?: string;
 };
 
-const Card: FC<CardProps> = ({ title, subtitle, children }) => {
+const Card: FC<CardProps> = (props: CardProps) => {
 	return (
-		<View className="px-4 py-3 rounded-xl bg-cardBackground">
+		<View className={`px-4 py-3 rounded-xl bg-cardBackground ${props.className}`}>
 			{/* Title + Subtitle Group with space around */}
-			{(title || subtitle) && (
+			{(props.title || props.subtitle) && (
 				<View className="mb-2 px-2 py-2">
-					{title && (
+					{props.title && (
 						<Text className="text-xl font-bold pb-1 color-cardForeground">
-							{title}
+							{props.title}
 						</Text>
 					)}
-					{subtitle && (
+					{props.subtitle && (
 						<Text className="text-sm text-muted-foreground leading-relaxed">
-							{subtitle}
+							{props.subtitle}
 						</Text>
 					)}
 				</View>
 			)}
 
 			{/* Children */}
-			{children}
+			{props.children}
 		</View>
 	);
 };

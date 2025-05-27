@@ -1,8 +1,7 @@
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { FC } from 'react';
-import { RootStackParamList } from '../../App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
+import { RootStackParamList } from '../../App';
 import Tile from '../../components/Tile';
 import SecondaryHeader from '../../components/SecondaryHeader';
 
@@ -15,21 +14,35 @@ type SettingsScreenProps = {
 	navigation: SettingsScreenNavigationProp;
 };
 
-const SettingsScreen: FC<SettingsScreenProps> = (
-	props: SettingsScreenProps
-) => {
+const SettingsScreen: FC<SettingsScreenProps> = (props: SettingsScreenProps) => {
+	const classNames = {
+		sectionLabel: "text-lg font-semibold text-foreground ml-1 px-4 pt-4 pb-2",
+	};
+
 	return (
 		<View className="flex-1 bg-background">
+			{/* Header */}
 			<SecondaryHeader
 				title="Settings"
 				onBack={() => props.navigation.pop()}
 			/>
 
-			{/* Page Content */}
+			{/* Content */}
 			<ScrollView className="m-2 flex-grow">
-				{/* Section Label */}
-				<Text className="text-lg font-semibold text-foreground ml-1 px-4 pt-4 pb-2">
-					Sync Settings
+				{/* General Section */}
+				<Text className={classNames.sectionLabel}>
+					General
+				</Text>
+				<Tile
+					title="Language"
+					subtitle="Choose the app language."
+					trailingIcon="languages"
+					onPress={() => props.navigation.push('LanguageScreen')}
+				/>
+
+				{/* Sync Section */}
+				<Text className={classNames.sectionLabel}>
+					Sync
 				</Text>
 				<Tile
 					title="Your Account QR Code"
@@ -43,17 +56,6 @@ const SettingsScreen: FC<SettingsScreenProps> = (
 					subtitle="Transfer your account from another device to this device by scanning the QR code."
 					trailingIcon="camera"
 					onPress={() => props.navigation.push('QrScanScreen')}
-				/>
-
-				{/* Section Label */}
-				<Text className="text-lg font-semibold text-foreground ml-1 px-4 pt-4 pb-2">
-					General Settings
-				</Text>
-				<Tile
-					title="Change Language"
-					subtitle="Change the app language."
-					trailingIcon="languages"
-					onPress={() => props.navigation.push('LanguageScreen')}
 				/>
 			</ScrollView>
 		</View>

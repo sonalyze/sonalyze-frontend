@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LocalSettings } from '../types/LocalSettings';
 import uuid from 'react-native-uuid';
 import { readLocalSettings, writeLocalSettings } from '../tools/localSettingsAccess';
