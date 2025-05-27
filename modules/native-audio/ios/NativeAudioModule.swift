@@ -68,12 +68,16 @@ public class NativeAudioModule: Module {
      *     - false: User denied microphone permission
      */
     AsyncFunction("requestMicrophonePermission") { (promise: Promise) in
+      log(.debug, message: "Starting permission request")
+      
       if #available(iOS 17.0, *) {
         AVAudioApplication.requestRecordPermission { granted in
+          log(.info, message: "Permission \(granted ? "granted" : "denied") after request")
           promise.resolve(granted)
         }
       } else {
         AVAudioSession.sharedInstance().requestRecordPermission { granted in
+          log(.info, message: "Permission \(granted ? "granted" : "denied") after request")
           promise.resolve(granted)
         }
       }
@@ -91,102 +95,92 @@ public class NativeAudioModule: Module {
      *   - [String]: Array of string identifiers for all available audio modes
      */
     Function("getAvailableAudioSessionModes") { () -> [String] in
+      log(.debug, message: "Function called")
+      
       let audioSession = AVAudioSession.sharedInstance()
       let modes = audioSession.availableModes
       let modeStrings = modes.map { $0.rawValue }
-      print("Available audio session modes: \(modeStrings)")
+      
+      log(.info, message: "Available modes: \(modeStrings)")
+      log(.debug, message: "Returning \(modeStrings.count) available modes")
+      
       return modeStrings
     }
 
     // -----------------------------------------------------------------------
     // MARK: - File-based Recording Functions (for debugging and testing)
     
-    /**
-     * Starts recording audio to a WAV file
-     * 
-     * Uses measurement mode when available to capture raw, unprocessed audio
-     * which is essential for accurate analysis
-     * 
-     * Parameters:
-     *   - fileName: String that specifies the name of the output file
-     *              ".wav" extension will be added automatically if not included
-     * 
-     * Returns:
-     *   - Dictionary with the following keys:
-     *     - "success": Boolean indicating if recording started successfully
-     *     - "fileUri": String with the complete URI to the recording file (on success)
-     *     - "path": String with the file system path to the recording (on success)
-     *     - "error": String with error description (on failure)
-     */
     AsyncFunction("fileStartRecording") { (fileName: String) -> [String: Any] in
+      log(.info, message: "Starting with filename '\(fileName)'")
+      
       do {
         let audioSession = AVAudioSession.sharedInstance()
         
         // Measurement mode provides minimal signal processing for clean recording
-        // Fall back to default mode if not available on the device
         let availableModes = audioSession.availableModes
         if availableModes.contains(.measurement) {
           try audioSession.setCategory(.record, mode: .measurement)
+          log(.info, message: "Using MEASUREMENT audio mode for clean recording")
         } else {
-          print("Measurement mode not available, falling back to default mode")
           try audioSession.setCategory(.record, mode: .default)
+          log(.warning, message: "Measurement mode not available, falling back to DEFAULT mode")
         }
         try audioSession.setActive(true)
         
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let fileURL = documentsPath.appendingPathComponent(fileName.hasSuffix(".wav") ? fileName : "\(fileName).wav")
+        log(.debug, message: "Recording to file: \(fileURL.path)")
         
         audioRecorder = try AVAudioRecorder(url: fileURL, settings: wavSettings)
         
         if let recorder = audioRecorder, recorder.record() {
+          log(.info, message: "Recording started successfully")
           return [
             "success": true,
             "fileUri": fileURL.absoluteString,
             "path": fileURL.path
           ]
         } else {
+          log(.error, message: "Failed to start recording")
           return ["success": false, "error": "Failed to start recording"]
         }
       } catch {
+        log(.error, message: "Exception occurred: \(error.localizedDescription)")
         return ["success": false, "error": error.localizedDescription]
       }
     }
     
-    /**
-     * Stops the current file recording and releases audio resources
-     * 
-     * Returns the location of the recorded file for further processing
-     * 
-     * Parameters:
-     *   - None
-     * 
-     * Returns:
-     *   - Dictionary with the following keys:
-     *     - "success": Boolean indicating if recording stopped successfully
-     *     - "fileUri": String with the URI to the recorded file (on success)
-     *     - "path": String with the file system path to the recording (on success)
-     *     - "error": String with error description (on failure)
-     * 
-     * Side effects:
-     *   - Sets audioRecorder to nil
-     *   - Deactivates audio session
-     */
     AsyncFunction("fileStopRecording") { () -> [String: Any] in
+      log(.debug, message: "Function called")
+      
       guard let recorder = audioRecorder, recorder.isRecording else {
+        log(.warning, message: "No active recording found")
         return ["success": false, "error": "No active recording"]
       }
       
+      let path = recorder.url.path
+      log(.info, message: "Stopping recording with output at \(path)")
+      
       recorder.stop()
+      log(.debug, message: "Recording stopped successfully")
       
       // Release audio resources to allow other apps to use audio
       do {
         try AVAudioSession.sharedInstance().setActive(false)
+        log(.debug, message: "Audio session deactivated")
       } catch {
-        print("Error deactivating audio session: \(error)")
+        log(.error, message: "Error deactivating audio session: \(error.localizedDescription)")
       }
       
       let fileURL = recorder.url
       audioRecorder = nil
+      
+      if FileManager.default.fileExists(atPath: fileURL.path) {
+        let fileSize = try? FileManager.default.attributesOfItem(atPath: fileURL.path)[.size] as? Int64
+        log(.info, message: "WAV file confirmed at \(fileURL.path) (\(fileSize ?? 0) bytes)")
+      } else {
+        log(.warning, message: "File doesn't exist at expected path: \(fileURL.path)")
+      }
       
       return [
         "success": true,
@@ -220,12 +214,23 @@ public class NativeAudioModule: Module {
      *   - Boolean: true if file was successfully deleted, false if an error occurred
      */
     Function("deleteRecording") { (filePath: String) -> Bool in
+      log(.debug, message: "Attempting to delete file at path: \(filePath)")
+      
       let fileManager = FileManager.default
+      
+      if !fileManager.fileExists(atPath: filePath) {
+        log(.warning, message: "File not found at path: \(filePath)")
+        return false
+      }
+      
+      log(.debug, message: "File exists, attempting deletion")
+      
       do {
         try fileManager.removeItem(atPath: filePath)
+        log(.info, message: "File successfully deleted: \(filePath)")
         return true
       } catch {
-        print("Error deleting file: \(error)")
+        log(.error, message: "Exception while deleting file: \(error.localizedDescription)")
         return false
       }
     }
@@ -233,53 +238,39 @@ public class NativeAudioModule: Module {
     // -----------------------------------------------------------------------
     // MARK: - Streaming Functions
     
-    /**
-     * Starts real-time streaming of audio data
-     * 
-     * Uses AVAudioEngine to provide audio buffers as they're captured
-     * This allows for immediate analysis without waiting for recording to complete
-     * 
-     * Parameters:
-     *   - options: Optional dictionary that can include:
-     *     - "bufferSize": Integer specifying buffer size in frames
-     * 
-     * Returns:
-     *   - Dictionary with the following keys:
-     *     - "success": Boolean indicating if streaming started successfully
-     *     - "error": String with error description (on failure)
-     * 
-     * Emits events:
-     *   - "onAudioData": Dictionary containing:
-     *     - "data": Array of float audio samples
-     *     - "timestamp": Integer sample time
-     *     - "sampleRate": Float sample rate in Hz
-     */
     AsyncFunction("startStreaming") { (options: [String: Any]?) -> [String: Any] in
+      log(.info, message: "Starting audio streaming")
+      
       do {
         // Clean up any existing streaming session
         if isStreamingActive {
+          log(.debug, message: "Stopping previous streaming session")
           stopAudioStreaming()
         }
-
+    
         let audioSession = AVAudioSession.sharedInstance()
         
         // Use measurement mode for clean audio when available
         let availableModes = audioSession.availableModes
         if availableModes.contains(.measurement) {
           try audioSession.setCategory(.record, mode: .measurement)
+          log(.info, message: "Using MEASUREMENT audio mode for clean recording")
         } else {
           try audioSession.setCategory(.record, mode: .default)
-          print("Measurement mode not available, falling back to default mode")
+          log(.warning, message: "Measurement mode not available, falling back to DEFAULT mode")
         }
         try audioSession.setActive(true)
         
         // Allow custom buffer size configuration
+        let originalBufferSize = streamBufferSize
         if let bufferSize = options?["bufferSize"] as? Int, bufferSize > 0 {
           streamBufferSize = AVAudioFrameCount(bufferSize)
+          log(.debug, message: "Updated buffer size from \(originalBufferSize) to \(streamBufferSize)")
         }
         
         audioEngine = AVAudioEngine()
         inputNode = audioEngine?.inputNode
+        log(.debug, message: "Creating AudioEngine and obtaining input node")
         
         /**
          * Install a tap on the input node to receive audio buffers
@@ -311,11 +302,14 @@ public class NativeAudioModule: Module {
           }
         }
         
+        log(.debug, message: "Starting audio engine")
         try audioEngine?.start()
         isStreamingActive = true
+        log(.info, message: "Audio streaming started successfully")
         
         return ["success": true]
       } catch {
+        log(.error, message: "Exception occurred: \(error.localizedDescription)")
         return ["success": false, "error": error.localizedDescription]
       }
     }
@@ -335,10 +329,15 @@ public class NativeAudioModule: Module {
      *   - Calls stopAudioStreaming() which releases all audio resources
      */
     Function("stopStreaming") { () -> [String: Any] in
+      log(.debug, message: "Function called")
+      
       if isStreamingActive {
+        log(.info, message: "Stopping active streaming session")
         stopAudioStreaming()
+        log(.debug, message: "Streaming stopped successfully")
         return ["success": true]
       } else {
+        log(.warning, message: "No active streaming to stop")
         return ["success": false, "error": "No active streaming"]
       }
     }
@@ -367,11 +366,17 @@ public class NativeAudioModule: Module {
      *   - Boolean: true if options were successfully updated, false otherwise
      */
     Function("setStreamingOptions") { (options: [String: Any]) -> Bool in
+      log(.debug, message: "Called with options \(options)")
+      
       if let bufferSize = options["bufferSize"] as? Int, bufferSize > 0 {
+        let oldSize = streamBufferSize
         streamBufferSize = AVAudioFrameCount(bufferSize)
+        log(.info, message: "Updated buffer size from \(oldSize) to \(streamBufferSize) samples")
         return true
+      } else {
+        log(.warning, message: "Invalid buffer size provided: \(options["bufferSize"] ?? "nil")")
+        return false
       }
-      return false
     }
 
     /**
@@ -390,9 +395,12 @@ public class NativeAudioModule: Module {
     *     - "error": String with error description (on failure)
     */
     AsyncFunction("playAudioFile") { (filePath: String, options: [String: Any]?) -> [String: Any] in
+      log(.info, message: "Starting playback of file: \(filePath)")
+      
       do {
         // Stop any ongoing playback
         if isPlaybackActive {
+          log(.debug, message: "Stopping previous playback")
           stopPlayback()
         }
         
@@ -400,6 +408,7 @@ public class NativeAudioModule: Module {
         
         // Use .playback category for highest quality output with minimal interference
         try audioSession.setCategory(.playback, mode: .default, options: [.duckOthers])
+        log(.debug, message: "Set audio session category to playback")
         
         // Activate audio session
         try audioSession.setActive(true)
@@ -407,8 +416,10 @@ public class NativeAudioModule: Module {
         // Create engine and nodes
         playbackEngine = AVAudioEngine()
         audioPlayerNode = AVAudioPlayerNode()
+        log(.debug, message: "Created audio engine and player node")
         
         guard let engine = playbackEngine, let playerNode = audioPlayerNode else {
+          log(.error, message: "Failed to create audio engine")
           return ["success": false, "error": "Failed to create audio engine"]
         }
         
@@ -419,8 +430,11 @@ public class NativeAudioModule: Module {
         audioFile = try AVAudioFile(forReading: fileURL)
         
         guard let file = audioFile else {
+          log(.error, message: "Failed to load audio file")
           return ["success": false, "error": "Failed to load audio file"]
         }
+        
+        log(.debug, message: "Loaded audio file: \(fileURL.lastPathComponent), format: \(file.processingFormat)")
         
         // Get the file format
         let fileFormat = file.processingFormat
@@ -435,6 +449,7 @@ public class NativeAudioModule: Module {
         // Set volume if specified
         if let volume = options?["volume"] as? Float {
           playerNode.volume = max(0.0, min(1.0, volume))
+          log(.debug, message: "Set playback volume to \(playerNode.volume)")
         }
         
         // Prepare engine
@@ -442,19 +457,23 @@ public class NativeAudioModule: Module {
         
         // Start the engine
         try engine.start()
+        log(.debug, message: "Audio engine started")
         
         // Schedule file for playback
         playerNode.scheduleFile(file, at: nil) {
           // Playback completion handler
           self.isPlaybackActive = false
+          self.log(.info, message: "Playback completed")
         }
         
         // Start playback
         playerNode.play()
         isPlaybackActive = true
+        log(.info, message: "Playback started successfully")
         
         return ["success": true]
       } catch {
+        log(.error, message: "Exception occurred: \(error.localizedDescription)")
         return ["success": false, "error": error.localizedDescription]
       }
     }
@@ -471,10 +490,15 @@ public class NativeAudioModule: Module {
     *     - "error": String with error description (if no active playback)
     */
     Function("stopAudioPlayback") { () -> [String: Any] in
+      log(.debug, message: "Function called")
+      
       if isPlaybackActive {
+        log(.info, message: "Stopping active playback session")
         stopPlayback()
+        log(.debug, message: "Playback stopped successfully")
         return ["success": true]
       } else {
+        log(.warning, message: "No active playback to stop")
         return ["success": false, "error": "No active playback"]
       }
     }
@@ -507,17 +531,20 @@ public class NativeAudioModule: Module {
    *   - Deactivates audio session
    */
   private func stopAudioStreaming() {
+    log(.debug, message: "Removing tap and stopping audio engine")
     inputNode?.removeTap(onBus: 0)
     
     audioEngine?.stop()
     audioEngine = nil
     inputNode = nil
     isStreamingActive = false
+    log(.debug, message: "Audio engine stopped and resources cleared")
     
     do {
       try AVAudioSession.sharedInstance().setActive(false)
+      log(.debug, message: "Audio session deactivated")
     } catch {
-      print("Error deactivating audio session: \(error)")
+      log(.error, message: "Error deactivating audio session: \(error.localizedDescription)")
     }
   }
 
@@ -525,6 +552,8 @@ public class NativeAudioModule: Module {
   * Helper method to clean up playback resources
   */
   private func stopPlayback() {
+    log(.debug, message: "Stopping playback and cleaning up resources")
+    
     audioPlayerNode?.stop()
     playbackEngine?.stop()
     
@@ -532,11 +561,35 @@ public class NativeAudioModule: Module {
     audioFile = nil
     playbackEngine = nil
     isPlaybackActive = false
+    log(.debug, message: "Playback resources released")
     
     do {
       try AVAudioSession.sharedInstance().setActive(false)
+      log(.debug, message: "Audio session deactivated")
     } catch {
-      print("Error deactivating audio session: \(error)")
+      log(.error, message: "Error deactivating audio session: \(error.localizedDescription)")
     }
+  }
+
+    /**
+   * Unified logging function that mimics Android logging style for consistent cross-platform debugging
+   * 
+   * @param level LogLevel The severity level of the log
+   * @param function String The function name (automatically provided by default)
+   * @param message String The message to log
+   */
+  private enum LogLevel: String {
+    case debug = "[DEBUG]"
+    case info = "[INFO]"
+    case warning = "[WARNING]"
+    case error = "[ERROR]"
+  }
+  
+  private func log(_ level: LogLevel, 
+                   function: String = #function, 
+                   message: String) {
+    // Format: [LEVEL] NativeAudioModule: functionName: message
+    let functionName = function.components(separatedBy: "(").first ?? function
+    print("\(level.rawValue) NativeAudioModule: \(functionName): \(message)")
   }
 }
