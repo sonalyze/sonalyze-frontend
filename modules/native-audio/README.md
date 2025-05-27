@@ -1,7 +1,7 @@
-NativeAudioModule API Reference
+NativeAudio API Reference
 ## Overview
 
-The `NativeAudioModule` is a high-quality audio recording and streaming module for iOS. It provides two approaches:
+The `NativeAudio` is a high-quality audio recording, playback and streaming module for iOS (Android and Web comming soon). It provides two approaches:
 
 - **File-based recording**  
     Records a complete WAV file for analysis after recording completes.  
@@ -12,8 +12,8 @@ The `NativeAudioModule` is a high-quality audio recording and streaming module f
 
 High-quality WAV recording settings optimized for audio analysis:
 
-- **48 kHz sample rate**: Captures frequencies up to 24 kHz  
-- **24-bit depth**: Provides high dynamic range for detailed analysis  
+- **48 kHz sample rate**
+- **24-bit depth**
 - **Linear PCM format**: Uncompressed to avoid artifacts
 
 ## API Reference
