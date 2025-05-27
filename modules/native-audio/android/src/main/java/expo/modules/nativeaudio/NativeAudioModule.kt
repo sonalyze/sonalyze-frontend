@@ -3,7 +3,6 @@ package expo.modules.nativeaudio
 import android.Manifest
 import android.content.pm.PackageManager
 import android.media.*
-import android.os.Process
 import androidx.core.app.ActivityCompat
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.modules.Module
@@ -17,28 +16,30 @@ import android.media.audiofx.AutomaticGainControl
 import android.media.audiofx.NoiseSuppressor
 import android.media.audiofx.AcousticEchoCanceler
 
+/**
+ * Native module for high-quality audio recording on Android.
+ * This module focuses on clean, unprocessed audio capture for analysis purposes.
+ */
 class NativeAudioModule : Module() {
-    // Audio configuration constants
-    private val sampleRate = 48000 // 48kHz sample rate
+    // Using 48kHz and float encoding for maximum audio quality
+    private val sampleRate = 48000 
     private val channelConfig = AudioFormat.CHANNEL_IN_MONO
-    private val audioFormat = AudioFormat.ENCODING_PCM_FLOAT // Equivalent to 32-bit float (highest quality)
-    private val bufferSize = 4096 // Default buffer size
+    private val audioFormat = AudioFormat.ENCODING_PCM_FLOAT // 32-bit float format
+    private val bufferSize = 4096 
     
-    // Recording state
+    // State management using AtomicBoolean for thread safety
     private var audioRecord: AudioRecord? = null
     private var recordingFile: File? = null
     private var isRecording = AtomicBoolean(false)
+    private var isPlaying = AtomicBoolean(false)
+    private var isStreaming = AtomicBoolean(false)
+    
+    // Background processing using Kotlin coroutines
     private var recordingJob: Job? = null
+    private var playbackJob: Job? = null
+    private var streamingJob: Job? = null
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
     
-    // Playback state
-    private var audioTrack: AudioTrack? = null
-    private var isPlaying = AtomicBoolean(false)
-    private var playbackJob: Job? = null
-    
-    // Streaming state
-    private var isStreaming = AtomicBoolean(false)
-    private var streamingJob: Job? = null
     private var streamBufferSize = bufferSize
     
     override fun definition() = ModuleDefinition {
@@ -46,7 +47,11 @@ class NativeAudioModule : Module() {
         
         Events("onAudioData")
         
-        // Permission management
+        /**
+         * Requests microphone permission from the user
+         * 
+         * @return Promise<Boolean> True if permission is granted, false otherwise
+         */
         AsyncFunction("requestMicrophonePermission") { promise: Promise ->
             val activity = appContext.currentActivity ?: run {
                 promise.resolve(false)
@@ -65,7 +70,8 @@ class NativeAudioModule : Module() {
                 0
             )
             
-            // We can't immediately know the result, so we check if permission was granted in practice
+            // Android permission API is asynchronous but we need a synchronous response,
+            // so we check if permission was immediately granted
             val granted = ActivityCompat.checkSelfPermission(
                 activity, 
                 Manifest.permission.RECORD_AUDIO
@@ -74,20 +80,37 @@ class NativeAudioModule : Module() {
             promise.resolve(granted)
         }
         
-        Function("getAvailableAudioSessionModes") { -> 
-            // Android doesn't have the concept of audio session modes like iOS,
-            // but we return some equivalent concepts for consistency
-            listOf("default", "voiceRecognition", "measurement")
+        /**
+         * Returns empty list since Android doesn't support iOS-style audio session modes
+         * 
+         * This is maintained for API compatibility with iOS, but has no effect on Android.
+         * The Android implementation uses AudioSource types instead.
+         * 
+         * @return List<String> Empty list of audio modes
+         */
+        Function("getAvailableAudioSessionModes") {
+            Log.w("NativeAudioModule", "Audio session modes are an iOS concept not available on Android")
+            emptyList<String>()
         }
         
-        // File-based recording functions
+        /**
+         * Starts recording audio to a file with maximum quality
+         * 
+         * @param fileName String Name of the output WAV file
+         * @return Map<String, Any> Result containing success status and file information
+         */
         AsyncFunction("fileStartRecording") { fileName: String -> 
+            val activity = appContext.currentActivity
+            if (activity == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                Log.w("NativeAudioModule", "Recording started while app may be in background. " +
+                    "Android 9+ restricts microphone access in background.")
+            }
+
             val context = appContext.reactContext ?: return@AsyncFunction mapOf(
                 "success" to false,
                 "error" to "Context not available"
             )
             
-            // Check permission
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) 
                 != PackageManager.PERMISSION_GRANTED) {
                 return@AsyncFunction mapOf(
@@ -102,26 +125,33 @@ class NativeAudioModule : Module() {
                     stopRecording()
                 }
                 
-                // Calculate buffer size based on audio parameters
+                // Calculate minimum viable buffer size for this device
                 val minBufferSize = AudioRecord.getMinBufferSize(
                     sampleRate, 
                     channelConfig, 
                     audioFormat
                 )
                 
-                // Create AudioRecord instance
+                val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                val audioSource = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
+                    audioManager.getProperty(AudioManager.PROPERTY_SUPPORT_AUDIO_SOURCE_UNPROCESSED) == "true") {
+                    MediaRecorder.AudioSource.UNPROCESSED // Truly raw audio (API 24+)
+                } else {
+                    MediaRecorder.AudioSource.VOICE_RECOGNITION // Less processed audio
+                }
+                
                 audioRecord = AudioRecord(
-                    MediaRecorder.AudioSource.VOICE_RECOGNITION, // This source has minimal processing
+                    audioSource,
                     sampleRate,
                     channelConfig,
                     audioFormat,
-                    minBufferSize * 2 // Double the minimum for safety
+                    minBufferSize * 2
                 )
                 
-                // Disable audio effects if available
+                // Explicitly disable processing effects for clean audio
                 disableAudioEffects(audioRecord?.audioSessionId ?: 0)
                 
-                // Create output file
+                // Set up output file
                 val filesDir = context.filesDir
                 val audioDir = File(filesDir, "audio")
                 if (!audioDir.exists()) {
@@ -131,7 +161,6 @@ class NativeAudioModule : Module() {
                 val wavFileName = if (fileName.endsWith(".wav")) fileName else "$fileName.wav"
                 recordingFile = File(audioDir, wavFileName)
                 
-                // Start recording
                 val record = audioRecord ?: return@AsyncFunction mapOf(
                     "success" to false,
                     "error" to "Failed to initialize audio recorder"
@@ -140,9 +169,9 @@ class NativeAudioModule : Module() {
                 record.startRecording()
                 isRecording.set(true)
                 
-                // Start a coroutine to read audio data
+                // Process audio data in background coroutine
                 recordingJob = coroutineScope.launch {
-                    // Create output stream for raw PCM data (we'll add WAV header later)
+                    // We record to PCM first then convert to WAV when done
                     val tempFile = File("${recordingFile?.absolutePath}.pcm")
                     val outputStream = FileOutputStream(tempFile)
                     val buffer = FloatArray(bufferSize)
@@ -151,7 +180,7 @@ class NativeAudioModule : Module() {
                         while (isRecording.get() && isActive) {
                             val readResult = record.read(buffer, 0, bufferSize, AudioRecord.READ_BLOCKING)
                             if (readResult > 0) {
-                                // Convert float array to bytes
+                                // Convert float samples to bytes
                                 val byteBuffer = ByteBuffer.allocate(buffer.size * 4)
                                     .order(ByteOrder.LITTLE_ENDIAN)
                                 
@@ -165,10 +194,10 @@ class NativeAudioModule : Module() {
                     } finally {
                         outputStream.close()
                         
-                        // When done recording, convert to WAV format
+                        // Convert raw PCM to WAV format with proper header
                         if (recordingFile != null && tempFile.exists()) {
                             addWavHeader(tempFile, recordingFile!!, sampleRate, 1, 32)
-                            tempFile.delete() // Delete the temporary PCM file
+                            tempFile.delete()
                         }
                     }
                 }
@@ -187,6 +216,11 @@ class NativeAudioModule : Module() {
             }
         }
         
+        /**
+         * Stops the current audio recording
+         * 
+         * @return Map<String, Any> Result containing success status and file information
+         */
         AsyncFunction("fileStopRecording") {
             if (!isRecording.get()) {
                 return@AsyncFunction mapOf(
@@ -205,68 +239,72 @@ class NativeAudioModule : Module() {
             )
         }
         
+        /**
+         * Checks if audio recording is currently active
+         * 
+         * @return Boolean True if recording is in progress
+         */
         Function("isFileRecording") {
             isRecording.get()
         }
         
+        /**
+         * Deletes a recorded audio file
+         * 
+         * @param filePath String Path to the file to delete
+         * @return Boolean True if file was deleted successfully
+         */
         Function("deleteRecording") { filePath: String ->
             try {
                 val file = File(filePath)
-                if (file.exists()) {
-                    file.delete()
-                    true
-                } else {
-                    false
-                }
+                file.exists() && file.delete()
             } catch (e: Exception) {
                 false
             }
         }
         
-        // Streaming functions - we'll implement these later
-        // For now, adding stubs similar to iOS implementation
+        // Streaming functions (placeholder API for future implementation)
         AsyncFunction("startStreaming") { options: Map<String, Any>? ->
-            // Streaming implementation will go here
-            mapOf("success" to false, "error" to "Not implemented yet")
+            mapOf("success" to false, "error" to "Streaming not yet implemented on Android")
         }
         
         Function("stopStreaming") {
-            mapOf("success" to false, "error" to "Not implemented yet")
+            mapOf("success" to false, "error" to "Streaming not yet implemented on Android")
         }
         
         Function("isStreaming") {
             false
         }
         
+        /**
+         * Sets options for audio streaming
+         * 
+         * @param options Map<String, Any> Options including bufferSize
+         * @return Boolean True if options were set successfully
+         */
         Function("setStreamingOptions") { options: Map<String, Any> ->
-            if (options.containsKey("bufferSize")) {
-                val size = options["bufferSize"] as? Int
-                if (size != null && size > 0) {
-                    streamBufferSize = size
-                    true
-                } else {
-                    false
-                }
+            val size = options["bufferSize"] as? Int
+            if (size != null && size > 0) {
+                streamBufferSize = size
+                true
             } else {
                 false
             }
         }
         
-        // Audio playback functions - also stubs for now
+        // Audio playback functions (placeholder API for future implementation)
         AsyncFunction("playAudioFile") { filePath: String, options: Map<String, Any>? ->
-            mapOf("success" to false, "error" to "Not implemented yet")
+            mapOf("success" to false, "error" to "Playback not yet implemented on Android")
         }
         
         Function("stopAudioPlayback") {
-            mapOf("success" to false, "error" to "Not implemented yet")
+            mapOf("success" to false, "error" to "Playback not yet implemented on Android")
         }
         
         Function("isPlaying") {
             false
         }
     }
-    
-    // Helper methods
     
     /**
      * Stops the current recording and cleans up resources
@@ -283,40 +321,42 @@ class NativeAudioModule : Module() {
                 }
                 recorder.release()
             } catch (e: Exception) {
-                // Ignore errors during cleanup
+                // Ignore errors during cleanup as the recording has already stopped
             }
         }
         audioRecord = null
     }
     
     /**
-     * Disables audio effects that might interfere with clean recording
+     * Disables audio processing effects that would interfere with clean recording
+     * 
+     * @param audioSessionId Int The audio session ID to disable effects for
      */
     private fun disableAudioEffects(audioSessionId: Int) {
         if (audioSessionId == 0) return
         
-        // Disable Automatic Gain Control if available
+        // Android automatically applies these effects which can distort analytical audio
         if (AutomaticGainControl.isAvailable()) {
-            val agc = AutomaticGainControl.create(audioSessionId)
-            agc?.enabled = false
-            // Don't release, we need it to stay disabled
+            AutomaticGainControl.create(audioSessionId)?.enabled = false
         }
         
-        // Disable Noise Suppressor if available
         if (NoiseSuppressor.isAvailable()) {
-            val ns = NoiseSuppressor.create(audioSessionId)
-            ns?.enabled = false
+            NoiseSuppressor.create(audioSessionId)?.enabled = false
         }
         
-        // Disable Acoustic Echo Canceler if available
         if (AcousticEchoCanceler.isAvailable()) {
-            val aec = AcousticEchoCanceler.create(audioSessionId)
-            aec?.enabled = false
+            AcousticEchoCanceler.create(audioSessionId)?.enabled = false
         }
     }
     
     /**
-     * Adds a WAV header to a raw PCM file
+     * Creates a proper WAV file from raw PCM audio data
+     * 
+     * @param pcmFile File Source file containing raw PCM data
+     * @param wavFile File Destination WAV file to create
+     * @param sampleRate Int Audio sample rate in Hz
+     * @param channels Int Number of audio channels
+     * @param bitsPerSample Int Bits per sample (bit depth)
      */
     private fun addWavHeader(
         pcmFile: File, 
@@ -327,39 +367,42 @@ class NativeAudioModule : Module() {
     ) {
         val pcmData = pcmFile.readBytes()
         val totalDataLen = pcmData.size
-        val totalSize = totalDataLen + 36  // 36 = size of header minus 8 bytes
+        val totalSize = totalDataLen + 36
         
-        val header = ByteBuffer.allocate(44) // WAV header is 44 bytes
+        // Create standard 44-byte WAV header
+        val header = ByteBuffer.allocate(44)
         
-        // RIFF header
+        // "RIFF" chunk descriptor
         header.put("RIFF".toByteArray())
         header.order(ByteOrder.LITTLE_ENDIAN).putInt(totalSize)
         header.put("WAVE".toByteArray())
         
-        // Format chunk
+        // "fmt " sub-chunk
         header.put("fmt ".toByteArray())
-        header.order(ByteOrder.LITTLE_ENDIAN).putInt(16) // Format chunk size (16 for PCM)
-        header.order(ByteOrder.LITTLE_ENDIAN).putShort(3) // Audio format (3 = IEEE Float)
-        header.order(ByteOrder.LITTLE_ENDIAN).putShort(channels.toShort()) // Channels
-        header.order(ByteOrder.LITTLE_ENDIAN).putInt(sampleRate) // Sample rate
+        header.order(ByteOrder.LITTLE_ENDIAN).putInt(16)
+        header.order(ByteOrder.LITTLE_ENDIAN).putShort(3) // 3 = IEEE float format
+        header.order(ByteOrder.LITTLE_ENDIAN).putShort(channels.toShort())
+        header.order(ByteOrder.LITTLE_ENDIAN).putInt(sampleRate)
         
         val byteRate = sampleRate * channels * (bitsPerSample / 8)
-        header.order(ByteOrder.LITTLE_ENDIAN).putInt(byteRate) // Byte rate
-        header.order(ByteOrder.LITTLE_ENDIAN).putShort((channels * (bitsPerSample / 8)).toShort()) // Block align
-        header.order(ByteOrder.LITTLE_ENDIAN).putShort(bitsPerSample.toShort()) // Bits per sample
+        header.order(ByteOrder.LITTLE_ENDIAN).putInt(byteRate)
+        header.order(ByteOrder.LITTLE_ENDIAN).putShort((channels * (bitsPerSample / 8)).toShort())
+        header.order(ByteOrder.LITTLE_ENDIAN).putShort(bitsPerSample.toShort())
         
-        // Data chunk
+        // "data" sub-chunk
         header.put("data".toByteArray())
-        header.order(ByteOrder.LITTLE_ENDIAN).putInt(totalDataLen) // Data size
+        header.order(ByteOrder.LITTLE_ENDIAN).putInt(totalDataLen)
         
-        // Write header + data to WAV file
+        // Write complete WAV file
         FileOutputStream(wavFile).use { output ->
             output.write(header.array())
             output.write(pcmData)
         }
     }
 
-    // Clean up resources when the module is destroyed
+    /**
+     * Clean up resources when module is destroyed
+     */
     override fun onDestroy() {
         super.onDestroy()
         stopRecording()
