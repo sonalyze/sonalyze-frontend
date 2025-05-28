@@ -14,7 +14,7 @@ const ExampleComponent: FC<ExampleComponentProps> = (
 		console.log(msg);
 	}, []);
 
-	const socket = useSocket('', handleIncoming, {
+	const socket = useSocket([{ event: 'message', handler: handleIncoming }], {
 		onConnect: () => console.log('connected'),
 		onDisconnect: (reason: string) => console.log('discsonnect: ' + reason),
 		onError: (error) => console.error(error),
@@ -26,7 +26,7 @@ const ExampleComponent: FC<ExampleComponentProps> = (
 			<Text>Name: {props.name}</Text>
 			<Text>Alter: {props.age}</Text>
 			<Button
-				onPress={() => socket.emit('message', 'moin')}
+				onPress={() => socket.emit('message', {})}
 				title="Emit socket message"
 			/>
 		</View>
