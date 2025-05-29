@@ -1,16 +1,18 @@
 # aal-frontend
 
-Repo for frontend of out app.
+Repo for frontend of our app.
 
 ---
 
 ## Features
 
--   [Expo](https://expo.dev/) (SDK 52+) managed workflow with over-the-air updates
--   TypeScript for type safety
--   [NativeWind](https://www.nativewind.dev/) (Tailwind CSS for React Native)
--   [Tanstack-Query](https://tanstack.com/query/latest) for api connection
--   ESLint and Prettier configured
+- [Expo](https://expo.dev/) (SDK 52+) managed workflow with over-the-air updates
+- TypeScript for type safety
+- [NativeWind](https://www.nativewind.dev/) (Tailwind CSS for React Native)
+- [Tanstack-Query](https://tanstack.com/query/latest) for api connection
+- ESLint and Prettier configured
+- [react-navigation](https://reactnavigation.org/docs/native-stack-navigator) for navigation
+- [socket-io](https://socket.io/docs/v4/client-api/) for bidirectional async communication
 
 ---
 
@@ -18,9 +20,9 @@ Repo for frontend of out app.
 
 Install:
 
--   [Node.js](https://nodejs.org/) v20+
--   npm
--   Expo CLI (optional)
+- [Node.js](https://nodejs.org/) v20+
+- npm
+- Expo CLI (optional)
 
 ---
 
@@ -49,12 +51,40 @@ src/
   api/              # Api models and functions
   assets/           # Images, fonts
   components/       # UI components
-  pages/            # App screens / pages
+  contexts/         # React Contexts
+  screens/          # App screens / pages
   hooks/            # Custom hooks
   tools/            # Utility functions
   types/            # Globally used types
-  App.tsx           # Entry point
+  App.tsx           # Entry point, Navigation
 ```
+
+## IOS Build and Run on Device
+1. Prebuild the App:
+```bash
+npm run prebuild
+```
+2. (On First Deploy Only) Open ios/aalfrontend.xcodeproj in XCode and run the app on your device
+
+3. (Further Deployments)
+```bash
+npm run ios
+```
+
+## Code Conventions:
+
+Components and Pages:
+
+- PascalCase, for example `HomeScreen`
+- have to be typed Function Components (FC<Props>) (see ExampleComponent.tsx)
+- Props have to be typed at the top of the file (see ExampleComponent.tsx)
+- Props should always have a prop object, not a deconstructor ((props: Props)=>{})
+- Avoid UseEffects whenever possible
+
+Functions:
+
+- Functions are camelCase, for example `function testFunction()`
+- Always declare return types
 
 ## Contributing
 
@@ -62,14 +92,18 @@ src/
 2. Push to your branch
 3. Create a PR to `development`
 
+### Branch Naming Conventions:
+
+Branch name should always start with `feature/`, `fix/`, `chore/` or `refactor/`, continued with the content of the branch. For example: `feature/microphone-impl`
+
 ## Required VS Code extensions
 
--   https://marketplace.visualstudio.com/items/?itemName=esbenp.prettier-vscode
--   https://marketplace.visualstudio.com/items/?itemName=bradlc.vscode-tailwindcss
--   https://marketplace.visualstudio.com/items/?itemName=dbaeumer.vscode-eslint
+- https://marketplace.visualstudio.com/items/?itemName=esbenp.prettier-vscode
+- https://marketplace.visualstudio.com/items/?itemName=bradlc.vscode-tailwindcss
+- https://marketplace.visualstudio.com/items/?itemName=dbaeumer.vscode-eslint
 
 ## Recommended VS Code extensions
 
--   https://marketplace.visualstudio.com/items/?itemName=dsznajder.es7-react-js-snippets
--   https://marketplace.visualstudio.com/items/?itemName=usernamehw.errorlens
--   https://marketplace.visualstudio.com/items/?itemName=csstools.postcss
+- https://marketplace.visualstudio.com/items/?itemName=dsznajder.es7-react-js-snippets
+- https://marketplace.visualstudio.com/items/?itemName=usernamehw.errorlens
+- https://marketplace.visualstudio.com/items/?itemName=csstools.postcss
