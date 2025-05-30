@@ -54,18 +54,17 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
         };
     }, []);
 
-    // Clean up event listeners when component unmounts
     useEffect(() => {
         return () => {
             if (isStreaming) {
                 console.log('[AudioStream] Component unmounting while streaming active, stopping stream');
                 stopAudioStream();
             }
-            if (cleanupRef.current) {
-                console.log('[AudioStream] Removing event listeners on unmount');
-                cleanupRef.current();
-            }
         };
+    }, []);  // Empty dependency array = run on mount/unmount only
+
+    useEffect(() => {
+        // No cleanup needed here
     }, [isStreaming]);
 
     // Start monitoring for audio data events
@@ -114,6 +113,12 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
         console.log('[AudioStream] Starting audio stream with buffer size:', bufferSize);
         try {
             setError(null);
+
+            // Clean up any existing listener first
+            if (cleanupRef.current) {
+                cleanupRef.current();
+                cleanupRef.current = null;
+            }
 
             // Set up event listener for audio data
             console.log('[AudioStream] Setting up audio data event listener');
