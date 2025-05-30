@@ -1,31 +1,45 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View } from 'react-native';
 import { FC } from 'react';
 import QRCode from 'react-native-qrcode-svg';
 import Card from './Card';
-import Icon from '@react-native-vector-icons/lucide';
 import { copyToClipboard } from '../tools/clipboardAccess';
+import Button from './Button';
+import { toast } from 'sonner-native';
 
 type QrCodeViewerProps = {
 	type: string;
 	payload: string;
+	allowCopy: boolean;
+	onCopy: (result: "success" | "inaccessible-clipboard") => void,
 };
 
 const QrCodeViewer: FC<QrCodeViewerProps> = (props: QrCodeViewerProps) => {
 	const value = `${props.type}:${props.payload}`;
 
+	// Callback for the "Copy to Clipboard" button.
+	async function onCopyCode() {
+		const success = await copyToClipboard(value);
+		success ? props.onCopy("success") : props.onCopy("inaccessible-clipboard");
+	}
+
 	return (
 		<Card>
-			<View className="items-center">
+			<View className="self-center items-center">
 				{/* QR Code */}
-				<View className="bg-white rounded-md p-3">
+				<View className="bg-white rounded-xl p-3">
 					<QRCode value={value} size={200} />
 				</View>
 
 				{/* Copy Button */}
-				<TouchableOpacity className="pt-2 flex-row items-center" onPress={() => copyToClipboard(value)}>
-					<Icon name="link" size={16}/>
-					<Text className="pl-2 text-base">Copy to Clipboard</Text>
-				</TouchableOpacity>
+				{props.allowCopy && (
+					<Button
+						leadingIcon="link"
+						label="Copy to Clipboard"
+						onPress={onCopyCode}
+						extend={false}
+						className="mt-3"
+					/>
+				)}
 			</View>
 		</Card>
 	);

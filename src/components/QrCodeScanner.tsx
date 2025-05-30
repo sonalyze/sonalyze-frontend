@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 import Card from './Card';
 import { BarcodeScanningResult, CameraView, useCameraPermissions } from 'expo-camera';
 import { Text, View } from 'react-native';
@@ -10,13 +10,13 @@ type QrCodeScannerProps = {
     type: string,
     allowPaste: boolean,
     onScan: (payload: string) => void,
-    onError: (error: "empty-clipboard" | "invalid-code") => void,
+    onError: (error: "empty-inaccessible-clipboard" | "invalid-code") => void,
 };
 
 const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
     const [permission, requestPermission] = useCameraPermissions();
     const [isCameraActive, setIsCameraActive] = useState(false);
-    const [shouldScan, setShouldScan] = useState(false);
+    const lastScannedTimestampRef = useRef(0);
 
     // Ask for camera permission, if required and if possible.
     useEffect(() => {
@@ -27,7 +27,6 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
 
     // Callback for the "Scan QR Code" button.
     async function onScanCode() {
-        setShouldScan(true);
         setIsCameraActive(true);
     }
 
@@ -39,7 +38,7 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
             handleInput(input);
         }
         else {
-            props.onError("empty-clipboard");
+            props.onError("empty-inaccessible-clipboard");
         }
     }
 
@@ -50,9 +49,14 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
 
     // Handler for when a QR code is scanned.
     function handleScanned(result: BarcodeScanningResult) {
-        // This flag is necessary, since the CameraView might invoke this handler multiple times at once.
+        // This is ugly, but necessary, since the CameraView might invoke this handler multiple times at once.
+        // Furthermore, just using `isCameraActive` would not be sufficient, since the handler might be called multiple times before the state is updated.
+        // See martom's answer on Stackoverflow: https://stackoverflow.com/questions/77415039/cannot-set-expo-camera-scan-interval
+        const currentTimestamp = Date.now();
+        const shouldScan = isCameraActive && (currentTimestamp - lastScannedTimestampRef.current > 1000);
+
         if (shouldScan) {
-            setShouldScan(false);
+            lastScannedTimestampRef.current = currentTimestamp;
             handleInput(result.data);
             setIsCameraActive(false);
         }
@@ -73,7 +77,7 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
     }
 
     return (
-        <Card className="items-center">
+        <Card className="self-center items-center">
             {/* Missing Camera Permission */}
             {permission?.granted !== true && (<>
                 <Icon name="camera-off" size={64} />
@@ -110,13 +114,24 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
                         />
                         <Button label="Cancel" onPress={onCancel} />
                     </View>
-                ) : (<Button label="Scan QR Code" onPress={onScanCode} />)}
+                ) : (
+                <Button
+                    label="Scan QR Code"
+                    leadingIcon="scan-qr-code"
+                    onPress={onScanCode}
+                    extend={false}
+                />)}
             </>)}
 
-            {/* Allow Paste */}
+            {/* Paste Button */}
             {props.allowPaste && !isCameraActive && (<>
                 <Text className="text-base my-2">or</Text>
-                <Button label="Paste from Clipboard" onPress={onPasteCode} />
+                <Button
+                    label="Paste from Clipboard"
+                    leadingIcon="clipboard"
+                    onPress={onPasteCode}
+                    extend={false}
+                />
             </>)}
         </Card>
     );

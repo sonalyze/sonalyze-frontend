@@ -12,8 +12,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LocalSettingsProvider } from './contexts/LocalSettingsContext';
 import QrScanScreen from './screens/settings/QrScanScreen';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import LanguageScreen from './screens/settings/LanguageScreen'; 
+import JoinSessionScreen from './screens/JoinSessionScreen';
+import StartSessionScreen from './screens/StartSessionScreen';
 
 
 enableScreens();
@@ -24,7 +25,6 @@ export default function App() {
 	return (
 		<SafeAreaProvider>
 			<GestureHandlerRootView style={{ flex: 1 }}>
-				<SafeAreaView style={{ flex: 1 }}>
 				<LocalSettingsProvider>
 					<QueryClientProvider client={queryClient}>
 					<SocketProvider>
@@ -39,7 +39,6 @@ export default function App() {
 					</SocketProvider>
 					</QueryClientProvider>
 				</LocalSettingsProvider>
-				</SafeAreaView>
 			</GestureHandlerRootView>
 		</SafeAreaProvider>
 
@@ -53,6 +52,20 @@ const RootStack = () => (
 		<Stack.Screen
 			name="HomeScreen"
 			component={HomeScreen}
+			options={{
+				headerShown: false
+			}}
+		/>
+		<Stack.Screen
+			name="StartSessionScreen"
+			component={StartSessionScreen}
+			options={{
+				headerShown: false
+			}}
+		/>
+		<Stack.Screen
+			name="JoinSessionScreen"
+			component={JoinSessionScreen}
 			options={{
 				headerShown: false
 			}}
@@ -91,6 +104,8 @@ const RootStack = () => (
 
 export type RootStackParamList = {
 	HomeScreen: undefined;
+	StartSessionScreen: undefined;
+	JoinSessionScreen: undefined;
 	SettingsScreen: undefined;
 	QrScanScreen: undefined;
 	QrViewScreen: undefined;

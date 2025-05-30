@@ -4,6 +4,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import Tile from '../../components/Tile';
 import SecondaryHeader from '../../components/SecondaryHeader';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type SettingsScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -20,7 +21,7 @@ const SettingsScreen: FC<SettingsScreenProps> = (props: SettingsScreenProps) => 
 	};
 
 	return (
-		<View className="flex-1 bg-background">
+		<SafeAreaView className="flex-1 bg-background">
 			{/* Header */}
 			<SecondaryHeader
 				title="Settings"
@@ -58,7 +59,7 @@ const SettingsScreen: FC<SettingsScreenProps> = (props: SettingsScreenProps) => 
 					onPress={() => props.navigation.push('QrScanScreen')}
 				/>
 			</ScrollView>
-		</View>
+		</SafeAreaView>
 	);
 };
 

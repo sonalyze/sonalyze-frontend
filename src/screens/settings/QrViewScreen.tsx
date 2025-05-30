@@ -1,10 +1,13 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { View, Text, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { FC } from 'react';
 import { RootStackParamList } from '../../App';
 import { useLocalSettings } from '../../contexts/LocalSettingsContext';
 import QrCodeViewer from '../../components/QrCodeViewer';
 import SecondaryHeader from '../../components/SecondaryHeader';
+import { toast } from 'sonner-native';
+import * as Haptics from 'expo-haptics';
 
 type QrViewScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -17,6 +20,23 @@ type QrViewScreenProps = {
 
 const QrViewScreen: FC<QrViewScreenProps> = (props: QrViewScreenProps) => {
 	const { settings } = useLocalSettings();
+
+	// Function to handle the copy action from the QR code viewer.
+	function onCopy(result: 'success' | 'inaccessible-clipboard') {
+		if (result === 'success') {
+			toast.success("Sucessfully copied to clipboard.");
+
+			Haptics.notificationAsync(
+                Haptics.NotificationFeedbackType.Success
+            );
+		} else {
+			toast.error("Clipboard is inaccessible.");
+
+			Haptics.notificationAsync(
+                Haptics.NotificationFeedbackType.Error
+            );
+		}
+	}
 
 	return (
 		<SafeAreaView className="flex-1 bg-background">
@@ -35,6 +55,8 @@ const QrViewScreen: FC<QrViewScreenProps> = (props: QrViewScreenProps) => {
 					<QrCodeViewer
 						type="user-token"
 						payload={settings.userToken}
+						allowCopy={true}
+						onCopy={onCopy}
 					/>
 				</View>
 				<Text className="text-center text-base">

@@ -28,7 +28,7 @@ const QrScanScreen: FC<QrScanScreenProps> = (props: QrScanScreenProps) => {
             });
 
             toast.success(
-               "Successfully transferred account."
+                "Successfully transferred account."
             );
 
             Haptics.notificationAsync(
@@ -38,23 +38,23 @@ const QrScanScreen: FC<QrScanScreenProps> = (props: QrScanScreenProps) => {
             props.navigation.popTo("HomeScreen");
         }
         else {
-            onErrorCode("invalid-code");
+            onError("invalid-code");
         }
     }
 
-    function onErrorCode(error : "empty-clipboard" | "invalid-code") {
-        Haptics.notificationAsync(
-            Haptics.NotificationFeedbackType.Error
-        );
-
-        switch(error) {
-            case "empty-clipboard":
+    function onError(error: "empty-inaccessible-clipboard" | "invalid-code") {
+        switch (error) {
+            case "empty-inaccessible-clipboard":
                 toast.error("Clipboard is empty or inaccessible.");
                 break;
             case "invalid-code":
                 toast.error("Not a valid Account ID.")
                 break;
         }
+
+        Haptics.notificationAsync(
+            Haptics.NotificationFeedbackType.Error
+        );
     }
 
     return (
@@ -75,7 +75,7 @@ const QrScanScreen: FC<QrScanScreenProps> = (props: QrScanScreenProps) => {
                     type='user-token'
                     allowPaste={true}
                     onScan={onInputCode}
-                    onError={onErrorCode}
+                    onError={onError}
                 />
                 <Text className="pt-4 text-base text-center">
                     After scanning, your rooms and measurement history will be

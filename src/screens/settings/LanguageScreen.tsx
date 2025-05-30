@@ -4,6 +4,7 @@ import SecondaryHeader from '../../components/SecondaryHeader';
 import Button from '../../components/Button';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const languages = [
   { label: 'English', value: 'en' },
@@ -19,12 +20,12 @@ type LanguageScreenProps = {
   navigation: LanguageScreenNavigationProp;
 };
 
-const LanguageScreen: FC<LanguageScreenProps> = ({ navigation }) => {
+const LanguageScreen: FC<LanguageScreenProps> = (props: LanguageScreenProps) => {
   const [selectedLanguage, setSelectedLanguage] = useState('en');
 
   return (
-    <View className="flex-1 bg-background">
-      <SecondaryHeader title="Change Language" onBack={() => navigation.pop()} />
+    <SafeAreaView className="flex-1 bg-background">
+      <SecondaryHeader title="Change Language" onBack={() => props.navigation.pop()} />
       <View className="px-4 pt-6">
 
         {languages.map((lang) => (
@@ -37,7 +38,7 @@ const LanguageScreen: FC<LanguageScreenProps> = ({ navigation }) => {
           </View>
         ))}
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
