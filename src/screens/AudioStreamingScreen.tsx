@@ -47,25 +47,20 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
 
         requestPermission();
 
-        // Component cleanup
+        // Component cleanup - only run once on unmount
         return () => {
             console.log('[AudioStream] Component unmounting');
-            stopMonitoring();
-        };
-    }, []);
 
-    useEffect(() => {
-        return () => {
+            // Clean up everything when component unmounts
             if (isStreaming) {
                 console.log('[AudioStream] Component unmounting while streaming active, stopping stream');
                 stopAudioStream();
             }
-        };
-    }, []);  // Empty dependency array = run on mount/unmount only
 
-    useEffect(() => {
-        // No cleanup needed here
-    }, [isStreaming]);
+            stopMonitoring();
+        };
+    }, []); // Keep empty to run only on mount/unmount
+
 
     // Start monitoring for audio data events
     function startMonitoring(): void {
@@ -139,19 +134,21 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
             // Start monitoring
             startMonitoring();
 
+            setIsStreaming(true); // Set this BEFORE starting streaming
+
             // Start streaming
             console.log('[AudioStream] Calling native startStreaming()');
             NativeAudio.startStreaming({ bufferSize })
                 .then(result => {
                     console.log('[AudioStream] startStreaming result:', result);
-                    if (result.success) {
-                        setIsStreaming(true);
-                        console.log('[AudioStream] Audio streaming started successfully');
-                    } else {
+                    if (!result.success) { // Changed condition to handle failure case
                         const errorMessage = `Failed to start streaming: ${result.error}`;
                         console.error(`[AudioStream] ${errorMessage}`);
                         setError(errorMessage);
                         stopMonitoring();
+                        setIsStreaming(false); // Reset state on failure
+                    } else {
+                        console.log('[AudioStream] Audio streaming started successfully');
                     }
                 })
                 .catch(err => {
