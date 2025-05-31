@@ -2,10 +2,21 @@ import React, { useState, useEffect, useRef, FC } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import NativeAudio, { AudioDataEvent } from '../../modules/native-audio';
 
-type AudioStreamingScreenProps = {
-};
+/**
+ * Props for the AudioStreamingScreen component
+ */
+type AudioStreamingScreenProps = {};
 
+/**
+ * Screen component for audio streaming functionality and visualization
+ * 
+ * @param props Component props
+ * @returns React component
+ */
 const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreamingScreenProps) => {
+    // ----------------
+    // State management
+    // ----------------
     const [hasPermission, setHasPermission] = useState<boolean | null>(null);
     const [isStreaming, setIsStreaming] = useState<boolean>(false);
     const [bufferSize, setBufferSize] = useState<number>(4096);
@@ -17,52 +28,58 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
         sampleRate: 0
     });
 
-    // Used to store the event subscription removal function
+    // References for managing async operations and state
     const cleanupRef = useRef<(() => void) | null>(null);
-    // Track if we're receiving audio data
     const dataReceivedRef = useRef<boolean>(false);
-    // Track last data reception time
     const lastDataTimeRef = useRef<number>(0);
-    // Monitoring interval reference
     const monitorRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    // Request microphone permission on component mount
+    // ----------------
+    // Lifecycle methods
+    // ----------------
+
+    /**
+     * Initialize component and request microphone permission
+     */
     useEffect(() => {
         console.log('[AudioStream] Component mounted');
-
-        function requestPermission(): void {
-            console.log('[AudioStream] Requesting microphone permission...');
-            NativeAudio.requestMicrophonePermission()
-                .then(granted => {
-                    console.log(`[AudioStream] Permission request result: ${granted ? 'GRANTED' : 'DENIED'}`);
-                    setHasPermission(granted);
-                })
-                .catch(err => {
-                    const errorMessage = 'Failed to request permission: ' + err;
-                    console.error(`[AudioStream] ${errorMessage}`);
-                    setError(errorMessage);
-                });
-        }
-
-
         requestPermission();
 
-        // Component cleanup - only run once on unmount
+        // Component cleanup
         return () => {
             console.log('[AudioStream] Component unmounting');
-
-            // Clean up everything when component unmounts
             if (isStreaming) {
                 console.log('[AudioStream] Component unmounting while streaming active, stopping stream');
                 stopAudioStream();
             }
-
             stopMonitoring();
         };
-    }, []); // Keep empty to run only on mount/unmount
+    }, []);
 
+    /**
+     * Request microphone permission from the user
+     */
+    function requestPermission(): void {
+        console.log('[AudioStream] Requesting microphone permission...');
+        NativeAudio.requestMicrophonePermission()
+            .then(granted => {
+                console.log(`[AudioStream] Permission request result: ${granted ? 'GRANTED' : 'DENIED'}`);
+                setHasPermission(granted);
+            })
+            .catch(err => {
+                const errorMessage = 'Failed to request permission: ' + err;
+                console.error(`[AudioStream] ${errorMessage}`);
+                setError(errorMessage);
+            });
+    }
 
-    // Start monitoring for audio data events
+    // ----------------
+    // Stream monitoring
+    // ----------------
+
+    /**
+     * Start monitoring for audio data events
+     */
     function startMonitoring(): void {
         console.log('[AudioStream] Starting audio stream monitor');
         dataReceivedRef.current = false;
@@ -91,11 +108,12 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
             } catch (err) {
                 console.error('[AudioStream] Error checking native streaming state:', err);
             }
-
         }, 1000);
     }
 
-    // Stop monitoring
+    /**
+     * Stop monitoring for audio data events
+     */
     function stopMonitoring(): void {
         if (monitorRef.current) {
             console.log('[AudioStream] Stopping audio stream monitor');
@@ -104,6 +122,13 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
         }
     }
 
+    // ----------------
+    // Audio streaming
+    // ----------------
+
+    /**
+     * Start the audio streaming process
+     */
     function startAudioStream(): void {
         console.log('[AudioStream] Starting audio stream with buffer size:', bufferSize);
         try {
@@ -134,19 +159,19 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
             // Start monitoring
             startMonitoring();
 
-            setIsStreaming(true); // Set this BEFORE starting streaming
+            setIsStreaming(true);
 
             // Start streaming
             console.log('[AudioStream] Calling native startStreaming()');
             NativeAudio.startStreaming({ bufferSize })
                 .then(result => {
                     console.log('[AudioStream] startStreaming result:', result);
-                    if (!result.success) { // Changed condition to handle failure case
+                    if (!result.success) {
                         const errorMessage = `Failed to start streaming: ${result.error}`;
                         console.error(`[AudioStream] ${errorMessage}`);
                         setError(errorMessage);
                         stopMonitoring();
-                        setIsStreaming(false); // Reset state on failure
+                        setIsStreaming(false);
                     } else {
                         console.log('[AudioStream] Audio streaming started successfully');
                     }
@@ -156,15 +181,20 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
                     console.error(`[AudioStream] ${errorMessage}`);
                     setError(errorMessage);
                     stopMonitoring();
+                    setIsStreaming(false);
                 });
         } catch (err) {
             const errorMessage = 'Error setting up audio stream: ' + err;
             console.error(`[AudioStream] ${errorMessage}`);
             setError(errorMessage);
             stopMonitoring();
+            setIsStreaming(false);
         }
     }
 
+    /**
+     * Stop the audio streaming process
+     */
     function stopAudioStream(): void {
         console.log('[AudioStream] Stopping audio stream');
         try {
@@ -205,6 +235,11 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
         }
     }
 
+    /**
+     * Process incoming audio data and update visualization
+     * 
+     * @param event AudioDataEvent containing audio samples
+     */
     function handleAudioData(event: AudioDataEvent): void {
         // Update data received flag and time
         dataReceivedRef.current = true;
@@ -229,11 +264,11 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
 
             const rms = Math.sqrt(sum / event.data.length);
 
-            // Update audio level (scale to 0-100 for visualization)
-            // Audio samples are typically in range -1.0 to 1.0
-            setAudioLevel(Math.min(100, Math.floor(rms * 100)));
+            // Enhanced visualization sensitivity for speech
+            const amplifiedRms = Math.pow(rms * 8, 0.7);
+            const displayLevel = Math.min(100, Math.floor(amplifiedRms * 100));
+            setAudioLevel(displayLevel);
 
-            // Update audio stats
             setAudioStats(prev => ({
                 samplesReceived: prev.samplesReceived + event.data.length,
                 maxAmplitude: Math.max(prev.maxAmplitude, maxSample),
@@ -250,6 +285,11 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
         }
     }
 
+    /**
+     * Update the audio buffer size setting
+     * 
+     * @param newSize New buffer size in samples
+     */
     function updateBufferSize(newSize: number): void {
         console.log(`[AudioStream] Updating buffer size from ${bufferSize} to ${newSize}`);
         if (newSize >= 256 && newSize <= 16384) {
@@ -266,7 +306,15 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
         }
     }
 
-    // Visualization of the audio level as a bar
+    // ----------------
+    // UI Components
+    // ----------------
+
+    /**
+     * Render the audio level visualization meter
+     * 
+     * @returns JSX for the audio level meter
+     */
     function renderAudioMeter(): React.ReactElement {
         return (
             <View className="w-full h-16 bg-gray-200 rounded-lg overflow-hidden mb-2">
@@ -281,6 +329,9 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
         );
     }
 
+    // ----------------
+    // Main Render
+    // ----------------
     return (
         <ScrollView className="flex-1 bg-gray-100">
             <View className="p-5">
