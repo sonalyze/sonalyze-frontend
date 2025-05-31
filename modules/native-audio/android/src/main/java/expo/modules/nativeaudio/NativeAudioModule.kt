@@ -47,6 +47,12 @@ class NativeAudioModule : Module() {
     
     override fun definition() = ModuleDefinition {
         Name("NativeAudio")
+
+        OnDestroy {
+            stopRecording()
+            stopStreaming() 
+            coroutineScope.cancel()
+        }
         
         Events("onAudioData")
         
@@ -743,14 +749,5 @@ class NativeAudioModule : Module() {
         } catch (e: Exception) {
             Log.e("NativeAudioModule", "addWavHeader: Failed to write WAV file: ${e.message}", e)
         }
-    }
-
-    /**
-     * Clean up resources when module is destroyed
-     */
-    override fun onDestroy() {
-        super.onDestroy()
-        stopRecording()
-        coroutineScope.cancel()
     }
 }
