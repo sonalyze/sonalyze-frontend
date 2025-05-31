@@ -16,6 +16,8 @@ import android.media.audiofx.AutomaticGainControl
 import android.media.audiofx.NoiseSuppressor
 import android.media.audiofx.AcousticEchoCanceler
 import android.util.Log
+import android.os.Build
+import android.content.Context
 
 /**
  * Native module for high-quality audio recording on Android.
