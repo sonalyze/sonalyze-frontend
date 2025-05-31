@@ -18,6 +18,9 @@ import android.media.audiofx.AcousticEchoCanceler
 import android.util.Log
 import android.os.Build
 import android.content.Context
+import android.media.MediaPlayer
+import android.media.AudioAttributes
+import android.net.Uri
 
 /**
  * Native module for high-quality audio recording on Android.
@@ -32,6 +35,7 @@ class NativeAudioModule : Module() {
     
     // State management using AtomicBoolean for thread safety
     private var audioRecord: AudioRecord? = null
+    private var mediaPlayer: MediaPlayer? = null
     private var recordingFile: File? = null
     private var isRecording = AtomicBoolean(false)
     private var isPlaying = AtomicBoolean(false)
@@ -51,6 +55,7 @@ class NativeAudioModule : Module() {
         OnDestroy {
             stopRecording()
             stopStreaming() 
+            stopPlayback()
             coroutineScope.cancel()
         }
         
@@ -577,17 +582,91 @@ class NativeAudioModule : Module() {
         }
 
         
-        // Audio playback functions (placeholder API for future implementation)
+        // Replace these placeholder functions in NativeAudioModule.kt
+
+        
+        // Audio playback functions
         AsyncFunction("playAudioFile") { filePath: String, options: Map<String, Any>? ->
-            mapOf("success" to false, "error" to "Playback not yet implemented on Android")
+            Log.i("NativeAudioModule", "playAudioFile: Starting playback of file: $filePath")
+            
+            try {
+                // Stop any ongoing playback
+                if (isPlaying.get()) {
+                    Log.d("NativeAudioModule", "playAudioFile: Stopping previous playback")
+                    stopPlayback()
+                }
+                
+                // Create and configure new MediaPlayer
+                mediaPlayer = MediaPlayer().apply {
+                    // Set audio attributes for media playback
+                    setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .build()
+                    )
+                    
+                    // Handle file path - check if it's a content URI or file path
+                    if (filePath.startsWith("content://")) {
+                        setDataSource(appContext.reactContext!!, Uri.parse(filePath))
+                    } else {
+                        setDataSource(filePath)
+                    }
+                    
+                    // Set volume if specified (values between 0.0-1.0)
+                    if (options?.containsKey("volume") == true) {
+                        val volume = (options["volume"] as? Float) ?: 1.0f
+                        val clampedVolume = volume.coerceIn(0.0f, 1.0f)
+                        setVolume(clampedVolume, clampedVolume)
+                        Log.d("NativeAudioModule", "playAudioFile: Set volume to $clampedVolume")
+                    }
+                    
+                    // Prepare player (synchronously)
+                    prepare()
+                    
+                    // Set completion listener
+                    setOnCompletionListener {
+                        Log.i("NativeAudioModule", "playAudioFile: Playback completed")
+                        isPlaying.set(false)
+                        release()
+                        mediaPlayer = null
+                    }
+                    
+                    // Start playback
+                    start()
+                    isPlaying.set(true)
+                }
+                
+                Log.i("NativeAudioModule", "playAudioFile: Started playback successfully")
+                return@AsyncFunction mapOf("success" to true)
+                
+            } catch (e: Exception) {
+                Log.e("NativeAudioModule", "playAudioFile: Exception occurred", e)
+                return@AsyncFunction mapOf(
+                    "success" to false,
+                    "error" to e.message
+                )
+            }
         }
         
         Function("stopAudioPlayback") {
-            mapOf("success" to false, "error" to "Playback not yet implemented on Android")
+            Log.i("NativeAudioModule", "stopAudioPlayback: Function called")
+            
+            if (!isPlaying.get()) {
+                Log.w("NativeAudioModule", "stopAudioPlayback: No active playback to stop")
+                return@Function mapOf(
+                    "success" to false,
+                    "error" to "No active playback"
+                )
+            }
+            
+            stopPlayback()
+            Log.i("NativeAudioModule", "stopAudioPlayback: Playback stopped successfully")
+            return@Function mapOf("success" to true)
         }
         
         Function("isPlaying") {
-            false
+            isPlaying.get()
         }
     }
 
@@ -647,6 +726,32 @@ class NativeAudioModule : Module() {
         audioRecord = null
         
         Log.d("NativeAudioModule", "stopRecording: Cleanup complete")
+    }
+
+    /**
+    * Stops playback and releases MediaPlayer resources
+    */
+    private fun stopPlayback() {
+        Log.d("NativeAudioModule", "stopPlayback: Stopping playback and cleaning up resources")
+        
+        mediaPlayer?.let { player ->
+            try {
+                if (player.isPlaying) {
+                    player.stop()
+                    Log.d("NativeAudioModule", "stopPlayback: MediaPlayer stopped")
+                }
+                player.reset()
+                player.release()
+                Log.d("NativeAudioModule", "stopPlayback: MediaPlayer released")
+            } catch (e: Exception) {
+                Log.w("NativeAudioModule", "stopPlayback: Error during cleanup: ${e.message}")
+                // Ignore errors during cleanup
+            }
+        }
+        
+        mediaPlayer = null
+        isPlaying.set(false)
+        Log.d("NativeAudioModule", "stopPlayback: Cleanup complete")
     }
     
     /**
