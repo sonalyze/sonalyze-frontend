@@ -627,14 +627,14 @@ class NativeAudioModule : Module() {
                     // Set completion listener
                     setOnCompletionListener {
                         Log.i("NativeAudioModule", "playAudioFile: Playback completed")
-                        isPlaying.set(false)
+                        this@NativeAudioModule.isPlaying.set(false)
                         release()
                         mediaPlayer = null
                     }
                     
                     // Start playback
                     start()
-                    isPlaying.set(true)
+                    this@NativeAudioModule.isPlaying.set(true)
                 }
                 
                 Log.i("NativeAudioModule", "playAudioFile: Started playback successfully")
