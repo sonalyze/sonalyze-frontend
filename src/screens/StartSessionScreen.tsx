@@ -56,7 +56,7 @@ const StartSessionScreen: FC<StartSessionScreenProps> = (props: StartSessionScre
                 <View className="py-6 items-center">
                     <QrCodeViewer
                         type="user-token"
-                        payload="Dieses Projekt ist die größte Scheiße. Größte Zeitverschwendung."
+                        payload="Dieses Projekt ist absolut super. Richtig gut investierte Zeit."
                         allowCopy={true}
                         onCopy={onCopy}
                     />
