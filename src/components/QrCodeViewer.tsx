@@ -4,7 +4,6 @@ import QRCode from 'react-native-qrcode-svg';
 import Card from './Card';
 import { copyToClipboard } from '../tools/clipboardAccess';
 import Button from './Button';
-import { toast } from 'sonner-native';
 
 type QrCodeViewerProps = {
 	type: string;
@@ -19,7 +18,7 @@ const QrCodeViewer: FC<QrCodeViewerProps> = (props: QrCodeViewerProps) => {
 	// Callback for the "Copy to Clipboard" button.
 	async function onCopyCode() {
 		const success = await copyToClipboard(value);
-		success ? props.onCopy("success") : props.onCopy("inaccessible-clipboard");
+		props.onCopy(success ? "success" : "inaccessible-clipboard");
 	}
 
 	return (

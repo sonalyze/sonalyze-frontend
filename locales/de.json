@@ -1,0 +1,11 @@
+{
+    "settings": "Einstellungen",
+    "general": "Allgemein",
+    "language": "Sprache",
+    "languageInfo": "Wählen Sie die Sprache der Benutzeroberfläche.",
+    "accountTransfer": "Kontoübertragung",
+    "showTransferCode": "Konto-Code anzeigen",
+    "scanTransferCode": "Konto-Code scannen",
+    "showTransferCodeInfo": "Zeigt einen QR-Code auf diesem Gerät an, um Ihr Konto auf ein anderes Gerät zu übertragen.",
+    "scanTransferCodeInfo": "Scannen Sie den QR-Code von einem anderen Gerät, um Ihr Konto auf dieses Gerät zu übertragen."
+}

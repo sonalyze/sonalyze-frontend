@@ -1,0 +1,11 @@
+{
+    "settings": "Settings",
+    "general": "General",
+    "language": "Language",
+    "languageInfo": "Select the language of the user interface.",
+    "accountTransfer": "Account Transfer",
+    "showTransferCode":"Show Account Code",
+    "scanTransferCode":"Scan Account Code",
+    "showTransferCodeInfo": "Shows a QR code on this device to transfer your account to another device.",
+    "scanTransferCodeInfo": "Scan the QR code from another device to transfer your account to this device."
+}

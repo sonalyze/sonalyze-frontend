@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { LocalSettings } from '../types/LocalSettings';
 import uuid from 'react-native-uuid';
 import { readLocalSettings, writeLocalSettings } from '../tools/localSettingsAccess';
+import i18n from '../i18n';
 
 type LocalSettingsContextType = {
     settings: LocalSettings;
@@ -18,18 +19,20 @@ export const LocalSettingsProvider: React.FC<LocalSettingsProviderProps> = (prop
     // Generate a unique user token.
     const [settings, setSettings] = useState<LocalSettings>({
         userToken: uuid.v4(),
+        locale: "en",
     });
 
     useEffect(() => {
         readLocalSettings().then((loadedSettings) => {
             if (loadedSettings) {
                 setSettings(loadedSettings);
+                i18n.changeLanguage(loadedSettings.locale);
             }
-
             else {
                 writeLocalSettings(settings);   
             }
         });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     },[]);
 
     const updateLocalSettings = async (newSettings: Partial<LocalSettings>)  => {
@@ -38,6 +41,11 @@ export const LocalSettingsProvider: React.FC<LocalSettingsProviderProps> = (prop
         await writeLocalSettings(
             updatedSettings,
         );
+
+        // Update i18n language if locale is changed
+        if (newSettings.locale && newSettings.locale !== settings.locale) {
+            i18n.changeLanguage(newSettings.locale);
+        }
 
         setSettings(updatedSettings);
     }

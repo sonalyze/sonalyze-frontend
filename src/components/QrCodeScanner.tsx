@@ -106,7 +106,7 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
                                 height: 200,
                                 width: 200,
                                 marginBottom: 8,
-                                borderRadius: 15,
+                                borderRadius: 10,
                                 backgroundColor: "black",
                                 overflow: "hidden"
                             }}

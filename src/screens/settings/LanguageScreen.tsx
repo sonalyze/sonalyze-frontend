@@ -1,15 +1,16 @@
-import { FC, useState } from 'react';
-import { View, Text } from 'react-native';
+import { FC } from 'react';
+import { View, FlatList, Text, TouchableHighlight } from 'react-native';
 import SecondaryHeader from '../../components/SecondaryHeader';
-import Button from '../../components/Button';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { locales } from '../../../locales/locales';
+import { useLocalSettings } from '../../contexts/LocalSettingsContext';
+import { useTranslation } from 'react-i18next';
+import Card from '../../components/Card';
+import Icon from '@react-native-vector-icons/lucide';
+import Divider from '../../components/Divider';
 
-const languages = [
-  { label: 'English', value: 'en' },
-  { label: 'Deutsch', value: 'de' },
-];
 
 type LanguageScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -21,22 +22,59 @@ type LanguageScreenProps = {
 };
 
 const LanguageScreen: FC<LanguageScreenProps> = (props: LanguageScreenProps) => {
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
+  const { settings, updateSettings } = useLocalSettings();
+  const { t } = useTranslation();
+
+  // Callback for when a language is selected.
+  async function onSelectLanguage(locale: string) {
+    await updateSettings({
+      locale: locale,
+    });
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <SecondaryHeader title="Change Language" onBack={() => props.navigation.pop()} />
-      <View className="px-4 pt-6">
+      {/* Header */}
+      <SecondaryHeader
+        title={t("language")}
+        onBack={() => props.navigation.pop()}
+      />
 
-        {languages.map((lang) => (
-          <View key={lang.value} className="mb-2">
-            <Button
-              label={lang.label}
-              onPress={() => setSelectedLanguage(lang.value)}
-              type={selectedLanguage === lang.value ? 'primary' : 'secondary'}
-            />
-          </View>
-        ))}
+      {/* Content */}
+      <View className="px-4 pt-4 flex-1">
+        {/* Display an option for each available language. */}
+        <Card>
+          <FlatList
+            bounces={false}
+            data={Object.keys(locales)}
+            ItemSeparatorComponent={() => (
+              <Divider
+                indent={8}
+              />
+            )}
+            renderItem={({ item }) => (
+              <TouchableHighlight onPress={() => onSelectLanguage(item)}
+                underlayColor="#dcdcdc40"
+                className="rounded-lg"
+              >
+                <View className="flex-row p-3  justify-between">
+                  <Text className="text-lg">
+                    {locales[item].nativeName}
+                  </Text>
+
+                  {/* Display a checkmark if this is the selected language. */}
+                  {item === settings.locale && (
+                    <Icon
+                      name="check"
+                      size={20}
+                      className="ml-auto"
+                    />
+                  )}
+                </View>
+              </TouchableHighlight>
+            )}
+          />
+        </Card>
       </View>
     </SafeAreaView>
   );

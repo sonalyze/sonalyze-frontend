@@ -1,8 +1,6 @@
 import { FC } from 'react';
 import { Text, View } from 'react-native';
 
-//Tiles for HomeScreen
-
 type CardProps = {
 	title?: string;
 	subtitle?: string;

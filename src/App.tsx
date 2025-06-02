@@ -1,4 +1,5 @@
 import './globals.css';
+import './i18n';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { enableScreens } from 'react-native-screens';
@@ -12,10 +13,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LocalSettingsProvider } from './contexts/LocalSettingsContext';
 import QrScanScreen from './screens/settings/QrScanScreen';
-import LanguageScreen from './screens/settings/LanguageScreen'; 
+import LanguageScreen from './screens/settings/LanguageScreen';
 import JoinSessionScreen from './screens/JoinSessionScreen';
 import StartSessionScreen from './screens/StartSessionScreen';
-
 
 enableScreens();
 
@@ -27,21 +27,20 @@ export default function App() {
 			<GestureHandlerRootView style={{ flex: 1 }}>
 				<LocalSettingsProvider>
 					<QueryClientProvider client={queryClient}>
-					<SocketProvider>
-						<NavigationContainer>
-						<RootStack />
-						</NavigationContainer>
-						<Toaster
-						position="bottom-center"
-						closeButton={true}
-						swipeToDismissDirection="left"
-						/>
-					</SocketProvider>
+						<SocketProvider>
+							<NavigationContainer>
+								<RootStack />
+							</NavigationContainer>
+							<Toaster
+								position="bottom-center"
+								closeButton={true}
+								swipeToDismissDirection="left"
+							/>
+						</SocketProvider>
 					</QueryClientProvider>
 				</LocalSettingsProvider>
 			</GestureHandlerRootView>
 		</SafeAreaProvider>
-
 	);
 }
 
@@ -98,7 +97,6 @@ const RootStack = () => (
 				headerShown: false
 			}}
 		/>
-
 	</Stack.Navigator>
 );
 
@@ -109,6 +107,5 @@ export type RootStackParamList = {
 	SettingsScreen: undefined;
 	QrScanScreen: undefined;
 	QrViewScreen: undefined;
-	LanguageScreen: undefined; 
+	LanguageScreen: undefined;
 };
-

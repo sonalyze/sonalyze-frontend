@@ -5,6 +5,7 @@ import { RootStackParamList } from '../../App';
 import Tile from '../../components/Tile';
 import SecondaryHeader from '../../components/SecondaryHeader';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 type SettingsScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -16,45 +17,47 @@ type SettingsScreenProps = {
 };
 
 const SettingsScreen: FC<SettingsScreenProps> = (props: SettingsScreenProps) => {
+	const { t } = useTranslation();
+
 	const classNames = {
-		sectionLabel: "text-lg font-semibold text-foreground ml-1 px-4 pt-4 pb-2",
+		sectionLabel: "text-lg font-semibold text-foreground ml-1 px-4 py-2",
 	};
 
 	return (
 		<SafeAreaView className="flex-1 bg-background">
 			{/* Header */}
 			<SecondaryHeader
-				title="Settings"
+				title={t("settings")}
 				onBack={() => props.navigation.pop()}
 			/>
 
 			{/* Content */}
-			<ScrollView className="m-2 flex-grow">
+			<ScrollView className="px-2 flex-grow" bounces={false}>
 				{/* General Section */}
 				<Text className={classNames.sectionLabel}>
-					General
+					{t("general")}
 				</Text>
 				<Tile
-					title="Language"
-					subtitle="Choose the app language."
+					title={t("language")}
+					subtitle={t("languageInfo")}
 					trailingIcon="languages"
 					onPress={() => props.navigation.push('LanguageScreen')}
 				/>
 
-				{/* Sync Section */}
+				{/* Account Transfer Section */}
 				<Text className={classNames.sectionLabel}>
-					Sync
+					{t("accountTransfer")}
 				</Text>
 				<Tile
-					title="Your Account QR Code"
-					subtitle="Shows a QR code on this device to transfer your account to another device."
+					title={t("showTransferCode")}
+					subtitle={t("showTransferCodeInfo")}
 					trailingIcon="qr-code"
 					onPress={() => props.navigation.push('QrViewScreen')}
 				/>
 				<View className="h-3" />
 				<Tile
-					title="Scan Account QR Code"
-					subtitle="Transfer your account from another device to this device by scanning the QR code."
+					title={t("scanTransferCode")}
+					subtitle={t("scanTransferCodeInfo")}
 					trailingIcon="camera"
 					onPress={() => props.navigation.push('QrScanScreen')}
 				/>
