@@ -4,6 +4,8 @@ import QRCode from 'react-native-qrcode-svg';
 import Card from './Card';
 import { copyToClipboard } from '../tools/clipboardAccess';
 import Button from './Button';
+import { useTranslation } from 'react-i18next';
+
 
 type QrCodeViewerProps = {
 	type: string;
@@ -13,6 +15,8 @@ type QrCodeViewerProps = {
 };
 
 const QrCodeViewer: FC<QrCodeViewerProps> = (props: QrCodeViewerProps) => {
+	const { t } = useTranslation();
+
 	const value = `${props.type}:${props.payload}`;
 
 	// Callback for the "Copy to Clipboard" button.
@@ -33,7 +37,7 @@ const QrCodeViewer: FC<QrCodeViewerProps> = (props: QrCodeViewerProps) => {
 				{props.allowCopy && (
 					<Button
 						leadingIcon="link"
-						label="Copy to Clipboard"
+						label={t("copyToClipboard")}
 						onPress={onCopyCode}
 						extend={false}
 						className="mt-3"

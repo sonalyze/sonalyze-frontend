@@ -17,6 +17,7 @@ import LanguageScreen from './screens/settings/LanguageScreen';
 import JoinSessionScreen from './screens/JoinSessionScreen';
 import StartSessionScreen from './screens/StartSessionScreen';
 
+
 enableScreens();
 
 const queryClient = new QueryClient();

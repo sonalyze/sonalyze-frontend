@@ -8,6 +8,8 @@ import QrCodeViewer from '../../components/QrCodeViewer';
 import SecondaryHeader from '../../components/SecondaryHeader';
 import { toast } from 'sonner-native';
 import * as Haptics from 'expo-haptics';
+import { useTranslation } from 'react-i18next';
+
 
 type QrViewScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -20,17 +22,19 @@ type QrViewScreenProps = {
 
 const QrViewScreen: FC<QrViewScreenProps> = (props: QrViewScreenProps) => {
 	const { settings } = useLocalSettings();
+	const { t } = useTranslation();
+
 
 	// Function to handle the copy action from the QR code viewer.
 	function onCopy(result: 'success' | 'inaccessible-clipboard') {
 		if (result === 'success') {
-			toast.success("Sucessfully copied to clipboard.");
+			toast.success(t("copySuccess"));
 
 			Haptics.notificationAsync(
                 Haptics.NotificationFeedbackType.Success
             );
 		} else {
-			toast.error("Clipboard is inaccessible.");
+			toast.error(t("copyError"));
 
 			Haptics.notificationAsync(
                 Haptics.NotificationFeedbackType.Error
@@ -42,26 +46,25 @@ const QrViewScreen: FC<QrViewScreenProps> = (props: QrViewScreenProps) => {
 		<SafeAreaView className="flex-1 bg-background">
 			{/* Header */}
 			<SecondaryHeader
-				title="Your Account QR-Code"
+				title={t("yourAccountQr")}
 				onBack={() => props.navigation.pop()}
 			/>
 
 			{/* Content */}
 			<ScrollView className="p-4 flex-grow">
 				<Text className="text-center text-lg font-medium">
-					Scan this QR code with another device running Sonalyze to transfer your account.
+					{t("qrInstruction1")}
 				</Text>
 				<View className="py-6 items-center">
 					<QrCodeViewer
 						type="user-token"
-						payload={settings.userToken}
+  						payload={settings.userToken ?? ""}
 						allowCopy={true}
 						onCopy={onCopy}
 					/>
 				</View>
 				<Text className="text-center text-base">
-					After scanning, your rooms and measurement history will be accessible on the new device.
-					Alternatively, you can copy your Account ID to clipboard and handle the distribution manually.
+					{t("qrInstruction2")}
 				</Text>
 			</ScrollView>
 		</SafeAreaView>

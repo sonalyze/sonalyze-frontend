@@ -5,6 +5,10 @@ import { Text, View } from 'react-native';
 import Icon from '@react-native-vector-icons/lucide';
 import Button from './Button';
 import { getFromClipboard } from '../tools/clipboardAccess';
+import { useTranslation } from 'react-i18next';
+
+
+
 
 type QrCodeScannerProps = {
     type: string,
@@ -14,6 +18,7 @@ type QrCodeScannerProps = {
 };
 
 const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
+    const { t } = useTranslation();
     const [permission, requestPermission] = useCameraPermissions();
     const [isCameraActive, setIsCameraActive] = useState(false);
     const lastScannedTimestampRef = useRef(0);
@@ -82,14 +87,13 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
             {permission?.granted !== true && (<>
                 <Icon name="camera-off" size={64} />
                 <Text className="text-lg text-center font-medium">
-                    Missing Camera Permission
+                    {t("missingCameraPermission")}
                 </Text>
 
                 {/* If the app cannot ask again, ask the user to go to their settings. */}
                 {permission?.canAskAgain !== true && (
                     <Text className="text-base text-center">
-                        Sonalyze does not have permission to access your camera.
-                        Open your device settings to enable camera access.
+                        {t("cameraPermissionInfo")}
                     </Text>
                 )}
             </>)}
@@ -112,11 +116,11 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
                             }}
                             onBarcodeScanned={handleScanned}
                         />
-                        <Button label="Cancel" onPress={onCancel} />
+                        <Button label={t("cancel")}  onPress={onCancel} />
                     </View>
                 ) : (
                 <Button
-                    label="Scan QR Code"
+                    label={t("scanQrCode")}
                     leadingIcon="scan-qr-code"
                     onPress={onScanCode}
                     extend={false}
@@ -125,9 +129,9 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
 
             {/* Paste Button */}
             {props.allowPaste && !isCameraActive && (<>
-                <Text className="text-base my-2">or</Text>
+                <Text className="text-base my-2">{t("or")}</Text>
                 <Button
-                    label="Paste from Clipboard"
+                    label={t("pasteFromClipboard")}
                     leadingIcon="clipboard"
                     onPress={onPasteCode}
                     extend={false}

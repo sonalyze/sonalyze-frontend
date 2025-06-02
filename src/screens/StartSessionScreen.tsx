@@ -8,6 +8,8 @@ import QrCodeViewer from '../components/QrCodeViewer';
 import { toast } from 'sonner-native';
 import * as Haptics from 'expo-haptics';
 import Button from '../components/Button';
+import { useTranslation } from 'react-i18next';
+
 
 
 type StartSessionScreenNavigationProp = NativeStackNavigationProp<
@@ -20,6 +22,8 @@ type StartSessionScreenProps = {
 };
 
 const StartSessionScreen: FC<StartSessionScreenProps> = (props: StartSessionScreenProps) => {
+    const { t } = useTranslation();
+
     // Function to handle the copy action from the QR code viewer.
     function onCopy(result: 'success' | 'inaccessible-clipboard') {
         if (result === 'success') {
@@ -40,14 +44,14 @@ const StartSessionScreen: FC<StartSessionScreenProps> = (props: StartSessionScre
     return (
         <SafeAreaView className="flex-1 bg-background">
             <SecondaryHeader
-                title="Start Session"
+                title={t("startSession")}
                 onBack={() => props.navigation.pop()}
             />
 
             {/* Content */}
             <ScrollView className="p-4 flex-grow">
                 <Text className="text-center text-lg font-medium">
-                    You are connected as microphone.
+                    {t("connectedAsMic")}
                 </Text>
                 <View className="py-6 items-center">
                     <QrCodeViewer
@@ -58,14 +62,13 @@ const StartSessionScreen: FC<StartSessionScreenProps> = (props: StartSessionScre
                     />
                 </View>
                 <Text className="text-center text-lg font-medium">
-                    1 Microphone, 0 Speakers
+                    {t("deviceCount", { microphones: 1, speakers: 0 })}
                 </Text>
                 <Text className="text-center text-base">
-                    You need at least one microphone and one speaker to start a measurement.
-                    Use the QR code above to invite other devices to this session.
+                    {t("startHint")}
                 </Text>
                 <Button
-                    label="Start Measurement"
+                    label={t("startMeasurement")}
                     onPress={() => { }}
                     className="mt-6"
                 />

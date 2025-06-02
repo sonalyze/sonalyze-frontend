@@ -8,12 +8,11 @@ type LocaleList = {
 }
 
 export const locales: LocaleList = {
-    "de": {
-        name: "German",
-        nativeName: "Deutsch"
-    },
-    "en": {
-        name: "English",
-        nativeName: "English"
-    },
-}
+    de: { name: "German", nativeName: "Deutsch" },
+    en: { name: "English", nativeName: "English" },
+    es: { name: "Spanish", nativeName: "Español" },
+    fr: { name: "French", nativeName: "Français" },
+    it: { name: "Italian", nativeName: "Italiano" },
+    tr: { name: "Turkish", nativeName: "Türkçe" },
+};
+
