@@ -30,7 +30,7 @@ const QrCodeViewer: FC<QrCodeViewerProps> = (props: QrCodeViewerProps) => {
 			<View className="self-center items-center">
 				{/* QR Code */}
 				<View className="bg-white rounded-xl p-3">
-					<QRCode value={value} size={200} />
+					<QRCode value={value} size={240} />
 				</View>
 
 				{/* Copy Button */}

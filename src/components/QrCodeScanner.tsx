@@ -7,9 +7,6 @@ import Button from './Button';
 import { getFromClipboard } from '../tools/clipboardAccess';
 import { useTranslation } from 'react-i18next';
 
-
-
-
 type QrCodeScannerProps = {
     type: string,
     allowPaste: boolean,
@@ -116,15 +113,15 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
                             }}
                             onBarcodeScanned={handleScanned}
                         />
-                        <Button label={t("cancel")}  onPress={onCancel} />
+                        <Button label={t("cancel")} onPress={onCancel} />
                     </View>
                 ) : (
-                <Button
-                    label={t("scanQrCode")}
-                    leadingIcon="scan-qr-code"
-                    onPress={onScanCode}
-                    extend={false}
-                />)}
+                    <Button
+                        label={t("scanQrCode")}
+                        leadingIcon="scan-qr-code"
+                        onPress={onScanCode}
+                        extend={false}
+                    />)}
             </>)}
 
             {/* Paste Button */}
