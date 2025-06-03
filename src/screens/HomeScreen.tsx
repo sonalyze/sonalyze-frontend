@@ -36,14 +36,6 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 				title="Zu Seite 2"
 				onPress={() => props.navigation.navigate('OtherScreen')}
 			/>
-			<Button
-				title="Test Audio"
-				onPress={() => props.navigation.navigate('AudioTestScreen')}
-			/>
-			<Button
-				title="Test Audio Streaming"
-				onPress={() => props.navigation.navigate('AudioStreamingScreen')}
-			/>
 		</View>
 	);
 };
