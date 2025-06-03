@@ -1,3 +1,7 @@
+/* This test screeen wont work from this location. 
+    Copy it into the screens folder of the aal-frontend app to test it. */
+
+
 import React, { useState, useEffect, useRef, FC } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import NativeAudio, { AudioDataEvent } from '../../modules/native-audio';
@@ -484,3 +488,4 @@ const AudioStreamingScreen: FC<AudioStreamingScreenProps> = (props: AudioStreami
 };
 
 export default AudioStreamingScreen;
+

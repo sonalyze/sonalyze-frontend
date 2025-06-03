@@ -1,3 +1,6 @@
+/* This test screeen wont work from this location. 
+    Copy it into the screens folder of the aal-frontend app to test it. */
+
 import React, { useState, useEffect, FC } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import NativeAudio from '../../modules/native-audio';
