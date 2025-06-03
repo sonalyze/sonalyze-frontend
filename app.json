@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.savebank.aalfrontend",
+      "bundleIdentifier": "com.sonalize.aalfrontend",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "This app needs access to your microphone for audio recording."
       }
@@ -24,7 +24,7 @@
         "foregroundImage": "./src/assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.savebank.aalfrontend"
+      "package": "com.sonalize.aalfrontend"
     },
     "web": {
       "favicon": "./src/assets/favicon.png",
