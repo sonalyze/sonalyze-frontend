@@ -5,8 +5,6 @@ import { enableScreens } from 'react-native-screens';
 import { NavigationContainer } from '@react-navigation/native';
 import OtherScreen from './screens/OtherScreen';
 import HomeScreen from './screens/HomeScreen';
-import AudioTestScreen from './screens/AudioTestScreen';
-import AudioStreamingScreen from './screens/AudioStreamingScreen';
 import { SocketProvider } from './contexts/SocketContext';
 
 enableScreens();
@@ -39,22 +37,10 @@ const RootStack = () => (
 			component={OtherScreen}
 			options={{ headerShown: true }}
 		/>
-		<Stack.Screen
-			name="AudioTestScreen"
-			component={AudioTestScreen}
-			options={{ title: 'Audio Testing' }}
-		/>
-		<Stack.Screen
-			name="AudioStreamingScreen"
-			component={AudioStreamingScreen}
-			options={{ title: 'Audio Streaming' }}
-		/>
 	</Stack.Navigator>
 );
 
 export type RootStackParamList = {
 	HomeScreen: undefined;
 	OtherScreen: undefined;
-	AudioTestScreen: undefined;
-	AudioStreamingScreen: undefined;
 };
