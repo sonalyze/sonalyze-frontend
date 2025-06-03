@@ -37,11 +37,5 @@
   "pasteFromClipboard": "Coller depuis le presse-papiers",
   "copyToClipboard": "Copier dans le presse-papiers",
   "cancel": "Annuler",
-  "or": "ou",
-  "historyTitle": "Historique",
-  "historySubtitle": "Vous pouvez consulter ici les mesures déjà effectuées.",
-  "viewAll": "Tout voir",
-  "noHistoryText": "Aucune mesure disponible pour le moment."
-
-
+  "or": "ou"
 }
