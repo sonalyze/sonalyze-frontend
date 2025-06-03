@@ -37,5 +37,11 @@
     "pasteFromClipboard": "Paste from Clipboard",
     "copyToClipboard": "Copy to Clipboard",
     "cancel": "Cancel",
-    "or": "or"
+    "or": "or",
+    "historyTitle": "History",
+    "historySubtitle": "Here you can view previously performed measurements.",
+    "viewAll": "View All",
+    "noHistoryText": "No measurements available yet."
+
+
 }

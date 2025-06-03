@@ -37,5 +37,10 @@
   "pasteFromClipboard": "Panodan Yapıştır",
   "copyToClipboard": "Panoya Kopyala",
   "cancel": "İptal",
-  "or": "veya"
+  "or": "veya",
+  "historyTitle": "Geçmiş",
+  "historySubtitle": "Burada daha önce yapılan ölçümleri görebilirsiniz.",
+  "viewAll": "Tümünü Gör",
+  "noHistoryText": "Henüz ölçüm mevcut değil."
+
 }

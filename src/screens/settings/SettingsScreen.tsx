@@ -43,7 +43,7 @@ const SettingsScreen: FC<SettingsScreenProps> = (props: SettingsScreenProps) => 
 					trailingIcon="languages"
 					onPress={() => props.navigation.push('LanguageScreen')}
 				/>
-
+				<View className="h-2" />
 				{/* Account Transfer Section */}
 				<Text className={classNames.sectionLabel}>
 					{t("accountTransfer")}
@@ -54,7 +54,7 @@ const SettingsScreen: FC<SettingsScreenProps> = (props: SettingsScreenProps) => 
 					trailingIcon="qr-code"
 					onPress={() => props.navigation.push('QrViewScreen')}
 				/>
-				<View className="h-3" />
+				<View className="h-2" />
 				<Tile
 					title={t("scanTransferCode")}
 					subtitle={t("scanTransferCodeInfo")}
