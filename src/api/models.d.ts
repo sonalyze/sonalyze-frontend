@@ -71,3 +71,7 @@ type Measurement = {
 	isOwner: boolean;
 	values: AcousticParameters[][];
 };
+
+type CreatedUser = {
+	id: string;
+};

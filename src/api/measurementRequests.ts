@@ -1,14 +1,11 @@
 import { axiosClient } from '../tools/helpers';
 
 /**
- * Get measurement information for the given ids
- * @param ids - The sharedIds of the measurements to get
+ * Get measurement information associated with the user
  * @returns List of measurement information
  */
-async function getMeasurements(ids: string[]): Promise<Measurement> {
-	const res = await axiosClient.put<Measurement>(`/measurements`, {
-		ids,
-	});
+async function getMeasurements(): Promise<Measurement> {
+	const res = await axiosClient.get<Measurement>(`/measurements`);
 
 	return res.data;
 }
