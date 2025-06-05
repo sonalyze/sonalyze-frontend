@@ -17,3 +17,22 @@ async function getMeasurements(): Promise<Measurement> {
 async function deleteMeasurement(id: string): Promise<void> {
 	await axiosClient.delete(`/measurements/${id}`);
 }
+
+/**
+ * Import measurement owned by another user
+ * @returns The measurement information
+ */
+async function importMeasurement(id: string): Promise<Measurement> {
+	const res = await axiosClient.get<Measurement>(
+		`/measurements/imported/${id}`
+	);
+
+	return res.data;
+}
+
+/**
+ * Remove subscription to an imported measurement
+ */
+async function removeImportedMeasurement(id: string): Promise<void> {
+	await axiosClient.delete<Measurement>(`/measurements/imported/${id}`);
+}
