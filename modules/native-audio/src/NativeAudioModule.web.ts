@@ -1,6 +1,5 @@
 import { registerWebModule, NativeModule } from 'expo';
 import {
-	AudioDataEvent,
 	AudioStreamingOptions,
 	AudioPlaybackOptions,
 	FileRecordingResult,
