@@ -62,3 +62,22 @@ async function updateRoomScene(id: string, scene: RoomScene): Promise<void> {
 		scene,
 	});
 }
+
+/**
+ * Import room owned by another user
+ * @param id - The id of the room to import
+ * @returns The room information
+ */
+async function importRoom(id: string): Promise<Room> {
+	const res = await axiosClient.get(`/rooms/imported/${id}`);
+
+	return res.data;
+}
+
+/**
+ * Remove subscription to an imported room
+ * @param id - The id of the room to remove
+ */
+async function removeImportedMeasurement(id: string): Promise<void> {
+	await axiosClient.delete<Measurement>(`/rooms/imported/${id}`);
+}
