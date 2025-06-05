@@ -1,12 +1,39 @@
 import { NativeModule, requireNativeModule } from 'expo';
-
-import { NativeAudioModuleEvents } from './NativeAudio.types';
+import {
+	NativeAudioModuleEvents,
+	AudioStreamingOptions,
+	AudioPlaybackOptions,
+	FileRecordingResult,
+	AudioStreamingResult,
+	AudioPlaybackResult,
+} from './NativeAudio.types';
 
 declare class NativeAudioModule extends NativeModule<NativeAudioModuleEvents> {
-  PI: number;
-  hello(): string;
-  setValueAsync(value: string): Promise<void>;
+	// Permission management
+	requestMicrophonePermission(): Promise<boolean>;
+	getAvailableAudioSessionModes(): string[];
+
+	// File-based recording functions
+	fileStartRecording(fileName: string): Promise<FileRecordingResult>;
+	fileStopRecording(): Promise<FileRecordingResult>;
+	isFileRecording(): boolean;
+	deleteRecording(filePath: string): boolean;
+
+	// Audio streaming functions
+	startStreaming(
+		options?: AudioStreamingOptions
+	): Promise<AudioStreamingResult>;
+	stopStreaming(): AudioStreamingResult;
+	isStreaming(): boolean;
+	setStreamingOptions(options: AudioStreamingOptions): boolean;
+
+	// Audio playback functions
+	playAudioFile(
+		filePath: string,
+		options?: AudioPlaybackOptions
+	): Promise<AudioPlaybackResult>;
+	stopAudioPlayback(): AudioPlaybackResult;
+	isPlaying(): boolean;
 }
 
-// This call loads the native module object from the JSI.
 export default requireNativeModule<NativeAudioModule>('NativeAudio');
