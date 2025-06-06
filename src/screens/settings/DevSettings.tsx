@@ -42,6 +42,7 @@ const DevSettingsScreen: FC<DevSettingsScreenProps> = (
 
 	async function onSelectServer(server: string) {
 		if (editMode) return;
+
 		await updateSettings({
 			currentServer: server,
 		});

@@ -39,7 +39,7 @@
 	"cancel": "Cancel",
 	"or": "or",
 	"purgeLocalStorageTitle": "Purge Local Storage",
-	"purgeLocalStorageInfo": "Are you sure you want to purge the local storage? The app must be fully restarted afterwards.",
+	"purgeLocalStorageInfo": "Are you sure you want to purge the local storage? This will also locally remove your user-token. The app must be fully restarted afterwards.",
 	"purge": "Purge",
 	"devSettings": "Developer Settings",
 	"edit": "Edit",
@@ -49,5 +49,6 @@
 	"newServer": "New Backend Server",
 	"enterNewServer": "Enter the URL of the new backend server:",
 	"save": "Save",
-	"purgeSuccess": "Local storage purged successfully. Please restart the app."
+	"purgeSuccess": "Local storage purged successfully. Please restart the app.",
+	"serverMigrationError": "Server migration error: The server URL is not valid or the server is unreachable."
 }

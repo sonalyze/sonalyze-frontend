@@ -6,14 +6,17 @@ import React, {
 	ReactNode,
 } from 'react';
 import { LocalSettings } from '../types/LocalSettings';
-import uuid from 'react-native-uuid';
 import {
 	readLocalSettings,
 	writeLocalSettings,
 } from '../tools/localSettingsAccess';
 import i18n from '../i18n';
-import { axiosClient } from '../tools/helpers';
+import { axiosClient, haveSameKeys } from '../tools/helpers';
+import { register } from '../api/userRequests';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Haptics from 'expo-haptics';
+import { toast } from 'sonner-native';
+import { useTranslation } from 'react-i18next';
 
 type LocalSettingsContextType = {
 	settings: LocalSettings;
@@ -31,21 +34,31 @@ type LocalSettingsProviderProps = {
 export const LocalSettingsProvider: React.FC<LocalSettingsProviderProps> = (
 	props: LocalSettingsProviderProps
 ) => {
-	// Generate a unique user token.
 	const [settings, setSettings] = useState<LocalSettings>({
-		userToken: uuid.v4(),
+		userToken: '',
 		locale: 'en',
-		servers: ['https://api.sonalyze.de', 'https://api.dev.sonalyze.de'],
-		currentServer: 'https://api.sonalyze.de',
+		servers: ['https://api.dev.sonalyze.de', 'https://api.sonalyze.de'],
+		currentServer: 'https://api.dev.sonalyze.de', // @TODO for now dev api is default
 	});
+	const { t } = useTranslation();
 
 	useEffect(() => {
-		readLocalSettings().then((loadedSettings) => {
-			if (loadedSettings) {
+		readLocalSettings().then(async (loadedSettings) => {
+			if (loadedSettings && haveSameKeys(loadedSettings, settings)) {
 				setSettings(loadedSettings);
 				i18n.changeLanguage(loadedSettings.locale);
+				axiosClient.defaults.headers.common['Authorization'] =
+					`Bearer ${loadedSettings.userToken}`;
+				axiosClient.defaults.baseURL = loadedSettings.currentServer;
 			} else {
-				writeLocalSettings(settings);
+				AsyncStorage.clear();
+				const res = await register();
+				const newSettings = { ...settings, ...{ userToken: res.id } };
+				axiosClient.defaults.headers.common['Authorization'] =
+					`Bearer ${res.id}`;
+				writeLocalSettings(newSettings);
+				setSettings(newSettings);
+				console.log(newSettings);
 			}
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -66,6 +79,19 @@ export const LocalSettingsProvider: React.FC<LocalSettingsProviderProps> = (
 			newSettings.currentServer !== settings.currentServer
 		) {
 			axiosClient.defaults.baseURL = newSettings.currentServer;
+			try {
+				const res = await register();
+				updatedSettings.userToken = res.id;
+				axiosClient.defaults.headers.common['Authorization'] =
+					`Bearer ${res.id}`;
+			} catch (err) {
+				console.error(err);
+				updatedSettings.currentServer = settings.currentServer;
+				toast.error(t('serverMigrationError'));
+				Haptics.notificationAsync(
+					Haptics.NotificationFeedbackType.Error
+				);
+			}
 		}
 
 		if (
