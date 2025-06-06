@@ -4,7 +4,7 @@ import { axiosClient } from '../tools/helpers';
  * Get measurement information associated with the user
  * @returns List of measurement information
  */
-async function getMeasurements(): Promise<Measurement> {
+export async function getMeasurements(): Promise<Measurement> {
 	const res = await axiosClient.get<Measurement>(`/measurements`);
 
 	return res.data;
@@ -14,7 +14,7 @@ async function getMeasurements(): Promise<Measurement> {
  * Delete the measurement with the given id
  * @param id - The id of the measurement to delete
  */
-async function deleteMeasurement(id: string): Promise<void> {
+export async function deleteMeasurement(id: string): Promise<void> {
 	await axiosClient.delete(`/measurements/${id}`);
 }
 
@@ -23,7 +23,7 @@ async function deleteMeasurement(id: string): Promise<void> {
  * @param id - The id of the measurement to import
  * @returns The measurement information
  */
-async function importMeasurement(id: string): Promise<Measurement> {
+export async function importMeasurement(id: string): Promise<Measurement> {
 	const res = await axiosClient.get<Measurement>(
 		`/measurements/imported/${id}`
 	);
@@ -35,6 +35,6 @@ async function importMeasurement(id: string): Promise<Measurement> {
  * Remove subscription to an imported measurement
  * @param id - The id of the measurement to remove
  */
-async function removeImportedMeasurement(id: string): Promise<void> {
+export async function removeImportedMeasurement(id: string): Promise<void> {
 	await axiosClient.delete<Measurement>(`/measurements/imported/${id}`);
 }

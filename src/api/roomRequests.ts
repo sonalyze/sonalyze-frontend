@@ -13,7 +13,7 @@ async function getRooms(): Promise<Room[]> {
  * Delete the room with the given sharedId
  * @param id - The id of the room to delete
  */
-async function deleteRoom(id: string): Promise<void> {
+export async function deleteRoom(id: string): Promise<void> {
 	await axiosClient.delete(`/rooms/${id}`);
 }
 
@@ -23,7 +23,10 @@ async function deleteRoom(id: string): Promise<void> {
  * @param scene - The scene data of the room to create
  * @returns General information about the created room
  */
-async function createRoom(name: string, scene: RoomScene): Promise<Room> {
+export async function createRoom(
+	name: string,
+	scene: RoomScene
+): Promise<Room> {
 	const data = await axiosClient.post<Room>('/rooms', {
 		name,
 		scene,
@@ -36,7 +39,7 @@ async function createRoom(name: string, scene: RoomScene): Promise<Room> {
  * @param id - The sharedId of the room to update
  * @param name - The new name of the room
  */
-async function updateRoom(id: string, name: string): Promise<void> {
+export async function updateRoom(id: string, name: string): Promise<void> {
 	await axiosClient.put(`/rooms/${id}`, {
 		name,
 	});
