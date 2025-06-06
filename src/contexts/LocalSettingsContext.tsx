@@ -37,7 +37,7 @@ export const LocalSettingsProvider: React.FC<LocalSettingsProviderProps> = (
 	const [settings, setSettings] = useState<LocalSettings>({
 		userToken: '',
 		locale: 'en',
-		servers: ['https://api.dev.sonalyze.de', 'https://api.sonalyze.de'],
+		servers: ['https://api.sonalyze.de', 'https://api.dev.sonalyze.de'],
 		currentServer: 'https://api.dev.sonalyze.de', // @TODO for now dev api is default
 	});
 	const { t } = useTranslation();
@@ -58,7 +58,6 @@ export const LocalSettingsProvider: React.FC<LocalSettingsProviderProps> = (
 					`Bearer ${res.id}`;
 				writeLocalSettings(newSettings);
 				setSettings(newSettings);
-				console.log(newSettings);
 			}
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps

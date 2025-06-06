@@ -2,7 +2,7 @@ import axios from 'axios';
 import { io, Socket } from 'socket.io-client';
 
 export const axiosClient = axios.create({
-	baseURL: 'https://api.dev.sonalyze.de/api',
+	baseURL: 'https://api.dev.sonalyze.de',
 	headers: {
 		'Content-Type': 'application/json',
 	},
