@@ -4,7 +4,7 @@ import { axiosClient } from '../tools/helpers';
  * Get general information about the rooms associated with the user
  * @returns List of general room information
  */
-async function getRooms(): Promise<Room[]> {
+export async function getRooms(): Promise<Room[]> {
 	const data = await axiosClient.get<Room[]>('/rooms');
 	return data.data;
 }
