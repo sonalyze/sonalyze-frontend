@@ -50,7 +50,7 @@ export async function updateRoom(id: string, name: string): Promise<void> {
  * @param id - The sharedId of the room to get
  * @returns The scene data of the room
  */
-async function getRoomScene(id: string): Promise<RoomScene> {
+export async function getRoomScene(id: string): Promise<RoomScene> {
 	const data = await axiosClient.get<RoomScene>(`/rooms/${id}/scene`);
 	return data.data;
 }
@@ -60,7 +60,10 @@ async function getRoomScene(id: string): Promise<RoomScene> {
  * @param id - The sharedId of the room to update
  * @param scene - The new scene data of the room
  */
-async function updateRoomScene(id: string, scene: RoomScene): Promise<void> {
+export async function updateRoomScene(
+	id: string,
+	scene: RoomScene
+): Promise<void> {
 	await axiosClient.put(`/rooms/${id}/scene`, {
 		scene,
 	});
@@ -71,7 +74,7 @@ async function updateRoomScene(id: string, scene: RoomScene): Promise<void> {
  * @param id - The id of the room to import
  * @returns The room information
  */
-async function importRoom(id: string): Promise<Room> {
+export async function importRoom(id: string): Promise<Room> {
 	const res = await axiosClient.get(`/rooms/imported/${id}`);
 
 	return res.data;
@@ -81,6 +84,6 @@ async function importRoom(id: string): Promise<Room> {
  * Remove subscription to an imported room
  * @param id - The id of the room to remove
  */
-async function removeImportedMeasurement(id: string): Promise<void> {
+export async function removeImportedMeasurement(id: string): Promise<void> {
 	await axiosClient.delete<Measurement>(`/rooms/imported/${id}`);
 }
