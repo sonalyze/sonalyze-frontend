@@ -16,6 +16,7 @@ import QrScanScreen from './screens/settings/QrScanScreen';
 import LanguageScreen from './screens/settings/LanguageScreen';
 import JoinSessionScreen from './screens/JoinSessionScreen';
 import StartSessionScreen from './screens/StartSessionScreen';
+import DevSettingsScreen from './screens/settings/DevSettings';
 
 enableScreens();
 
@@ -52,49 +53,56 @@ const RootStack = () => (
 			name="HomeScreen"
 			component={HomeScreen}
 			options={{
-				headerShown: false
+				headerShown: false,
 			}}
 		/>
 		<Stack.Screen
 			name="StartSessionScreen"
 			component={StartSessionScreen}
 			options={{
-				headerShown: false
+				headerShown: false,
 			}}
 		/>
 		<Stack.Screen
 			name="JoinSessionScreen"
 			component={JoinSessionScreen}
 			options={{
-				headerShown: false
+				headerShown: false,
 			}}
 		/>
 		<Stack.Screen
 			name="SettingsScreen"
 			component={SettingsScreen}
 			options={{
-				headerShown: false
+				headerShown: false,
 			}}
 		/>
 		<Stack.Screen
 			name="QrScanScreen"
 			component={QrScanScreen}
 			options={{
-				headerShown: false
+				headerShown: false,
 			}}
 		/>
 		<Stack.Screen
 			name="QrViewScreen"
 			component={QrViewScreen}
 			options={{
-				headerShown: false
+				headerShown: false,
 			}}
 		/>
 		<Stack.Screen
 			name="LanguageScreen"
 			component={LanguageScreen}
 			options={{
-				headerShown: false
+				headerShown: false,
+			}}
+		/>
+		<Stack.Screen
+			name="DevSettingsScreen"
+			component={DevSettingsScreen}
+			options={{
+				headerShown: false,
 			}}
 		/>
 	</Stack.Navigator>
@@ -108,4 +116,5 @@ export type RootStackParamList = {
 	QrScanScreen: undefined;
 	QrViewScreen: undefined;
 	LanguageScreen: undefined;
+	DevSettingsScreen: undefined;
 };

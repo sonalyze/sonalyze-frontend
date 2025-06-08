@@ -4,9 +4,8 @@ import { axiosClient } from '../tools/helpers';
  * Create a new user and return the created user information
  * @returns Created user information
  */
-async function register(): Promise<CreatedUser> {
-	const res = await axiosClient.get<CreatedUser>(`/user/register`);
-
+export async function register(): Promise<CreatedUser> {
+	const res = await axiosClient.get<CreatedUser>(`/users/register`);
 	return res.data;
 }
 
@@ -14,6 +13,6 @@ async function register(): Promise<CreatedUser> {
  * Migrate the current user to another user using the provided token
  * @param token - The of the other user to migrate to
  */
-async function migrateUser(token: string): Promise<void> {
-	await axiosClient.put<void>(`/user/migrate`, { token });
+export async function migrateUser(token: string): Promise<void> {
+	await axiosClient.put<void>(`/users/migrate`, { token });
 }

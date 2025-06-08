@@ -17,6 +17,8 @@ module.exports = {
 				cardForeground: '#2e2e2e',
 				tileBackground: '#f5f6fc',
 				tileForeground: '#2e2e2e',
+				warnBackground: '#FF3B30',
+				editForeground: '#007AFF',
 			},
 		},
 	},
