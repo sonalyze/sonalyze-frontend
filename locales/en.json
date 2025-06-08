@@ -42,6 +42,7 @@
 	"purgeLocalStorageInfo": "Are you sure you want to purge the local storage? This will also locally remove your user-token. The app must be fully restarted afterwards.",
 	"purge": "Purge",
 	"devSettings": "Developer Settings",
+	"dev": "Developer",
 	"edit": "Edit",
 	"done": "Done",
 	"addBackendServer": "Add Backend Server...",

@@ -61,9 +61,9 @@ const SettingsScreen: FC<SettingsScreenProps> = (
 					trailingIcon="camera"
 					onPress={() => props.navigation.push('QrScanScreen')}
 				/>
-				<Text className={classNames.sectionLabel}>{'Dev'}</Text>
+				<Text className={classNames.sectionLabel}>{t('dev')}</Text>
 				<Tile
-					title={'Dev Settings'}
+					title={t('devSettings')}
 					subtitle={'Advanced configuration options for developers.'}
 					trailingIcon=""
 					onPress={() => props.navigation.push('DevSettingsScreen')}
