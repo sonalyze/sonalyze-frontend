@@ -91,8 +91,17 @@ const DevSettingsScreen: FC<DevSettingsScreenProps> = (
 			<SecondaryHeader
 				title={t('devSettings')}
 				onBack={() => props.navigation.pop()}
-				rightText={!editMode ? t('edit') : t('done')}
-				onRightText={() => setEditMode((e) => !e)}
+				suffix={
+					<TouchableOpacity
+						onPress={() => setEditMode((e) => !e)}
+						className="mr-3"
+						hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+					>
+						<Text className="text-xl color-[#007AFF]">
+							{!editMode ? t('edit') : t('done')}
+						</Text>
+					</TouchableOpacity>
+				}
 			/>
 
 			<View className="px-4 pt-4 flex-1 justify-around">

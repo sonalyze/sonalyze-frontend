@@ -7,47 +7,44 @@ type ButtonProps = {
 	leadingIcon?: any;
 	trailingIcon?: any;
 	onPress: () => void;
-	type?: "primary" | "secondary" | "ghost";
+	type?: 'primary' | 'secondary' | 'ghost';
 	extend?: boolean;
 	className?: string;
 };
 
-
-
 const Button: FC<ButtonProps> = (props: ButtonProps) => {
 	// Default properties.
-	const type = props.type ?? "primary";
+	const type = props.type ?? 'primary';
 	const extend = props.extend ?? true;
-	const width = extend ? "w-full" : "w-fit";
+	const width = extend ? 'w-full' : 'w-fit';
 
 	let backgroundColor: string;
 
 	switch (type) {
-		case "primary":
-			backgroundColor = "bg-primary";
+		case 'primary':
+			backgroundColor = 'bg-primary';
 			break;
-		case "secondary":
-			backgroundColor = "bg-secondary";
+		case 'secondary':
+			backgroundColor = 'bg-secondary';
 			break;
-		case "ghost":
-			backgroundColor = "bg-transparent";
+		case 'ghost':
+			backgroundColor = 'bg-transparent';
 			break;
 	}
 
 	let textColor: string;
 
 	switch (type) {
-		case "primary":
-			textColor = "primaryForeground"
+		case 'primary':
+			textColor = 'primaryForeground';
 			break;
-		case "secondary":
-			textColor = "text-secondaryForeground";
+		case 'secondary':
+			textColor = 'text-secondaryForeground';
 			break;
-		case "ghost":
-			textColor = "foreground";
+		case 'ghost':
+			textColor = 'foreground';
 			break;
 	}
-
 
 	return (
 		<TouchableOpacity
@@ -64,7 +61,9 @@ const Button: FC<ButtonProps> = (props: ButtonProps) => {
 					/>
 				)}
 				{/* Label */}
-				<Text className={`text-lg text-center font-semibold ${textColor}`}>
+				<Text
+					className={`text-lg text-center font-semibold ${textColor}`}
+				>
 					{props.label}
 				</Text>
 				{/* Trailing Icon */}

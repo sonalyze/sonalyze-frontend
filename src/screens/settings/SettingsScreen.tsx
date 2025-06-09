@@ -61,11 +61,13 @@ const SettingsScreen: FC<SettingsScreenProps> = (
 					trailingIcon="camera"
 					onPress={() => props.navigation.push('QrScanScreen')}
 				/>
-				<Text className={classNames.sectionLabel}>{t('dev')}</Text>
+
+				{/* Misc Section */}
+				<Text className={classNames.sectionLabel}>{t('misc')}</Text>
 				<Tile
 					title={t('devSettings')}
-					subtitle={'Advanced configuration options for developers.'}
-					trailingIcon=""
+					subtitle={t('devSettingsInfo')}
+					trailingIcon="code"
 					onPress={() => props.navigation.push('DevSettingsScreen')}
 				/>
 			</ScrollView>

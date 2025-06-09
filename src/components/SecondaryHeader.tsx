@@ -1,12 +1,11 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import Icon from '@react-native-vector-icons/lucide';
-import { FC } from 'react';
+import { FC, ReactNode } from 'react';
 
 type SecondaryHeaderProps = {
 	title: string;
 	onBack?: () => void;
-	rightText?: string;
-	onRightText?: () => void;
+	suffix?: ReactNode;
 };
 
 const SecondaryHeader: FC<SecondaryHeaderProps> = (
@@ -22,16 +21,10 @@ const SecondaryHeader: FC<SecondaryHeaderProps> = (
 			<View className="ml-3 flex-1">
 				<Text className="text-2xl color-foreground">{props.title}</Text>
 			</View>
-			{props.rightText && props.onRightText && (
-				<TouchableOpacity
-					onPress={props.onRightText}
-					className="mr-3"
-					hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-				>
-					<Text className="text-2xl color-[#007AFF]">
-						{props.rightText}
-					</Text>
-				</TouchableOpacity>
+			{props.suffix && (
+				<View className="flex-row items-center ml-auto">
+					{props.suffix}
+				</View>
 			)}
 		</View>
 	);

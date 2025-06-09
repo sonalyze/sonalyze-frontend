@@ -6,22 +6,21 @@ import en from '../locales/en.json';
 import fr from '../locales/fr.json';
 import tr from '../locales/tr.json';
 
-
 export const languageResources = {
-  de: { translation: de },
-  en: { translation: en },
-  fr: { translation: fr },
-  tr: { translation: tr },
+	de: { translation: de },
+	en: { translation: en },
+	fr: { translation: fr },
+	tr: { translation: tr },
 };
 
 i18n.use(initReactI18next).init({
-  compatibilityJSON: 'v4',
-  lng: 'en',
-  fallbackLng: 'en',
-  resources: languageResources,
-  interpolation: {
-    escapeValue: false,
-  },
+	compatibilityJSON: 'v4',
+	lng: 'en',
+	fallbackLng: 'en',
+	resources: languageResources,
+	interpolation: {
+		escapeValue: false,
+	},
 });
 
 export default i18n;
