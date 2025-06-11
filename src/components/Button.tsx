@@ -7,16 +7,16 @@ type ButtonProps = {
 	leadingIcon?: any;
 	trailingIcon?: any;
 	onPress: () => void;
-	type?: 'primary' | 'secondary' | 'ghost';
-	extend?: boolean;
+	type?: 'primary' | 'secondary' | 'destructive' | 'ghost';
+	expand?: boolean;
 	className?: string;
 };
 
 const Button: FC<ButtonProps> = (props: ButtonProps) => {
 	// Default properties.
 	const type = props.type ?? 'primary';
-	const extend = props.extend ?? true;
-	const width = extend ? 'w-full' : 'w-fit';
+	const expand = props.expand ?? true;
+	const width = expand ? 'w-full' : 'w-fit';
 
 	let backgroundColor: string;
 
@@ -27,6 +27,9 @@ const Button: FC<ButtonProps> = (props: ButtonProps) => {
 		case 'secondary':
 			backgroundColor = 'bg-secondary';
 			break;
+		case 'destructive':
+			backgroundColor = 'bg-destructive';
+			break;
 		case 'ghost':
 			backgroundColor = 'bg-transparent';
 			break;
@@ -36,13 +39,16 @@ const Button: FC<ButtonProps> = (props: ButtonProps) => {
 
 	switch (type) {
 		case 'primary':
-			textColor = 'primaryForeground';
+			textColor = 'text-primaryForeground';
 			break;
 		case 'secondary':
 			textColor = 'text-secondaryForeground';
 			break;
+		case 'destructive':
+			textColor = 'text-destructiveForeground';
+			break;
 		case 'ghost':
-			textColor = 'foreground';
+			textColor = 'text-foreground';
 			break;
 	}
 

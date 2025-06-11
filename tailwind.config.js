@@ -11,6 +11,8 @@ module.exports = {
 				primaryForeground: '#000000',
 				secondary: '#e8e8e8',
 				secondaryForeground: '#000000',
+				destructive: '#FF3B30',
+				destructiveForeground: '#ffffff',
 				background: '#ffffff',
 				foreground: '#000000',
 				cardBackground: '#f5f6fc',
