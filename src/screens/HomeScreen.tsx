@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
-import { FC, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import Icon from '@react-native-vector-icons/lucide';
 import Button from '../components/Button';
 import Card from '../components/Card';
@@ -35,7 +35,7 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 	const [isConnected, setConnected] = useState(false);
 	const { settings, updateSettings, initial } = useLocalSettings();
 
-	async function refreshConnectionState() {
+	const refreshConnectionState = useCallback(async () => {
 		// If the settings have not been loaded yet, do not do anything.
 		if (initial) {
 			return;
@@ -85,13 +85,17 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 			setConnected(true);
 			setLoading(false);
 		}
-	}
+	}, [networkState.isInternetReachable, settings, updateSettings, initial]);
 
 	// Update state whenever the network state or the local settings change.
 	useEffect(() => {
 		refreshConnectionState();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [networkState, settings, initial]);
+	}, [
+		networkState.isInternetReachable,
+		settings,
+		initial,
+		refreshConnectionState,
+	]);
 
 	return (
 		<SafeAreaView className="flex-1 bg-background">
