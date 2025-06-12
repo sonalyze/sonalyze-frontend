@@ -13,7 +13,7 @@ type ButtonProps = {
 };
 
 const Button: FC<ButtonProps> = (props: ButtonProps) => {
-	// Default properties.
+	// @TODO: Proper state.
 	const type = props.type ?? 'primary';
 	const expand = props.expand ?? true;
 	const width = expand ? 'w-full' : 'w-fit';

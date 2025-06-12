@@ -34,6 +34,7 @@ const DevSettingsScreen: FC<DevSettingsScreenProps> = (
 	async function onSelectServer(server: string) {
 		await updateSettings({
 			currentServer: server,
+			userToken: '',
 		});
 	}
 
@@ -137,7 +138,7 @@ const DevSettingsScreen: FC<DevSettingsScreenProps> = (
 				{/* Toggle edit mode */}
 
 				<Text className="text-lg font-semibold text-foreground ml-1 px-4 pb-2">
-					Backend Server
+					{t('backendServers')}
 				</Text>
 
 				<View className="flex-1">
@@ -145,8 +146,16 @@ const DevSettingsScreen: FC<DevSettingsScreenProps> = (
 						<FlatList
 							bounces={false}
 							data={settings.servers}
+							keyExtractor={(item) =>
+								item + settings.currentServer
+							}
 							renderItem={(item) =>
-								ServerTile(item.item, item.index > 1)
+								ServerTile(
+									item.item,
+									// The two predefined servers and the currently selected server should not be deleteable.
+									item.index > 1 &&
+										item.item !== settings.currentServer
+								)
 							}
 							ItemSeparatorComponent={() => (
 								<Divider indent={8} verticalPadding={4} />

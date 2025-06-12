@@ -25,6 +25,7 @@
 		"expo-clipboard": "^7.1.4",
 		"expo-dev-client": "~5.1.8",
 		"expo-haptics": "~14.1.4",
+		"expo-network": "^7.1.5",
 		"expo-status-bar": "~2.2.3",
 		"i18next": "^24.2.3",
 		"nativewind": "^4.1.23",

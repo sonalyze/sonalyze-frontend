@@ -16,6 +16,7 @@ type QrCodeViewerProps = {
 const QrCodeViewer: FC<QrCodeViewerProps> = (props: QrCodeViewerProps) => {
 	const { t } = useTranslation();
 
+	// @TODO: Proper state.
 	const value = `${props.type}:${props.payload}`;
 
 	// Callback for the "Copy to Clipboard" button.
@@ -38,7 +39,7 @@ const QrCodeViewer: FC<QrCodeViewerProps> = (props: QrCodeViewerProps) => {
 						leadingIcon="link"
 						label={t('copyToClipboard')}
 						onPress={onCopyCode}
-						extend={false}
+						expand={false}
 						className="mt-3"
 					/>
 				)}

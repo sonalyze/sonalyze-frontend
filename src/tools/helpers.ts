@@ -20,6 +20,5 @@ export function createSocket(): Socket {
 export function haveSameKeys(a: object, b: object): boolean {
 	const aKeys = Object.keys(a).sort();
 	const bKeys = Object.keys(b).sort();
-	if (aKeys.length !== bKeys.length) return false;
-	return aKeys.every((key, i) => key === bKeys[i]);
+	return aKeys.length === bKeys.length && aKeys.every((key, i) => key === bKeys[i]);
 }

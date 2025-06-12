@@ -47,11 +47,15 @@
 	"purgeLocalStorageTitle": "Lokale Einstellungen zurücksetzen",
 	"purgeLocalStorageInfo": "Sind Sie sicher, dass Sie die lokalen Einstellungen zurücksetzen möchten? Dies entfernt auch lokal Ihren Benutzer-Token. Die App muss danach vollständig neu gestartet werden.",
 	"purge": "Zurücksetzen",
+	"backendServers": "Backend-Server",
 	"addServer": "Server hinzufügen",
 	"addServerTitle": "Neuer Backend-Server",
 	"addServerDescr": "Bitte geben Sie die Adresse des neuen Backend-Servers ein.",
 	"serverAddress": "Serveradresse",
 	"save": "Speichern",
 	"purgeSuccess": "Lokale Einstellungen erfolgreich zurückgesetzt. Bitte starten Sie die App neu.",
-	"serverMigrationError": "Fehler bei der Servermigration: Die URL ist ungültig oder der Server ist nicht erreichbar."
+	"serverMigrationError": "Fehler bei der Servermigration: Die URL ist ungültig oder der Server ist nicht erreichbar.",
+	"connecting": "Verbinde...",
+	"connectionError": "Verbindungsfehler",
+	"connectionErrorInfo": "Es konnte keine Verbindung zu unserem Server hergestellt werden. Bitte überprüfen Sie Ihre Netzwerkverbindung oder Backend-Konfiguration."
 }

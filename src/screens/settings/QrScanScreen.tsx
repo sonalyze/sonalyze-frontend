@@ -25,11 +25,7 @@ const QrScanScreen: FC<QrScanScreenProps> = (props: QrScanScreenProps) => {
 
 	async function onInputCode(code: string) {
 		// Ensure that the provided code is a valid UUID v4.
-		if (
-			RegExp(
-				/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
-			).test(code)
-		) {
+		if (RegExp(/\b[a-f0-9]{24}\b/g).test(code)) {
 			await updateSettings({
 				userToken: code,
 			});

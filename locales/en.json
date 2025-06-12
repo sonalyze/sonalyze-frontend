@@ -47,11 +47,15 @@
 	"purgeLocalStorageTitle": "Purge Local Storage",
 	"purgeLocalStorageInfo": "Are you sure you want to purge the local storage? This will also locally remove your user token. The app must be fully restarted afterwards.",
 	"purge": "Purge",
+	"backendServers": "Backend Servers",
 	"addServer": "Add Server",
 	"addServerTitle": "New Backend Server",
 	"addServerDescr": "Please enter the address of the new backend server.",
 	"serverAddress": "Server Address",
 	"save": "Save",
 	"purgeSuccess": "Local storage purged successfully. Please restart the app.",
-	"serverMigrationError": "Server migration error: The server URL is not valid or the server is unreachable."
+	"serverMigrationError": "Server migration error: The server URL is not valid or the server is unreachable.",
+	"connecting": "Connecting...",
+	"connectionError": "Connection Error",
+	"connectionErrorInfo": "Failed to connect to our server. Please check your network connection or backend configuration."
 }
