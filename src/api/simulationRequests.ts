@@ -5,7 +5,7 @@ import { axiosClient } from '../tools/helpers';
  * @param id - The id of the room to get the simulation result for
  * @returns The simulation results of the room
  */
-async function getSimulationResult(id: string): Promise<Simulation> {
+export async function getSimulationResult(id: string): Promise<Simulation> {
 	const res = await axiosClient.get<Simulation>(
 		`/rooms/${id}/simulation/result`
 	);
@@ -19,7 +19,7 @@ async function getSimulationResult(id: string): Promise<Simulation> {
  * @param scene - The scene data of the room to create the simulation for
  * @returns The simulation results
  */
-async function simulateRoom(id: string): Promise<Simulation> {
+export async function simulateRoom(id: string): Promise<Simulation> {
 	const res = await axiosClient.post<Simulation>(`/rooms/${id}/simulation`);
 
 	return res.data;
