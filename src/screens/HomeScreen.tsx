@@ -130,7 +130,7 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 					<Text className="text-center text-lg">
 						{t('connectionError')}
 					</Text>
-					<Text className="text-center py-2">
+					<Text className="text-center pt-2 pb-4">
 						{t('connectionErrorInfo')}
 					</Text>
 					<Button

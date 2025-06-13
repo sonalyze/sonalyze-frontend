@@ -57,5 +57,7 @@
 	"serverMigrationError": "Fehler bei der Servermigration: Die URL ist ungültig oder der Server ist nicht erreichbar.",
 	"connecting": "Verbinde...",
 	"connectionError": "Verbindungsfehler",
-	"connectionErrorInfo": "Es konnte keine Verbindung zu unserem Server hergestellt werden. Bitte überprüfen Sie Ihre Netzwerkverbindung oder Backend-Konfiguration."
+	"connectionErrorInfo": "Es konnte keine Verbindung zu unserem Server hergestellt werden. Bitte überprüfen Sie Ihre Netzwerkverbindung oder Backend-Konfiguration.",
+	"measurementStartError": "Messung konnte nicht gestartet werden: {{reason}}",
+	"number": "Nummer {{number}}"
 }

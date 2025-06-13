@@ -17,6 +17,8 @@ import LanguageScreen from './screens/settings/LanguageScreen';
 import JoinSessionScreen from './screens/JoinSessionScreen';
 import StartSessionScreen from './screens/StartSessionScreen';
 import DevSettingsScreen from './screens/settings/DevSettings';
+import MeasurementScreen from './screens/MeasurementScreen';
+import MeasurementResultScreen from './screens/MeasurementResultScreen';
 
 enableScreens();
 
@@ -71,6 +73,20 @@ const RootStack = () => (
 			}}
 		/>
 		<Stack.Screen
+			name="MeasurementScreen"
+			component={MeasurementScreen}
+			options={{
+				headerShown: false,
+			}}
+		/>
+		<Stack.Screen
+			name="MeasurementResultScreen"
+			component={MeasurementResultScreen}
+			options={{
+				headerShown: false,
+			}}
+		/>
+		<Stack.Screen
 			name="SettingsScreen"
 			component={SettingsScreen}
 			options={{
@@ -112,6 +128,8 @@ export type RootStackParamList = {
 	HomeScreen: undefined;
 	StartSessionScreen: undefined;
 	JoinSessionScreen: undefined;
+	MeasurementScreen: undefined;
+	MeasurementResultScreen: undefined;
 	SettingsScreen: undefined;
 	QrScanScreen: undefined;
 	QrViewScreen: undefined;

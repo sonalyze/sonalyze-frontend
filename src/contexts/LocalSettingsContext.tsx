@@ -48,10 +48,9 @@ export const LocalSettingsProvider: React.FC<LocalSettingsProviderProps> = (
 				const newSettings = { ...settings };
 				writeLocalSettings(newSettings);
 				setSettings(newSettings);
+				setInitial(false);
 				return;
 			}
-
-			console.log(loadedSettings);
 
 			setInitial(false);
 			setSettings(loadedSettings);
