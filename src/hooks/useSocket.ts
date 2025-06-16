@@ -7,16 +7,25 @@ type UseSocketOptions = {
 	onError?: (err: Error) => void;
 };
 
+type EventHandler = { event: string; handler: (data: object) => void };
+
+/**
+ * Custom hook to manage socket connections and events
+ * @description This hook connects to a socket server, listens for specified events,
+ * emits events, and provides connection status.
+ * It also handles connection and disconnection events, as well as errors.
+ * @param events - An array of event handlers, each containing an event name and a handler function.
+ * @param options - Optional configuration for connection and error handling.
+ */
 export const useSocket = (
-	namespace: string,
-	onMessage: (data: any) => void, // @TODO typings
+	events: EventHandler[],
 	options: UseSocketOptions = {}
 ) => {
 	const { socket } = useSocketContext();
 	const [connected, setConnected] = useState(false);
 
 	const emit = useCallback(
-		(event: string, payload?: any) => {
+		(event: string, payload?: object) => {
 			socket.emit(event, payload);
 		},
 		[socket]
@@ -43,15 +52,19 @@ export const useSocket = (
 		socket.on('disconnect', handleDisconnect);
 		socket.on('connect_error', handleError);
 
-		socket.on(namespace, onMessage);
+		events.forEach(({ event, handler }) => {
+			socket.on(event, handler);
+		});
 
 		return () => {
 			socket.off('connect', handleConnect);
 			socket.off('disconnect', handleDisconnect);
 			socket.off('connect_error', handleError);
-			socket.off(namespace, onMessage);
+			events.forEach(({ event, handler }) => {
+				socket.off(event, handler);
+			});
 		};
-	}, [namespace, onMessage, options, socket]);
+	}, [events, options, socket]);
 
 	return { connected, emit };
 };

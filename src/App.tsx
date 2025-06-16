@@ -20,6 +20,7 @@ import HistoryScreen from './screens/HistoryScreen';
 import HistoryDetailScreen from './screens/HistoryDetailScreen';
 import { HistoryItemData } from './components/HistoryItem';
 
+import DevSettingsScreen from './screens/settings/DevSettings';
 
 enableScreens();
 
@@ -102,6 +103,13 @@ const RootStack = () => (
 			}}
 		/>
 		<Stack.Screen
+			name="DevSettingsScreen"
+			component={DevSettingsScreen}
+			options={{
+				headerShown: false,
+			}}
+		/>
+		<Stack.Screen
 			name="HistoryScreen"
 			component={HistoryScreen}
 			options={{ headerShown: false }}
@@ -124,4 +132,5 @@ export type RootStackParamList = {
 	LanguageScreen: undefined;
 	HistoryScreen: undefined;
 	HistoryDetailScreen: { item: HistoryItemData };
+	DevSettingsScreen: undefined;
 };

@@ -16,50 +16,57 @@ type SettingsScreenProps = {
 	navigation: SettingsScreenNavigationProp;
 };
 
-const SettingsScreen: FC<SettingsScreenProps> = (props: SettingsScreenProps) => {
+const SettingsScreen: FC<SettingsScreenProps> = (
+	props: SettingsScreenProps
+) => {
 	const { t } = useTranslation();
 
 	const classNames = {
-		sectionLabel: "text-lg font-semibold text-foreground ml-1 px-4 py-2",
+		sectionLabel: 'text-lg font-semibold text-foreground ml-1 px-4 py-2',
 	};
 
 	return (
 		<SafeAreaView className="flex-1 bg-background">
 			{/* Header */}
 			<SecondaryHeader
-				title={t("settings")}
+				title={t('settings')}
 				onBack={() => props.navigation.pop()}
 			/>
 
 			{/* Content */}
 			<ScrollView className="px-2 flex-grow" bounces={false}>
 				{/* General Section */}
-				<Text className={classNames.sectionLabel}>
-					{t("general")}
-				</Text>
+				<Text className={classNames.sectionLabel}>{t('general')}</Text>
 				<Tile
-					title={t("language")}
-					subtitle={t("languageInfo")}
+					title={t('language')}
+					subtitle={t('languageInfo')}
 					trailingIcon="languages"
 					onPress={() => props.navigation.push('LanguageScreen')}
 				/>
 				<View className="h-2" />
 				{/* Account Transfer Section */}
 				<Text className={classNames.sectionLabel}>
-					{t("accountTransfer")}
+					{t('accountTransfer')}
 				</Text>
 				<Tile
-					title={t("showTransferCode")}
-					subtitle={t("showTransferCodeInfo")}
+					title={t('showTransferCode')}
+					subtitle={t('showTransferCodeInfo')}
 					trailingIcon="qr-code"
 					onPress={() => props.navigation.push('QrViewScreen')}
 				/>
 				<View className="h-2" />
 				<Tile
-					title={t("scanTransferCode")}
-					subtitle={t("scanTransferCodeInfo")}
+					title={t('scanTransferCode')}
+					subtitle={t('scanTransferCodeInfo')}
 					trailingIcon="camera"
 					onPress={() => props.navigation.push('QrScanScreen')}
+				/>
+				<Text className={classNames.sectionLabel}>{t('dev')}</Text>
+				<Tile
+					title={t('devSettings')}
+					subtitle={'Advanced configuration options for developers.'}
+					trailingIcon=""
+					onPress={() => props.navigation.push('DevSettingsScreen')}
 				/>
 			</ScrollView>
 		</SafeAreaView>

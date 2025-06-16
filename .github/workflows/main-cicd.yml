@@ -1,0 +1,27 @@
+name: Main CI/CD Pipeline
+
+on:
+    push:
+        branches: ['main']
+
+jobs:
+    build-and-push:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: write
+        steps:
+            - name: Check Out Repository
+              uses: actions/checkout@v2
+
+            - name: Login to dockerhub
+              uses: docker/login-action@v3
+              with:
+                  username: ${{ secrets.DOCKERHUB_USER }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+            - name: Build and push to dockerhub
+              uses: docker/build-push-action@v5
+              with:
+                  context: .
+                  push: true
+                  tags: sonalyzebot/sonalyze-web:latest

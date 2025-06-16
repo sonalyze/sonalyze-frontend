@@ -1,11 +1,3 @@
-// @TODO: for testing purposes only
-type TestTodo = {
-	userId: number;
-	id: number;
-	title: string;
-	completed: boolean;
-};
-
 type Room = {
 	id: string;
 	name: string;
@@ -70,4 +62,8 @@ type Measurement = {
 	createdAt: string;
 	isOwner: boolean;
 	values: AcousticParameters[][];
+};
+
+type CreatedUser = {
+	id: string;
 };
