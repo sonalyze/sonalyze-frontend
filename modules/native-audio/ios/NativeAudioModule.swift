@@ -485,4 +485,43 @@ public class NativeAudioModule: Module {
     _ = try? AVAudioSession.sharedInstance().setActive(false)
 
   }
+
+    /**
+   * Retrieves the raw audio data from a recorded file
+   * 
+   * Reads the audio file from disk and returns it as a base64 encoded string.
+   * This allows JavaScript to access the raw audio data for processing or transmission.
+   * 
+   * Parameters:
+   *   - filePath: String containing the full file system path to the recording
+   * 
+   * Returns:
+   *   - Dictionary with the following keys:
+   *     - "success": Boolean indicating if data was retrieved successfully
+   *     - "data": String containing base64 encoded audio data (only when success is true)
+   *     - "error": String description if an error occurred (only when success is false)
+   */
+  AsyncFunction("getRecordingData") { (filePath: String) -> [String: Any] in
+    do {
+      let fileManager = FileManager.default
+      
+      if !fileManager.fileExists(atPath: filePath) {
+        return ["success": false, "error": "Recording file not found at path: \(filePath)"]
+      }
+      
+      let fileURL = URL(fileURLWithPath: filePath)
+      let audioData = try Data(contentsOf: fileURL)
+      let base64String = audioData.base64EncodedString()
+      
+      return [
+        "success": true,
+        "data": base64String
+      ]
+    } catch {
+      return [
+        "success": false,
+        "error": error.localizedDescription
+      ]
+    }
+  }
 }

@@ -680,6 +680,48 @@ class NativeAudioModule : Module() {
         Function("isPlaying") {
             isPlaying.get()
         }
+
+
+        /**
+         * Retrieves the raw audio data from a recorded file
+         * 
+         * Reads the audio file from disk and returns it as a base64 encoded string.
+         * This function allows JavaScript to access the audio data for processing or transmission.
+         * 
+         * Parameters:
+         *   - filePath: String containing the full file system path to the recording
+         * 
+         * Returns:
+         *   - Map<String, Any> with the following keys:
+         *     - "success": Boolean indicating if data was retrieved successfully
+         *     - "data": String containing base64 encoded audio data (only when success is true)
+         *     - "error": String description if an error occurred (only when success is false)
+         */
+        AsyncFunction("getRecordingData") { filePath: String ->
+          try {
+            val file = File(filePath)
+            
+            if (!file.exists()) {
+              return@AsyncFunction mapOf(
+                "success" to false,
+                "error" to "Recording file not found at path: $filePath"
+              )
+            }
+            
+            val fileBytes = file.readBytes()
+            val base64Data = android.util.Base64.encodeToString(fileBytes, android.util.Base64.NO_WRAP)
+            
+            mapOf(
+              "success" to true,
+              "data" to base64Data
+            )
+          } catch (e: Exception) {
+            mapOf(
+              "success" to false,
+              "error" to (e.message ?: "Unknown error retrieving recording")
+            )
+          }
+        }
     }
 
     // ===== RESOURCE MANAGEMENT =====
