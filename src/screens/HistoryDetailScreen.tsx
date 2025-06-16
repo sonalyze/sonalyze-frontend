@@ -1,15 +1,15 @@
+// src/screens/HistoryDetailScreen.tsx
 import { FC } from 'react';
 import { View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { format, Locale } from 'date-fns';
-import { enUS, de, fr, tr, it, es } from 'date-fns/locale';
+import { formatWithOptions } from 'date-fns/fp';
+import { enUS, de, fr, tr, it, es } from 'date-fns/locale';  
 import { useTranslation } from 'react-i18next';
 
 import { RootStackParamList } from '../App';
 import SecondaryHeader from '../components/SecondaryHeader';
-
 
 type ScreenRouteProp = RouteProp<RootStackParamList, 'HistoryDetailScreen'>;
 type ScreenNavigationProp = NativeStackNavigationProp<
@@ -24,9 +24,9 @@ type Props = {
 
 const HistoryDetailScreen: FC<Props> = ({ route, navigation }) => {
   const { t, i18n } = useTranslation();
-  const item: Measurement = route.params.item;
+  const item = route.params.item as Measurement;
 
-  // Hilfsfunktion für den Durchschnitt
+  // Durchschnitt
   const avg = (arr: number[]) =>
     arr.length
       ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2)
@@ -34,8 +34,8 @@ const HistoryDetailScreen: FC<Props> = ({ route, navigation }) => {
 
   const summary = item.values?.[0]?.[0];
 
-  // Sprach‐Locales
-  const localeMap: Record<string, Locale> = {
+  // Keine explizite Locale-Annotation nötig
+  const localeMap: Record<string, typeof enUS> = {
     en: enUS,
     de,
     fr,
@@ -45,11 +45,15 @@ const HistoryDetailScreen: FC<Props> = ({ route, navigation }) => {
   };
   const locale = localeMap[i18n.language] || enUS;
 
-  // Formatiertes Datum
-  const formattedDate =
-    i18n.language === 'de'
-      ? format(new Date(item.createdAt), "d. MMMM yyyy 'um' HH:mm 'Uhr'", { locale })
-      : format(new Date(item.createdAt), 'PPPp', { locale });
+  // Datum formatieren
+const formatLocale = formatWithOptions({ locale: localeMap[i18n.language] || enUS });
+
+const formattedDate =
+  i18n.language === 'de'
+    // d. MMMM yyyy 'um' HH:mm 'Uhr'
+    ? formatLocale("d. MMMM yyyy 'um' HH:mm 'Uhr'", new Date(item.createdAt))
+    // PPPp
+    : formatLocale('PPPp', new Date(item.createdAt));
 
   return (
     <SafeAreaView className="flex-1 bg-background">

@@ -18,7 +18,6 @@ import JoinSessionScreen from './screens/JoinSessionScreen';
 import StartSessionScreen from './screens/StartSessionScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import HistoryDetailScreen from './screens/HistoryDetailScreen';
-
 import DevSettingsScreen from './screens/settings/DevSettings';
 
 enableScreens();
@@ -43,6 +42,8 @@ export default function App() {
                     <Stack.Screen name="LanguageScreen" component={LanguageScreen} />
                     <Stack.Screen name="HistoryScreen" component={HistoryScreen} />
                     <Stack.Screen name="HistoryDetailScreen" component={HistoryDetailScreen} />
+					<Stack.Screen name="DevSettingsScreen" component={DevSettingsScreen} />
+
                   </Stack.Navigator>
                 </NavigationContainer>
               <Toaster

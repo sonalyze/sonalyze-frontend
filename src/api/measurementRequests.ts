@@ -6,9 +6,10 @@ import { axiosClient } from '../tools/helpers';
  * Get measurement information associated with the user
  * @returns List of measurement information
  */
-export async function getMeasurements(): Promise<Measurement> {
-	const res = await axiosClient.get<Measurement>(`/measurements`);
-  return res.data;
+export function getMeasurements(): Promise<Measurement[]> {
+  return axiosClient
+    .get<Measurement[]>('/measurements')
+    .then(res => res.data);
 }
 
 
