@@ -18,38 +18,46 @@ import JoinSessionScreen from './screens/JoinSessionScreen';
 import StartSessionScreen from './screens/StartSessionScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import HistoryDetailScreen from './screens/HistoryDetailScreen';
-import { HistoryItemData } from './components/HistoryItem';
 
 import DevSettingsScreen from './screens/settings/DevSettings';
 
 enableScreens();
-
 const queryClient = new QueryClient();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
-	return (
-		<SafeAreaProvider>
-			<GestureHandlerRootView style={{ flex: 1 }}>
-				<LocalSettingsProvider>
-					<QueryClientProvider client={queryClient}>
-						<SocketProvider>
-							<NavigationContainer>
-								<RootStack />
-							</NavigationContainer>
-							<Toaster
-								position="bottom-center"
-								closeButton={true}
-								swipeToDismissDirection="left"
-							/>
-						</SocketProvider>
-					</QueryClientProvider>
-				</LocalSettingsProvider>
-			</GestureHandlerRootView>
-		</SafeAreaProvider>
-	);
+  return (
+    <SafeAreaProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <LocalSettingsProvider>
+          <QueryClientProvider client={queryClient}>
+            <SocketProvider>
+                <NavigationContainer>
+                  <Stack.Navigator screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="HomeScreen" component={HomeScreen} />
+                    <Stack.Screen name="StartSessionScreen" component={StartSessionScreen} />
+                    <Stack.Screen name="JoinSessionScreen" component={JoinSessionScreen} />
+                    <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
+                    <Stack.Screen name="QrScanScreen" component={QrScanScreen} />
+                    <Stack.Screen name="QrViewScreen" component={QrViewScreen} />
+                    <Stack.Screen name="LanguageScreen" component={LanguageScreen} />
+                    <Stack.Screen name="HistoryScreen" component={HistoryScreen} />
+                    <Stack.Screen name="HistoryDetailScreen" component={HistoryDetailScreen} />
+                  </Stack.Navigator>
+                </NavigationContainer>
+              <Toaster
+                position="bottom-center"
+                closeButton={true}
+                swipeToDismissDirection="left"
+              />
+            </SocketProvider>
+          </QueryClientProvider>
+        </LocalSettingsProvider>
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
+  );
 }
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const RootStack = () => (
 	<Stack.Navigator>
@@ -131,6 +139,6 @@ export type RootStackParamList = {
 	QrViewScreen: undefined;
 	LanguageScreen: undefined;
 	HistoryScreen: undefined;
-	HistoryDetailScreen: { item: HistoryItemData };
+	HistoryDetailScreen: {item: Measurement };
 	DevSettingsScreen: undefined;
 };

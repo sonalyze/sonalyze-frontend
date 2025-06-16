@@ -2,13 +2,14 @@ import { FC } from 'react';
 import { View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from '../App';
-import { useTranslation } from 'react-i18next';
-import SecondaryHeader from '../components/SecondaryHeader';
-import { HistoryItemData } from '../components/HistoryItem';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { format, Locale } from 'date-fns';
 import { enUS, de, fr, tr, it, es } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
+
+import { RootStackParamList } from '../App';
+import SecondaryHeader from '../components/SecondaryHeader';
+
 
 type ScreenRouteProp = RouteProp<RootStackParamList, 'HistoryDetailScreen'>;
 type ScreenNavigationProp = NativeStackNavigationProp<
@@ -23,13 +24,17 @@ type Props = {
 
 const HistoryDetailScreen: FC<Props> = ({ route, navigation }) => {
   const { t, i18n } = useTranslation();
-  const item: HistoryItemData = route.params.item;
+  const item: Measurement = route.params.item;
 
+  // Hilfsfunktion für den Durchschnitt
   const avg = (arr: number[]) =>
-    arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2) : '–';
+    arr.length
+      ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2)
+      : '–';
 
   const summary = item.values?.[0]?.[0];
 
+  // Sprach‐Locales
   const localeMap: Record<string, Locale> = {
     en: enUS,
     de,
@@ -38,9 +43,9 @@ const HistoryDetailScreen: FC<Props> = ({ route, navigation }) => {
     it,
     es,
   };
-
   const locale = localeMap[i18n.language] || enUS;
 
+  // Formatiertes Datum
   const formattedDate =
     i18n.language === 'de'
       ? format(new Date(item.createdAt), "d. MMMM yyyy 'um' HH:mm 'Uhr'", { locale })
@@ -51,6 +56,7 @@ const HistoryDetailScreen: FC<Props> = ({ route, navigation }) => {
       <SecondaryHeader title={item.name} onBack={() => navigation.pop()} />
       <View className="p-4">
         <Text className="text-base text-muted mb-4">{formattedDate}</Text>
+
         {summary && (
           <View className="gap-2">
             <Text className="text-sm">RT60: {avg(summary.rt60)}</Text>
