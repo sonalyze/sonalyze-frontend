@@ -41,6 +41,6 @@
     "historyTitle": "Verlauf",
     "historySubtitle": "Hier sehen Sie bereits ausgeführte Messungen.",
     "viewAll": "Alle anzeigen",
-    "noHistoryText": "Noch keine Messungen vorhanden."
+    "history.errorLoad": "Fehler beim Laden des Verlaufs"
 
 }

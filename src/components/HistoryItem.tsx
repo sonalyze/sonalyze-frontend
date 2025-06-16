@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import { View, Text } from 'react-native';
 import Card from './Card';
-import { format, Locale } from 'date-fns';
+import { formatWithOptions } from 'date-fns/fp/formatWithOptions';
 import { enUS, de, fr, tr, it, es } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 
@@ -11,10 +11,13 @@ type Props = {
   type?: 'slim' | 'default';
 };
 
+// Derive the correct locale type from one of the actual locale objects
+type DFLocale = typeof enUS;
+
 const HistoryItem: FC<Props> = ({ item, type = 'default' }) => {
   const { i18n } = useTranslation();
 
-  const localeMap: Record<string, Locale> = {
+  const localeMap: Record<string, DFLocale> = {
     en: enUS,
     de,
     fr,
@@ -25,11 +28,17 @@ const HistoryItem: FC<Props> = ({ item, type = 'default' }) => {
 
   const formatDate = (date: Date) => {
     if (i18n.language === 'de') {
-      return format(date, "d. MMMM yyyy 'um' HH:mm 'Uhr'", { locale: de });
+      const fmtDe = formatWithOptions(
+        { locale: de },
+        "d. MMMM yyyy 'um' HH:mm 'Uhr'"
+      );
+      return fmtDe(date);
     }
-    return format(date, 'PPPp', {
-      locale: localeMap[i18n.language] || enUS,
-    });
+    const fmt = formatWithOptions(
+      { locale: localeMap[i18n.language] || enUS },
+      'PPPp'
+    );
+    return fmt(date);
   };
 
   const date = formatDate(new Date(item.createdAt));

@@ -51,5 +51,9 @@
 	"enterNewServer": "Enter the URL of the new backend server:",
 	"save": "Save",
 	"purgeSuccess": "Local storage purged successfully. Please restart the app.",
-	"serverMigrationError": "Server migration error: The server URL is not valid or the server is unreachable."
+	"serverMigrationError": "Server migration error: The server URL is not valid or the server is unreachable.",
+	"historyTitle": "History",
+  	"historySubtitle": "Here you can see previously performed measurements.",
+  	"viewAll": "View All",
+  	"history.errorLoad": "Error loading history"
 }

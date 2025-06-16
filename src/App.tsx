@@ -25,108 +25,88 @@ const queryClient = new QueryClient();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
-  return (
-    <SafeAreaProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <LocalSettingsProvider>
-          <QueryClientProvider client={queryClient}>
-            <SocketProvider>
-                <NavigationContainer>
-                  <Stack.Navigator screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="HomeScreen" component={HomeScreen} />
-                    <Stack.Screen name="StartSessionScreen" component={StartSessionScreen} />
-                    <Stack.Screen name="JoinSessionScreen" component={JoinSessionScreen} />
-                    <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
-                    <Stack.Screen name="QrScanScreen" component={QrScanScreen} />
-                    <Stack.Screen name="QrViewScreen" component={QrViewScreen} />
-                    <Stack.Screen name="LanguageScreen" component={LanguageScreen} />
-                    <Stack.Screen name="HistoryScreen" component={HistoryScreen} />
-                    <Stack.Screen name="HistoryDetailScreen" component={HistoryDetailScreen} />
-					<Stack.Screen name="DevSettingsScreen" component={DevSettingsScreen} />
-
-                  </Stack.Navigator>
-                </NavigationContainer>
-              <Toaster
-                position="bottom-center"
-                closeButton={true}
-                swipeToDismissDirection="left"
-              />
-            </SocketProvider>
-          </QueryClientProvider>
-        </LocalSettingsProvider>
-      </GestureHandlerRootView>
-    </SafeAreaProvider>
-  );
+	return (
+		<SafeAreaProvider>
+			<GestureHandlerRootView style={{ flex: 1 }}>
+				<LocalSettingsProvider>
+					<QueryClientProvider client={queryClient}>
+						<SocketProvider>
+							<NavigationContainer>
+								<Stack.Navigator
+									screenOptions={{ headerShown: false }}
+								>
+									<Stack.Screen
+										name="HomeScreen"
+										component={HomeScreen}
+									/>
+									<Stack.Screen
+										name="StartSessionScreen"
+										component={StartSessionScreen}
+									/>
+									<Stack.Screen
+										name="JoinSessionScreen"
+										component={JoinSessionScreen}
+									/>
+									<Stack.Screen
+										name="SettingsScreen"
+										component={SettingsScreen}
+									/>
+									<Stack.Screen
+										name="QrScanScreen"
+										component={QrScanScreen}
+									/>
+									<Stack.Screen
+										name="QrViewScreen"
+										component={QrViewScreen}
+									/>
+									<Stack.Screen
+										name="LanguageScreen"
+										component={LanguageScreen}
+									/>
+									<Stack.Screen
+										name="HistoryScreen"
+										component={HistoryScreen}
+									/>
+									<Stack.Screen
+										name="HistoryDetailScreen"
+										component={HistoryDetailScreen}
+									/>
+									<Stack.Screen
+										name="DevSettingsScreen"
+										component={DevSettingsScreen}
+									/>
+								</Stack.Navigator>
+							</NavigationContainer>
+							<Toaster
+								position="bottom-center"
+								closeButton={true}
+								swipeToDismissDirection="left"
+							/>
+						</SocketProvider>
+					</QueryClientProvider>
+				</LocalSettingsProvider>
+			</GestureHandlerRootView>
+		</SafeAreaProvider>
+	);
 }
 
-
 const RootStack = () => (
-	<Stack.Navigator>
-		<Stack.Screen
-			name="HomeScreen"
-			component={HomeScreen}
-			options={{
-				headerShown: false,
-			}}
-		/>
+	<Stack.Navigator screenOptions={{ headerShown: false }}>
+		<Stack.Screen name="HomeScreen" component={HomeScreen} />
 		<Stack.Screen
 			name="StartSessionScreen"
 			component={StartSessionScreen}
-			options={{
-				headerShown: false,
-			}}
 		/>
-		<Stack.Screen
-			name="JoinSessionScreen"
-			component={JoinSessionScreen}
-			options={{
-				headerShown: false,
-			}}
-		/>
-		<Stack.Screen
-			name="SettingsScreen"
-			component={SettingsScreen}
-			options={{
-				headerShown: false,
-			}}
-		/>
-		<Stack.Screen
-			name="QrScanScreen"
-			component={QrScanScreen}
-			options={{
-				headerShown: false,
-			}}
-		/>
-		<Stack.Screen
-			name="QrViewScreen"
-			component={QrViewScreen}
-			options={{
-				headerShown: false,
-			}}
-		/>
-		<Stack.Screen
-			name="LanguageScreen"
-			component={LanguageScreen}
-			options={{
-				headerShown: false,
-			}}
-		/>
-		<Stack.Screen
-			name="DevSettingsScreen"
-			component={DevSettingsScreen}
-			options={{
-				headerShown: false,
-			}}
-		/>
-		<Stack.Screen
-			name="HistoryScreen"
-			component={HistoryScreen}
-			options={{ headerShown: false }}
-		/>
+		<Stack.Screen name="JoinSessionScreen" component={JoinSessionScreen} />
+		<Stack.Screen name="SettingsScreen" component={SettingsScreen} />
+		<Stack.Screen name="QrScanScreen" component={QrScanScreen} />
+		<Stack.Screen name="QrViewScreen" component={QrViewScreen} />
+		<Stack.Screen name="LanguageScreen" component={LanguageScreen} />
+		<Stack.Screen name="DevSettingsScreen" component={DevSettingsScreen} />
+		<Stack.Screen name="HistoryScreen" component={HistoryScreen} />
 		<Stack.Screen
 			name="HistoryDetailScreen"
 			component={HistoryDetailScreen}
-			options={{ headerShown: false }}
 		/>
 	</Stack.Navigator>
 );
@@ -140,6 +120,6 @@ export type RootStackParamList = {
 	QrViewScreen: undefined;
 	LanguageScreen: undefined;
 	HistoryScreen: undefined;
-	HistoryDetailScreen: {item: Measurement };
+	HistoryDetailScreen: { item: Measurement };
 	DevSettingsScreen: undefined;
 };
