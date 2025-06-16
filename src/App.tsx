@@ -17,6 +17,7 @@ import LanguageScreen from './screens/settings/LanguageScreen';
 import JoinSessionScreen from './screens/JoinSessionScreen';
 import StartSessionScreen from './screens/StartSessionScreen';
 import DevSettingsScreen from './screens/settings/DevSettings';
+import AudioTransmissionTest from './screens/AudioTransmissionTest';
 
 enableScreens();
 
@@ -105,6 +106,13 @@ const RootStack = () => (
 				headerShown: false,
 			}}
 		/>
+		<Stack.Screen
+			name="AudioTransmissionTest"
+			component={AudioTransmissionTest}
+			options={{
+				headerShown: false,
+			}}
+		/>
 	</Stack.Navigator>
 );
 
@@ -117,4 +125,5 @@ export type RootStackParamList = {
 	QrViewScreen: undefined;
 	LanguageScreen: undefined;
 	DevSettingsScreen: undefined;
+	AudioTransmissionTest: undefined;
 };
