@@ -6,10 +6,9 @@ import { axiosClient } from '../tools/helpers';
  * Get measurement information associated with the user
  * @returns List of measurement information
  */
-export function getMeasurements(): Promise<Measurement[]> {
-  return axiosClient
-    .get<Measurement[]>('/measurements')
-    .then(res => res.data);
+export async function getMeasurements(): Promise<Measurement[]> {
+  const res = await axiosClient.get<Measurement[]>('/measurements');
+  return res.data;
 }
 
 
@@ -18,8 +17,13 @@ export function getMeasurements(): Promise<Measurement[]> {
  * @param id - The id of the measurement to delete
  */
 export async function deleteMeasurement(id: string): Promise<void> {
-	await axiosClient.delete(`/measurements/${id}`);
+  await axiosClient.delete(`/measurements/${id}`, {
+    params: {
+      measurement_id: id
+    }
+  });
 }
+
 
 /**
  * Import measurement owned by another user

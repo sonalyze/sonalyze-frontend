@@ -17,26 +17,29 @@ import HistoryItem from '../components/HistoryItem';
 import { getMeasurements } from '../api/measurementRequests';
 
 
-type HistoryScreenNavigationProp = NativeStackNavigationProp<
+type HistoryScreenNavigationProps = NativeStackNavigationProp<
   RootStackParamList,
   'HistoryScreen'
 >;
 
-type Props = {
-  navigation: HistoryScreenNavigationProp;
+type HistoryScreenProps = {
+   navigation: HistoryScreenNavigationProps;
 };
 
-const HistoryScreen: FC<Props> = ({ navigation }) => {
+const HistoryScreen: FC<HistoryScreenProps> = ({ navigation }) => {
   const { t } = useTranslation();
-  const {
-    data: history = [],
-    isLoading,
-    error,
-  } = useQuery<Measurement[], Error>({
+
+  const historyQuery = useQuery<Measurement[], Error>({
     queryKey: ['measurements'],
     queryFn: getMeasurements,
     retry: false,
   });
+
+  const {
+    data: history = [],
+    isLoading,
+    error,
+  } = historyQuery;
 
   return (
     <SafeAreaView className="flex-1 bg-background">

@@ -1,17 +1,16 @@
-import { FC } from 'react';
+import React, { FC } from 'react';
 import { View, Text, Dimensions, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { formatWithOptions } from 'date-fns/fp';
-import { enUS, de, fr, tr, it, es } from 'date-fns/locale';  
+import { enUS, de, fr, tr, it, es } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
-
-// Neu:
 import { LineChart } from 'react-native-chart-kit';
-
 import { RootStackParamList } from '../App';
 import SecondaryHeader from '../components/SecondaryHeader';
+import { deleteMeasurement } from '../api/measurementRequests';
+import { toast } from 'sonner-native';
 
 type ScreenRouteProp = RouteProp<RootStackParamList, 'HistoryDetailScreen'>;
 type ScreenNavigationProp = NativeStackNavigationProp<
@@ -24,7 +23,7 @@ const screenWidth = Dimensions.get('window').width;
 const chartConfig = {
   backgroundGradientFrom: '#ffffff',
   backgroundGradientTo: '#ffffff',
-  color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`, // primary-Farbe
+  color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
   labelColor: () => '#6b7280',
   strokeWidth: 2,
   decimalPlaces: 2,
@@ -35,27 +34,48 @@ const chartConfig = {
   },
 };
 
-type Props = {
+type HistoryDetailScreenProps = {
   route: ScreenRouteProp;
   navigation: ScreenNavigationProp;
 };
 
-const HistoryDetailScreen: FC<Props> = ({ route, navigation }) => {
+const HistoryDetailScreen: FC<HistoryDetailScreenProps> = ({ route, navigation }) => {
   const { t, i18n } = useTranslation();
   const item = route.params.item as Measurement;
 
-  // Hilfsfunktion Mittelwert
+  // Handler for delete icon press
+  const handleDelete = async (id: string) => {
+  try {
+    await deleteMeasurement(id);
+    navigation.goBack();
+    toast.success(t('deleteSuccess'));
+  } catch (err: any) {
+    if (err.response?.status === 422) {
+      toast.error(t('invalidIdError'));
+    } else {
+      toast.error(t('genericError'));
+    }
+    console.error('Delete failed:', err.response?.data || err.message);
+  }
+};
+
+
   const avg = (arr: number[]) =>
     arr.length
       ? arr.reduce((a, b) => a + b, 0) / arr.length
       : 0;
 
   const summary = item.values?.[0]?.[0];
-  // Wenn summary fehlt, zeigen wir nur den Header & Datum:
   if (!summary) {
     return (
       <SafeAreaView className="flex-1 bg-background">
-        <SecondaryHeader title={item.name} onBack={() => navigation.pop()} />
+        <SecondaryHeader
+          title={item.name}
+          onBack={() => navigation.pop()}
+          rightIconName="trash-2"
+          rightIconId={item.id}
+          onRightIconPress={handleDelete}
+        />
         <View className="p-4">
           <Text>{t('noData')}</Text>
         </View>
@@ -63,7 +83,6 @@ const HistoryDetailScreen: FC<Props> = ({ route, navigation }) => {
     );
   }
 
-  // Daten für das Chart: wir nehmen hier einfach die Array-Werte,
   const datasets = [
     { label: 'RT60', data: summary.rt60 },
     { label: 'C50', data: summary.c50 },
@@ -72,7 +91,6 @@ const HistoryDetailScreen: FC<Props> = ({ route, navigation }) => {
     { label: 'G', data: summary.g },
   ];
 
-  // Formatierung Datum (unverändert)
   const localeMap: Record<string, typeof enUS> = { en: enUS, de, fr, tr, it, es };
   const formatLocale = formatWithOptions({ locale: localeMap[i18n.language] || enUS });
   const formattedDate =
@@ -82,7 +100,13 @@ const HistoryDetailScreen: FC<Props> = ({ route, navigation }) => {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <SecondaryHeader title={item.name} onBack={() => navigation.pop()} />
+      <SecondaryHeader
+        title={item.name}
+        onBack={() => navigation.pop()}
+        rightIconName="trash-2"
+        rightIconId={item.id}
+        onRightIconPress={handleDelete}
+      />
 
       <ScrollView className="p-4">
         <Text className="text-base text-muted mb-4">{formattedDate}</Text>
@@ -92,7 +116,7 @@ const HistoryDetailScreen: FC<Props> = ({ route, navigation }) => {
             <Text className="text-sm font-semibold mb-2">{label}</Text>
             <LineChart
               data={{ labels: data.map((_, i) => `${i + 1}`), datasets: [{ data }] }}
-              width={screenWidth - 32}    // Padding 16px links/rechts
+              width={screenWidth - 32}
               height={180}
               chartConfig={chartConfig}
               bezier

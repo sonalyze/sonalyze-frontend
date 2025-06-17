@@ -36,16 +36,13 @@ const HomeScreen: FC<HomeScreenProps> = ({ navigation }) => {
 		queryKey: ['measurements'],
 		queryFn: getMeasurements,
 
-		// Mehrere Versuche statt sofort abbrechen:
-		retry: 2, // bis zu 2 Mal neu versuchen
+		retry: 2,
 		retryDelay: (
-			attemptIndex // exponentieller Back-off
+			attemptIndex 
 		) => Math.min(1000 * 2 ** attemptIndex, 30000),
 
-		// automatisch nach Netz-Reconnect nochmal probieren
 		refetchOnReconnect: true,
 
-		// beim ersten Mount und bei jedem Zurückkehren erneut laden
 		refetchOnMount: 'always',
 	});
 
