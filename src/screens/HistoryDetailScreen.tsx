@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { View, Text, Dimensions, ScrollView } from 'react-native';
+import { View, Text, Dimensions, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -7,10 +7,12 @@ import { formatWithOptions } from 'date-fns/fp';
 import { enUS, de, fr, tr, it, es } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 import { LineChart } from 'react-native-chart-kit';
+import { toast } from 'sonner-native';
 import { RootStackParamList } from '../App';
 import SecondaryHeader from '../components/SecondaryHeader';
-import { deleteMeasurement } from '../api/measurementRequests';
-import { toast } from 'sonner-native';
+import { deleteMeasurement, removeImportedMeasurement } from '../api/measurementRequests';
+import Icon from '@react-native-vector-icons/lucide';
+import { copyToClipboard } from '../tools/clipboardAccess';
 
 type ScreenRouteProp = RouteProp<RootStackParamList, 'HistoryDetailScreen'>;
 type ScreenNavigationProp = NativeStackNavigationProp<
@@ -43,27 +45,33 @@ const HistoryDetailScreen: FC<HistoryDetailScreenProps> = ({ route, navigation }
   const { t, i18n } = useTranslation();
   const item = route.params.item as Measurement;
 
-  // Handler for delete icon press
+  const isImported = !item.isOwner;
+
+  // Handler for delete action
   const handleDelete = async (id: string) => {
-  try {
-    await deleteMeasurement(id);
-    navigation.goBack();
-    toast.success(t('deleteSuccess'));
-  } catch (err: any) {
-    if (err.response?.status === 422) {
-      toast.error(t('invalidIdError'));
-    } else {
-      toast.error(t('genericError'));
+    try {
+      if (isImported) {
+        await removeImportedMeasurement(id);
+        toast.success(t('removeImportedSuccess'));
+      } else {
+        await deleteMeasurement(id);
+        toast.success(t('deleteSuccess'));
+      }
+      navigation.goBack();
+    } catch (err: any) {
+      console.error('[Delete] failed:', err);
+      const status = err.response?.status;
+      if (status === 401) {
+        toast.error(t('unauthorizedError'));
+      } else if (status === 404) {
+        toast.error(t('notFoundError'));
+      } else if (status === 422) {
+        toast.error(t('invalidIdError'));
+      } else {
+        toast.error(t('genericError'));
+      }
     }
-    console.error('Delete failed:', err.response?.data || err.message);
-  }
-};
-
-
-  const avg = (arr: number[]) =>
-    arr.length
-      ? arr.reduce((a, b) => a + b, 0) / arr.length
-      : 0;
+  };
 
   const summary = item.values?.[0]?.[0];
   if (!summary) {
@@ -109,7 +117,20 @@ const HistoryDetailScreen: FC<HistoryDetailScreenProps> = ({ route, navigation }
       />
 
       <ScrollView className="p-4">
-        <Text className="text-base text-muted mb-4">{formattedDate}</Text>
+        <View className="flex-row items-center mb-2">
+           <Text className="text-base text-muted">ID: {item.id}</Text>
+          <TouchableOpacity
+            onPress={() => {
+              copyToClipboard(item.id);
+              toast.success(t('copySuccess'));
+            }}
+            className="ml-2"
+          >
+            <Icon name="copy" size={18} />
+          </TouchableOpacity>
+        </View>
+
+        <Text className="text-base text-muted font-medium mb-4">{formattedDate}</Text>
 
         {datasets.map(({ label, data }) => (
           <View key={label} className="mb-6">
