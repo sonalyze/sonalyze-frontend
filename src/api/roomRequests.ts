@@ -24,7 +24,7 @@ export async function deleteRoom(id: string): Promise<void> {
  * @returns The room information
  */
 export async function importRoom(id: string): Promise<Room> {
-	const res = await axiosClient.get(`/room/imported/${id}`);
+	 const res = await axiosClient.get<Room>(`/room/imported/${id}`);
 
 	return res.data;
 }

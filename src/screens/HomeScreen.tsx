@@ -14,7 +14,6 @@ import HistoryItem from '../components/HistoryItem';
 import { getMeasurements } from '../api/measurementRequests';
 import { getRooms } from '../api/roomRequests';
 
-// Measurement und Room global definiert
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -50,7 +49,6 @@ const HomeScreen: FC<HomeScreenProps> = ({ navigation }) => {
   const isLoading = loadingMeasurements || loadingRooms;
   const error = errorMeasurements || errorRooms;
 
-  // Kombiniere und sortiere nach Datum
   type UnifiedItem = {
     id: string;
     createdAt: string;

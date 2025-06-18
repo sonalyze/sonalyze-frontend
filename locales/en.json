@@ -63,5 +63,17 @@
   "invalidIdError": "Please enter a valid measurement ID.",
   "owner": "Owner",
     "imported": "Imported",
-    "dateLabel": "Date:"
+    "dateLabel": "Date",
+	"notFoundError": "Item not found.",
+  "genericError": "An unexpected error occurred. Please try again.",
+  "room": "Room",
+  "measurement": "Measurement",
+  "historyDetailTitle": "History Detail",
+  "noHistoryItems": "No history items available.",
+  "importRoomSuccess": "Room imported successfully.",
+  "enterRoomId": "Enter room ID",
+  "roomId": "Room ID",
+  "idInput": "ID Input Field",
+  "enterIdHint": "Enter the measurement or room ID to import.",
+  "loading": "Loading..."
 }
