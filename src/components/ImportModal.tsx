@@ -31,12 +31,11 @@ const ImportModal: FC<ImportModalProps> = ({ visible, onClose, onImport }) => {
 
 	const handleCancel = () => {
 		if (isLoading) return;
-		setInputId(''); 
+		setInputId('');
 		onClose();
 	};
 
 	const handleConfirm = async () => {
-		// Trimmen der ID vor der Validierung
 		const trimmedId = inputId.trim();
 		if (isLoading || !trimmedId) {
 			toast.error(t('invalidIdError'));
@@ -46,9 +45,14 @@ const ImportModal: FC<ImportModalProps> = ({ visible, onClose, onImport }) => {
 		setIsLoading(true);
 		try {
 			await onImport(trimmedId, type);
-
 			setInputId('');
-		} catch {
+			onClose();
+		} catch (error: any) {
+			if (error?.message === 'NOT_FOUND' || error?.code === 'NOT_FOUND') {
+				toast.error(t('idNotFoundError'));
+			} else {
+				toast.error(t('importFailed'));
+			}
 		} finally {
 			setIsLoading(false);
 		}
@@ -109,7 +113,6 @@ const ImportModal: FC<ImportModalProps> = ({ visible, onClose, onImport }) => {
 							}
 							editable={!isLoading}
 							className="border border-gray-300 rounded-md p-2 mb-6"
-
 						/>
 
 						{/* Buttons */}
@@ -119,7 +122,7 @@ const ImportModal: FC<ImportModalProps> = ({ visible, onClose, onImport }) => {
 									label={t('cancel')}
 									onPress={handleCancel}
 									disabled={isLoading}
-									type="secondary" 
+									type="secondary"
 								/>
 							</View>
 							<View className="flex-1">
@@ -128,7 +131,7 @@ const ImportModal: FC<ImportModalProps> = ({ visible, onClose, onImport }) => {
 										isLoading ? t('loading') : t('import')
 									}
 									onPress={handleConfirm}
-									disabled={isLoading} 
+									disabled={isLoading}
 								/>
 							</View>
 						</View>
