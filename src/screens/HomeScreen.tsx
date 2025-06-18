@@ -1,5 +1,5 @@
-import { FC } from 'react';
-import { Text, ScrollView, View, ActivityIndicator } from 'react-native';
+import  { FC } from 'react';
+import { Text, ScrollView, View,  TouchableOpacity } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -12,143 +12,147 @@ import Button from '../components/Button';
 import Card from '../components/Card';
 import HistoryItem from '../components/HistoryItem';
 import { getMeasurements } from '../api/measurementRequests';
-import { TouchableOpacity } from 'react-native';
+import { getRooms } from '../api/roomRequests';
 
+// Measurement und Room global definiert
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
-	RootStackParamList,
-	'HomeScreen'
+  RootStackParamList,
+  'HomeScreen'
 >;
 
 type HomeScreenProps = {
-	navigation: HomeScreenNavigationProp;
+  navigation: HomeScreenNavigationProp;
 };
 
 const HomeScreen: FC<HomeScreenProps> = ({ navigation }) => {
-	const { t } = useTranslation();
-	const {
-		data: history = [],
-		isLoading,
-		isFetching,
-		error,
-		refetch,
-	} = useQuery<Measurement[], Error>({
-		queryKey: ['measurements'],
-		queryFn: getMeasurements,
+  const { t } = useTranslation();
+  const {
+    data: measurements = [],
+    isLoading: loadingMeasurements,
+    error: errorMeasurements,
+    refetch: refetchMeasurements,
+  } = useQuery<Measurement[], Error>({
+    queryKey: ['measurements'],
+    queryFn: getMeasurements,
+  });
 
-		retry: 2,
-		retryDelay: (
-			attemptIndex 
-		) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  const {
+    data: rooms = [],
+    isLoading: loadingRooms,
+    error: errorRooms,
+    refetch: refetchRooms,
+  } = useQuery<Room[], Error>({
+    queryKey: ['rooms'],
+    queryFn: getRooms,
+  });
 
-		refetchOnReconnect: true,
+  const isLoading = loadingMeasurements || loadingRooms;
+  const error = errorMeasurements || errorRooms;
 
-		refetchOnMount: 'always',
-	});
+  // Kombiniere und sortiere nach Datum
+  type UnifiedItem = {
+    id: string;
+    createdAt: string;
+    raw: Measurement | Room;
+    type: 'measurement' | 'room';
+  };
 
-	return (
-		<SafeAreaView className="flex-1 bg-background">
-			{/* Header */}
-			<View className="relative h-[60px] flex-row items-center justify-between px-5 py-3 bg-card">
-				<Text className="text-2xl font-semibold text-foreground">
-					Sonalyze
-				</Text>
-				<Icon
-					name="settings"
-					size={24}
-					color="#000"
-					onPress={() => navigation.push('SettingsScreen')}
-					style={{ padding: 8 }}
-				/>
-			</View>
+  const combined: UnifiedItem[] = [
+    ...measurements.map(m => ({
+      id: m.id,
+      createdAt: m.createdAt,
+      raw: m,
+      type: 'measurement' as const,
+    })),
+    ...rooms.map(r => ({
+      id: r.id,
+      createdAt: r.lastUpdatedAt,
+      raw: r,
+      type: 'room' as const,
+    })),
+  ]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 3);
 
-			{isLoading && (
-				<Progress.Bar
-					indeterminate
-					width={null}
-					color={'#C3E7FF'}
-					unfilledColor={'#F9FAFB'}
-					height={4}
-					borderWidth={0}
-				/>
-			)}
+  return (
+    <SafeAreaView className="flex-1 bg-background">
+      {/* Header */}
+      <View className="relative h-[60px] flex-row items-center justify-between px-5 py-3 bg-card">
+        <Text className="text-2xl font-semibold text-foreground">Sonalyze</Text>
+        <Icon
+          name="settings"
+          size={24}
+          color="#000"
+          onPress={() => navigation.push('SettingsScreen')}
+          style={{ padding: 8 }}
+        />
+      </View>
 
-			{/* Page Content */}
-			<ScrollView className="m-2">
-				{/* Cooperative Card */}
-				<Card
-					title={t('cooperativeTitle')}
-					subtitle={t('cooperativeSubtitle')}
-				>
-					<View className="flex-row gap-2">
-						<View className="flex-1">
-							<Button
-								label={t('start')}
-								onPress={() =>
-									navigation.push('StartSessionScreen')
-								}
-							/>
-						</View>
-						<View className="flex-1">
-							<Button
-								label={t('join')}
-								onPress={() =>
-									navigation.push('JoinSessionScreen')
-								}
-							/>
-						</View>
-					</View>
-				</Card>
+      {isLoading && (
+        <Progress.Bar
+          indeterminate
+          width={null}
+          color={'#C3E7FF'}
+          unfilledColor={'#F9FAFB'}
+          height={4}
+          borderWidth={0}
+        />
+      )}
 
-				<View className="h-2" />
+      <ScrollView className="m-2">
+        {/* Cooperative Card */}
+        <Card title={t('cooperativeTitle')} subtitle={t('cooperativeSubtitle')}>
+          <View className="flex-row gap-2">
+            <View className="flex-1">
+              <Button label={t('start')} onPress={() => navigation.push('StartSessionScreen')} />
+            </View>
+            <View className="flex-1">
+              <Button label={t('join')} onPress={() => navigation.push('JoinSessionScreen')} />
+            </View>
+          </View>
+        </Card>
 
-				{/* Simulation Card */}
-				<Card
-					title={t('simulationTitle')}
-					subtitle={t('simulationSubtitle')}
-				>
-					<Button label={t('start')} onPress={() => {}} />
-				</Card>
+        <View className="h-2" />
 
-				<View className="h-2" />
+        {/* Simulation Card */}
+        <Card title={t('simulationTitle')} subtitle={t('simulationSubtitle')}>
+          <Button label={t('start')} onPress={() => {}} />
+        </Card>
 
-				{/* History Card */}
-				<Card title={t('historyTitle')} subtitle={t('historySubtitle')}>
-					{error && (
-						<Text className="text-center">
-							{t('history.errorLoad')}
-						</Text>
-					)}
+        <View className="h-2" />
 
-					{!isLoading && history.length > 0 && (
-						<View>
-							{history.slice(0, 3).map((item) => (
-								<TouchableOpacity
-									key={item.id}
-									activeOpacity={0.8}
-									onPress={() =>
-										navigation.navigate(
-											'HistoryDetailScreen',
-											{ item }
-										)
-									}
-								>
-									<HistoryItem item={item} type="slim" />
-								</TouchableOpacity>
-							))}
-						</View>
-					)}
+        {/* History Card */}
+        <Card title={t('historyTitle')} subtitle={t('historySubtitle')}>
+          {error && <Text className="text-center">{t('history.errorLoad')}</Text>}
 
-					<View className="flex-row">
-						<Button
-							label={t('viewAll')}
-							onPress={() => navigation.push('HistoryScreen')}
-						/>
-					</View>
-				</Card>
-			</ScrollView>
-		</SafeAreaView>
-	);
+          {!isLoading && combined.length > 0 && (
+            <View>
+              {combined.map(item => (
+                <TouchableOpacity
+                  key={`${item.id}-${item.createdAt}-${item.type}`}
+                  activeOpacity={0.8}
+                  onPress={() => navigation.navigate('HistoryDetailScreen', { item: item.raw })}
+                >
+                  <HistoryItem
+                    item={
+                      item.type === 'room'
+                        ? ({ ...(item.raw as Room), createdAt: item.createdAt } as any)
+                        : (item.raw as Measurement)
+                    }
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          <View className="flex-row">
+            <Button label={t('viewAll')} onPress={() => navigation.push('HistoryScreen')} />
+          </View>
+        </Card>
+      </ScrollView>
+    </SafeAreaView>
+  );
 };
 
 export default HomeScreen;

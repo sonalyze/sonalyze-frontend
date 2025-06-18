@@ -55,5 +55,13 @@
 	"historyTitle": "History",
   	"historySubtitle": "Here you can see previously performed measurements.",
   	"viewAll": "View All",
-  	"history.errorLoad": "Error loading history"
+  	"history.errorLoad": "Error loading history",
+	 "enterMeasurementId": "Enter measurement ID",
+  "measurementId": "Measurement ID",
+  "import": "Import",
+  "importSuccess": "Measurement imported successfully.",
+  "invalidIdError": "Please enter a valid measurement ID.",
+  "owner": "Owner",
+    "imported": "Imported",
+    "dateLabel": "Date:"
 }

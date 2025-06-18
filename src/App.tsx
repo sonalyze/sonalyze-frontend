@@ -120,6 +120,6 @@ export type RootStackParamList = {
 	QrViewScreen: undefined;
 	LanguageScreen: undefined;
 	HistoryScreen: undefined;
-	HistoryDetailScreen: { item: Measurement };
+	HistoryDetailScreen: { item: Measurement | Room };
 	DevSettingsScreen: undefined;
 };
