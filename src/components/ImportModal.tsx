@@ -25,10 +25,13 @@ interface ImportModalProps {
 
 const ImportModal: FC<ImportModalProps> = ({ visible, onClose, onImport }) => {
 	const { t } = useTranslation();
+
+	//State variablen
 	const [inputId, setInputId] = useState('');
 	const [type, setType] = useState<ImportType>('measurement');
 	const [isLoading, setIsLoading] = useState(false);
 
+	// Funktionen für die Modal-Steuerung
 	const handleCancel = () => {
 		if (isLoading) return;
 		setInputId('');
@@ -41,7 +44,6 @@ const ImportModal: FC<ImportModalProps> = ({ visible, onClose, onImport }) => {
 			toast.error(t('invalidIdError'));
 			return;
 		}
-
 		setIsLoading(true);
 		try {
 			await onImport(trimmedId, type);
@@ -71,25 +73,24 @@ const ImportModal: FC<ImportModalProps> = ({ visible, onClose, onImport }) => {
 					className="w-11/12"
 				>
 					<View className="bg-white rounded-xl p-6">
-						{/* Selector */}
+						{/* Selektor */}
 						<View className="flex-row mb-4">
 							{IMPORT_OPTIONS.map((opt) => (
 								<TouchableOpacity
 									key={opt}
-									className={`flex-1 py-2 mx-1 rounded-md ${
-										type === opt
-											? 'bg-blue-500'
-											: 'bg-gray-200'
-									}`}
+									className={`
+										flex-1 py-2 mx-1 rounded-md
+										${type === opt ? 'bg-primary' : 'bg-secondary'}
+									`}
 									activeOpacity={0.8}
 									onPress={() => !isLoading && setType(opt)}
+									disabled={isLoading}
 								>
 									<Text
-										className={`text-center font-semibold ${
-											type === opt
-												? 'text-white'
-												: 'text-gray-700'
-										}`}
+										className={`
+										text-center font-semibold
+										${type === opt ? 'text-primaryForeground' : 'text-secondaryForeground'}
+										`}
 									>
 										{t(opt)}
 									</Text>
@@ -97,7 +98,7 @@ const ImportModal: FC<ImportModalProps> = ({ visible, onClose, onImport }) => {
 							))}
 						</View>
 
-						{/* Title & Input */}
+						{/* Titel & Input */}
 						<Text className="text-lg font-medium mb-2">
 							{type === 'measurement'
 								? t('enterMeasurementId')
@@ -136,7 +137,7 @@ const ImportModal: FC<ImportModalProps> = ({ visible, onClose, onImport }) => {
 							</View>
 						</View>
 
-						{/* Loading Overlay */}
+						{/* Lade Animation */}
 						{isLoading && (
 							<View className="absolute inset-0 justify-center items-center bg-white/50 rounded-xl">
 								<ActivityIndicator size="large" />

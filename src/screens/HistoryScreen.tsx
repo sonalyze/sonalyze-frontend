@@ -19,16 +19,15 @@ import ImportModal from '../components/ImportModal';
 import { getMeasurements, importMeasurement } from '../api/measurementRequests';
 import { getRooms, importRoom } from '../api/roomRequests';
 
-
 type HistoryScreenNavigationProps = NativeStackNavigationProp<
 	RootStackParamList,
 	'HistoryScreen'
 >;
-
 type HistoryScreenProps = {
 	navigation: HistoryScreenNavigationProps;
 };
 
+//Vereinheitlichung Messungen und Räume
 type UnifiedItem = {
 	id: string;
 	name: string;
@@ -42,20 +41,21 @@ const HistoryScreen: FC<HistoryScreenProps> = ({ navigation }) => {
 	const { t } = useTranslation();
 	const [showModal, setShowModal] = useState(false);
 
-	// Messungen
+	// Messungen laden
 	const measurementsQuery = useQuery<Measurement[], Error>({
 		queryKey: ['measurements'],
 		queryFn: getMeasurements,
 		retry: false,
 	});
 
-	// Räume
+	// Räume laden
 	const roomsQuery = useQuery<Room[], Error>({
 		queryKey: ['rooms'],
 		queryFn: getRooms,
 		retry: false,
 	});
 
+	// Daten der Abfragen extrahieren
 	const {
 		data: measurements = [],
 		isLoading: loadingMeasurements,
@@ -70,6 +70,7 @@ const HistoryScreen: FC<HistoryScreenProps> = ({ navigation }) => {
 		refetch: refetchRooms,
 	} = roomsQuery;
 
+	// Lade- und Fehlerzustände
 	const isLoading = loadingMeasurements || loadingRooms;
 	const error = errorMeasurements || errorRooms;
 
@@ -84,11 +85,9 @@ const HistoryScreen: FC<HistoryScreenProps> = ({ navigation }) => {
 				await importMeasurement(id);
 				refetchMeasurements();
 			} else {
-				// room → importRoom
 				await importRoom(id);
 				refetchRooms();
 			}
-
 			toast.success(t('importSuccess'));
 			setShowModal(false);
 		} catch (err: any) {
@@ -100,6 +99,7 @@ const HistoryScreen: FC<HistoryScreenProps> = ({ navigation }) => {
 		}
 	};
 
+	// Vereinheitlichung der Messungen und Räume
 	const combined: UnifiedItem[] = [
 		...measurements.map((m) => ({
 			id: m.id,
@@ -132,6 +132,7 @@ const HistoryScreen: FC<HistoryScreenProps> = ({ navigation }) => {
 				onRightIconPress={() => setShowModal(true)}
 			/>
 
+			{/* Lade- und Fehleranzeige */}
 			{isLoading && (
 				<View className="flex-1 justify-center items-center">
 					<ActivityIndicator size="large" />
@@ -144,6 +145,7 @@ const HistoryScreen: FC<HistoryScreenProps> = ({ navigation }) => {
 				</Text>
 			)}
 
+			{/* Liste der Messungen und Räume */}
 			{!isLoading && !error && (
 				<FlatList
 					contentContainerStyle={{ padding: 8 }}

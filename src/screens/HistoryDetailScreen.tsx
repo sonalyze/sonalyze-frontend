@@ -25,16 +25,15 @@ import { deleteRoom, removeImportedRoom } from '../api/roomRequests';
 import Icon from '@react-native-vector-icons/lucide';
 import { copyToClipboard } from '../tools/clipboardAccess';
 
-// Define route props
+// Props
 type ScreenRouteProp = RouteProp<RootStackParamList, 'HistoryDetailScreen'>;
 type ScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
 	'HistoryDetailScreen'
 >;
 
+// Parameter für Diagramme
 const screenWidth = Dimensions.get('window').width;
-
-// Chart config for measurements
 const chartConfig = {
 	backgroundGradientFrom: '#ffffff',
 	backgroundGradientTo: '#ffffff',
@@ -55,7 +54,7 @@ const HistoryDetailScreen: FC<{
 	const isMeasurement = (item as Measurement).values !== undefined;
 	const isOwner = item.isOwner;
 
-	// Unified delete handler
+	// Löschen-Funktionen
 	const handleDelete = async (id: string) => {
 		try {
 			if (isMeasurement) {
@@ -67,7 +66,6 @@ const HistoryDetailScreen: FC<{
 					toast.success(t('deleteSuccess'));
 				}
 			} else {
-				// Room case
 				if (!isOwner) {
 					await removeImportedRoom(id);
 					toast.success(t('removeImportedRoomSuccess'));
@@ -90,11 +88,12 @@ const HistoryDetailScreen: FC<{
 		}
 	};
 
-	// Date field selection
+	// Festlegung des Datums für Sortierung
 	const dateValue = isMeasurement
 		? (item as Measurement).createdAt
 		: (item as Room).lastUpdatedAt;
 
+	// Formatierung des Datums und Sprache
 	const localeMap: Record<string, typeof enUS> = {
 		en: enUS,
 		de,
@@ -111,6 +110,7 @@ const HistoryDetailScreen: FC<{
 			? formatLocale("d. MMMM yyyy 'um' HH:mm 'Uhr'", new Date(dateValue))
 			: formatLocale('PPPp', new Date(dateValue));
 
+	// Werte Array der Messungen (RT60, C50, C80, D50, G)
 	const summary = isMeasurement
 		? (item as Measurement).values?.[0]?.[0] || null
 		: null;
@@ -143,7 +143,7 @@ const HistoryDetailScreen: FC<{
 					{formattedDate}
 				</Text>
 
-				{/* Measurement chunk */}
+				{/* Messung Details */}
 				{isMeasurement ? (
 					summary ? (
 						(
@@ -174,7 +174,7 @@ const HistoryDetailScreen: FC<{
 						<Text>{t('noData')}</Text>
 					)
 				) : (
-					// Room details
+					// Raum details
 					<View>
 						<View className="mb-4">
 							<Text className="text-sm font-semibold mb-1">

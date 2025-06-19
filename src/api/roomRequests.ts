@@ -5,10 +5,9 @@ import { axiosClient } from '../tools/helpers';
  * @returns List of general room information
  */
 export async function getRooms(): Promise<Room[]> {
-  const res = await axiosClient.get<Room[]>('/room/');
-  return res.data;
+	const res = await axiosClient.get<Room[]>('/room/');
+	return res.data;
 }
-
 
 /**
  * Delete the room with the given sharedId
@@ -24,8 +23,7 @@ export async function deleteRoom(id: string): Promise<void> {
  * @returns The room information
  */
 export async function importRoom(id: string): Promise<Room> {
-	 const res = await axiosClient.get<Room>(`/room/imported/${id}`);
-
+	const res = await axiosClient.get<Room>(`/room/imported/${id}`);
 	return res.data;
 }
 
@@ -36,8 +34,6 @@ export async function importRoom(id: string): Promise<Room> {
 export async function removeImportedRoom(id: string): Promise<void> {
 	await axiosClient.delete<Measurement>(`/room/imported/${id}`);
 }
-
-
 
 /**
  * Create a new room with the given name and scene data
@@ -90,4 +86,3 @@ export async function updateRoomScene(
 		scene,
 	});
 }
-

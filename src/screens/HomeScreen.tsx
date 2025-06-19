@@ -14,18 +14,19 @@ import HistoryItem from '../components/HistoryItem';
 import { getMeasurements } from '../api/measurementRequests';
 import { getRooms } from '../api/roomRequests';
 
-
+//Props
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   'HomeScreen'
 >;
-
 type HomeScreenProps = {
   navigation: HomeScreenNavigationProp;
 };
 
 const HomeScreen: FC<HomeScreenProps> = ({ navigation }) => {
   const { t } = useTranslation();
+
+  // Abfrage für Messungen und Räume
   const {
     data: measurements = [],
     isLoading: loadingMeasurements,
@@ -46,9 +47,11 @@ const HomeScreen: FC<HomeScreenProps> = ({ navigation }) => {
     queryFn: getRooms,
   });
 
+  // Kombinierte Lade- und Fehlerzustände
   const isLoading = loadingMeasurements || loadingRooms;
   const error = errorMeasurements || errorRooms;
 
+  //Vereinheitlichung Messungen und Räume
   type UnifiedItem = {
     id: string;
     createdAt: string;

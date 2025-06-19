@@ -32,7 +32,7 @@ export async function deleteMeasurement(id: string): Promise<void> {
  */
 export async function importMeasurement(id: string): Promise<Measurement> {
   // hier wird kein Slash mehr ans Ende gehängt
-  const res = await axiosClient.get<Measurement>(`/measurements/imported/${id}`);
+  const res = await axiosClient.get<Measurement>(`/measurements/imported/${id}/`);
   return res.data;
 }
 
