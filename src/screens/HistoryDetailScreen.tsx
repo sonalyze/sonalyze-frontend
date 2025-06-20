@@ -1,18 +1,10 @@
 import React from 'react';
-import {
-	View,
-	Text,
-	Dimensions,
-	ScrollView,
-	TouchableOpacity,
-	Alert,
-} from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import Icon from '@react-native-vector-icons/lucide';
-import { LineChart } from 'react-native-chart-kit';
 import { toast } from 'sonner-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { copyToClipboard } from '../tools/clipboardAccess';
@@ -25,34 +17,8 @@ import { deleteRoom, removeImportedRoom } from '../api/roomRequests';
 import { formatWithOptions } from 'date-fns/fp';
 import { enUS, de, fr, tr, it, es } from 'date-fns/locale';
 import { RootStackParamList } from '../App';
-import tailwindConfig from '../../tailwind.config';
-
-// Hex-to-RGBA Helper (für Chart-Integration)
-const hexToRgba = (hex: string, alpha = 1) => {
-	const sanitized = hex.replace('#', '');
-	const intVal = parseInt(sanitized, 16);
-	const r = (intVal >> 16) & 255;
-	const g = (intVal >> 8) & 255;
-	const b = intVal & 255;
-	return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-};
-
-// Tailwind-Theme-Farben abrufen (Typcasting nötig da Config kein Typ definiert)
-const tailwindCfgAny = tailwindConfig as any;
-const themeExtend = tailwindCfgAny.theme?.extend;
-const colors = themeExtend?.colors ?? {};
-
-// Chart-Konfiguration
-const screenWidth = Dimensions.get('window').width;
-const chartConfig = {
-	backgroundGradientFrom: colors.background,
-	backgroundGradientTo: colors.background,
-	color: (opacity = 1) => hexToRgba(colors.editForeground, opacity),
-	labelColor: () => colors.tileForeground,
-	strokeWidth: 2,
-	decimalPlaces: 2,
-	propsForDots: { r: '3', strokeWidth: '1', stroke: colors.editForeground },
-};
+import MeasurementDetail from '../components/MeasurementDetail';
+import RoomDetail from '../components/RoomDetail';
 
 // Typen für Navigation und Route
 type ScreenRouteProp = RouteProp<RootStackParamList, 'HistoryDetailScreen'>;
@@ -62,74 +28,6 @@ type ScreenNavigationProp = NativeStackNavigationProp<
 >;
 type Props = { route: ScreenRouteProp; navigation: ScreenNavigationProp };
 
-type Measurement = {
-	id: string;
-	name: string;
-	createdAt: string;
-	values?: Array<
-		Array<Record<'rt60' | 'c50' | 'c80' | 'd50' | 'g', number[]>>
-	>;
-	isOwner: boolean;
-};
-
-type Room = {
-	id: string;
-	name: string;
-	lastUpdatedAt: string;
-	hasSimulation: boolean;
-	isOwner: boolean;
-};
-
-// Subcomponent: Measurement Details
-const MeasurementDetail: React.FC<{
-	summary: Record<string, number[]> | null;
-}> = ({ summary }) => {
-	const { t } = useTranslation();
-	if (!summary) return <Text>{t('noData')}</Text>;
-
-	const keys = ['rt60', 'c50', 'c80', 'd50', 'g'] as const;
-	return (
-		<>
-			{keys.map((key) => (
-				<View key={key} className="mb-6">
-					<Text className="text-sm font-semibold mb-2">
-						{key.toUpperCase()}
-					</Text>
-					<LineChart
-						data={{
-							labels: summary[key].map((_, i) => `${i + 1}`),
-							datasets: [{ data: summary[key] }],
-						}}
-						width={screenWidth - 32}
-						height={180}
-						chartConfig={chartConfig}
-						bezier
-						style={{ borderRadius: 8 }}
-					/>
-				</View>
-			))}
-		</>
-	);
-};
-
-// Subcomponent: Room Details
-const RoomDetail: React.FC<{ hasSimulation: boolean }> = ({
-	hasSimulation,
-}) => {
-	const { t } = useTranslation();
-	return (
-		<View className="mb-4">
-			<Text className="text-sm font-semibold mb-1">
-				{t('simulation')}
-			</Text>
-			<Text className="text-base">
-				{hasSimulation ? t('yes') : t('no')}
-			</Text>
-		</View>
-	);
-};
-
-// Hauptkomponente
 const HistoryDetailScreen = ({ route, navigation }: Props) => {
 	const { t, i18n } = useTranslation();
 	const queryClient = useQueryClient();
