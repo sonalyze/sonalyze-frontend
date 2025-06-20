@@ -14,7 +14,7 @@ const hexToRgba = (hex: string, alpha = 1) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
-// Tailwind-Theme-Farben abrufen (Typcasting nötig da Config kein Typ definiert)
+// Tailwind-Theme-Farben abrufen 
 const tailwindCfgAny = tailwindConfig as any;
 const themeExtend = tailwindCfgAny.theme?.extend;
 const colors = themeExtend?.colors ?? {};
