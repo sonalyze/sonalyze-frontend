@@ -134,6 +134,9 @@ const HistoryDetailScreen = ({ route, navigation }: Props) => {
 				<Text className="text-base text-muted font-medium mb-4">
 					{formattedDate}
 				</Text>
+				<Text className="text-base text-muted font-medium mb-2">
+					{t('isOwner')}: {item.isOwner ? 'Yes' : 'No'}
+				</Text>
 
 				{isMeasurement ? (
 					<MeasurementDetail summary={summary} />
