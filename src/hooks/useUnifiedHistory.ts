@@ -45,9 +45,6 @@ export function useUnifiedHistory(limit?: number) {
     isLoading,
     error,
     items: limit != null ? combined.slice(0, limit) : combined,
-    refetch: () => {
-      measurementsQuery.refetch()
-      roomsQuery.refetch()
-    },
+    
   }
 }

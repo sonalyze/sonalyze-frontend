@@ -17,12 +17,9 @@ export async function getMeasurements(): Promise<Measurement[]> {
  * @param id - The id of the measurement to delete
  */
 export async function deleteMeasurement(id: string): Promise<void> {
-  await axiosClient.delete(`/measurements/${id}/`, {
-    params: {
-      measurement_id: id
-    }
-  });
+  await axiosClient.delete(`/measurements/${id}/`);
 }
+
 
 
 /**

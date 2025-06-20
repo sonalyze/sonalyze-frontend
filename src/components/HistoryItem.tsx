@@ -24,7 +24,8 @@ type HistoryItemProps = {
 	};
 };
 
-const HistoryItem: FC<HistoryItemProps> = ({ item }) => {
+const HistoryItem: FC<HistoryItemProps> = (props) => {
+  const { item } = props;
 	// i18n für Lokalisierung von Text und Datum
 	const { t, i18n } = useTranslation();
 	const locale = localeMap[i18n.language] ?? enUS;

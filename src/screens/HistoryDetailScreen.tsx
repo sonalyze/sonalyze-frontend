@@ -1,60 +1,155 @@
-import { FC } from 'react';
+import React from 'react';
 import {
 	View,
 	Text,
 	Dimensions,
 	ScrollView,
 	TouchableOpacity,
+	Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { formatWithOptions } from 'date-fns/fp';
-import { enUS, de, fr, tr, it, es } from 'date-fns/locale';
+import { RouteProp } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import Icon from '@react-native-vector-icons/lucide';
 import { LineChart } from 'react-native-chart-kit';
 import { toast } from 'sonner-native';
-import { RootStackParamList } from '../App';
-import SecondaryHeader from '../components/SecondaryHeader';
 import { useQueryClient } from '@tanstack/react-query';
+import { copyToClipboard } from '../tools/clipboardAccess';
+import SecondaryHeader from '../components/SecondaryHeader';
 import {
 	deleteMeasurement,
 	removeImportedMeasurement,
 } from '../api/measurementRequests';
 import { deleteRoom, removeImportedRoom } from '../api/roomRequests';
-import Icon from '@react-native-vector-icons/lucide';
-import { copyToClipboard } from '../tools/clipboardAccess';
+import { formatWithOptions } from 'date-fns/fp';
+import { enUS, de, fr, tr, it, es } from 'date-fns/locale';
+import { RootStackParamList } from '../App';
+import tailwindConfig from '../../tailwind.config';
 
-// Props
+// Hex-to-RGBA Helper (für Chart-Integration)
+const hexToRgba = (hex: string, alpha = 1) => {
+	const sanitized = hex.replace('#', '');
+	const intVal = parseInt(sanitized, 16);
+	const r = (intVal >> 16) & 255;
+	const g = (intVal >> 8) & 255;
+	const b = intVal & 255;
+	return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+// Tailwind-Theme-Farben abrufen (Typcasting nötig da Config kein Typ definiert)
+const tailwindCfgAny = tailwindConfig as any;
+const themeExtend = tailwindCfgAny.theme?.extend;
+const colors = themeExtend?.colors ?? {};
+
+// Chart-Konfiguration
+const screenWidth = Dimensions.get('window').width;
+const chartConfig = {
+	backgroundGradientFrom: colors.background,
+	backgroundGradientTo: colors.background,
+	color: (opacity = 1) => hexToRgba(colors.editForeground, opacity),
+	labelColor: () => colors.tileForeground,
+	strokeWidth: 2,
+	decimalPlaces: 2,
+	propsForDots: { r: '3', strokeWidth: '1', stroke: colors.editForeground },
+};
+
+// Typen für Navigation und Route
 type ScreenRouteProp = RouteProp<RootStackParamList, 'HistoryDetailScreen'>;
 type ScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
 	'HistoryDetailScreen'
 >;
+type Props = { route: ScreenRouteProp; navigation: ScreenNavigationProp };
 
-// Parameter für Diagramme
-const screenWidth = Dimensions.get('window').width;
-const chartConfig = {
-	backgroundGradientFrom: '#ffffff',
-	backgroundGradientTo: '#ffffff',
-	color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
-	labelColor: () => '#6b7280',
-	strokeWidth: 2,
-	decimalPlaces: 2,
-	propsForDots: { r: '3', strokeWidth: '1', stroke: '#3B82F6' },
+type Measurement = {
+	id: string;
+	name: string;
+	createdAt: string;
+	values?: Array<
+		Array<Record<'rt60' | 'c50' | 'c80' | 'd50' | 'g', number[]>>
+	>;
+	isOwner: boolean;
 };
 
-const HistoryDetailScreen: FC<{
-	route: ScreenRouteProp;
-	navigation: ScreenNavigationProp;
-}> = ({ route, navigation }) => {
+type Room = {
+	id: string;
+	name: string;
+	lastUpdatedAt: string;
+	hasSimulation: boolean;
+	isOwner: boolean;
+};
+
+// Subcomponent: Measurement Details
+const MeasurementDetail: React.FC<{
+	summary: Record<string, number[]> | null;
+}> = ({ summary }) => {
+	const { t } = useTranslation();
+	if (!summary) return <Text>{t('noData')}</Text>;
+
+	const keys = ['rt60', 'c50', 'c80', 'd50', 'g'] as const;
+	return (
+		<>
+			{keys.map((key) => (
+				<View key={key} className="mb-6">
+					<Text className="text-sm font-semibold mb-2">
+						{key.toUpperCase()}
+					</Text>
+					<LineChart
+						data={{
+							labels: summary[key].map((_, i) => `${i + 1}`),
+							datasets: [{ data: summary[key] }],
+						}}
+						width={screenWidth - 32}
+						height={180}
+						chartConfig={chartConfig}
+						bezier
+						style={{ borderRadius: 8 }}
+					/>
+				</View>
+			))}
+		</>
+	);
+};
+
+// Subcomponent: Room Details
+const RoomDetail: React.FC<{ hasSimulation: boolean }> = ({
+	hasSimulation,
+}) => {
+	const { t } = useTranslation();
+	return (
+		<View className="mb-4">
+			<Text className="text-sm font-semibold mb-1">
+				{t('simulation')}
+			</Text>
+			<Text className="text-base">
+				{hasSimulation ? t('yes') : t('no')}
+			</Text>
+		</View>
+	);
+};
+
+// Hauptkomponente
+const HistoryDetailScreen = ({ route, navigation }: Props) => {
 	const { t, i18n } = useTranslation();
 	const queryClient = useQueryClient();
+
 	const item = route.params.item as Measurement | Room;
 	const isMeasurement = (item as Measurement).values !== undefined;
 	const isOwner = item.isOwner;
 
-	// Löschen-Funktionen
+	// Zeigt ein Bestätigungs-Popup vor dem Löschen
+	const confirmDelete = () => {
+		Alert.alert(t('confirmDeletionTitle'), t('confirmDeletionMessage'), [
+			{ text: t('cancel'), style: 'cancel' },
+			{
+				text: t('confirm'),
+				style: 'destructive',
+				onPress: () => handleDelete(item.id),
+			},
+		]);
+	};
+
 	const handleDelete = async (id: string) => {
 		try {
 			if (isMeasurement) {
@@ -76,11 +171,15 @@ const HistoryDetailScreen: FC<{
 			}
 			await queryClient.invalidateQueries({ queryKey: ['measurements'] });
 			await queryClient.invalidateQueries({ queryKey: ['rooms'] });
-
 			navigation.goBack();
-		} catch (err: any) {
+		} catch (err: unknown) {
 			console.error('[Delete] failed:', err);
-			const status = err.response?.status;
+			let status: number | undefined;
+			if (typeof err === 'object' && err !== null && 'response' in err) {
+				const resp = (err as any).response;
+				if (resp && typeof resp.status === 'number')
+					status = resp.status;
+			}
 			if (status === 401) toast.error(t('unauthorizedError'));
 			else if (status === 404) toast.error(t('notFoundError'));
 			else if (status === 422) toast.error(t('invalidIdError'));
@@ -88,12 +187,9 @@ const HistoryDetailScreen: FC<{
 		}
 	};
 
-	// Festlegung des Datums für Sortierung
 	const dateValue = isMeasurement
 		? (item as Measurement).createdAt
 		: (item as Room).lastUpdatedAt;
-
-	// Formatierung des Datums und Sprache
 	const localeMap: Record<string, typeof enUS> = {
 		en: enUS,
 		de,
@@ -110,7 +206,6 @@ const HistoryDetailScreen: FC<{
 			? formatLocale("d. MMMM yyyy 'um' HH:mm 'Uhr'", new Date(dateValue))
 			: formatLocale('PPPp', new Date(dateValue));
 
-	// Werte Array der Messungen (RT60, C50, C80, D50, G)
 	const summary = isMeasurement
 		? (item as Measurement).values?.[0]?.[0] || null
 		: null;
@@ -122,7 +217,7 @@ const HistoryDetailScreen: FC<{
 				onBack={() => navigation.pop()}
 				rightIconName="trash-2"
 				rightIconId={item.id}
-				onRightIconPress={() => handleDelete(item.id)}
+				onRightIconPress={confirmDelete}
 			/>
 
 			<ScrollView className="p-4">
@@ -143,50 +238,10 @@ const HistoryDetailScreen: FC<{
 					{formattedDate}
 				</Text>
 
-				{/* Messung Details */}
 				{isMeasurement ? (
-					summary ? (
-						(
-							['rt60', 'c50', 'c80', 'd50', 'g'] as Array<
-								keyof typeof summary
-							>
-						).map((key) => (
-							<View key={key} className="mb-6">
-								<Text className="text-sm font-semibold mb-2">
-									{key.toUpperCase()}
-								</Text>
-								<LineChart
-									data={{
-										labels: summary[key].map(
-											(_, i) => `${i + 1}`
-										),
-										datasets: [{ data: summary[key] }],
-									}}
-									width={screenWidth - 32}
-									height={180}
-									chartConfig={chartConfig}
-									bezier
-									style={{ borderRadius: 8 }}
-								/>
-							</View>
-						))
-					) : (
-						<Text>{t('noData')}</Text>
-					)
+					<MeasurementDetail summary={summary} />
 				) : (
-					// Raum details
-					<View>
-						<View className="mb-4">
-							<Text className="text-sm font-semibold mb-1">
-								{t('simulation')}
-							</Text>
-							<Text className="text-base">
-								{(item as Room).hasSimulation
-									? t('yes')
-									: t('no')}
-							</Text>
-						</View>
-					</View>
+					<RoomDetail hasSimulation={(item as Room).hasSimulation} />
 				)}
 			</ScrollView>
 		</SafeAreaView>

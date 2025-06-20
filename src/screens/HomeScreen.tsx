@@ -22,9 +22,10 @@ type HomeScreenProps = {
 	navigation: HomeScreenNavigationProp;
 };
 
-const HomeScreen: FC<HomeScreenProps> = ({ navigation }) => {
+const HomeScreen: FC<HomeScreenProps> = (props) => {
+	const { navigation } = props;
 	const { t } = useTranslation();
-	const { isLoading, error, items: recent, refetch } = useUnifiedHistory(3);
+	const { isLoading, error, items: recent } = useUnifiedHistory(3);
 
 	return (
 		<SafeAreaView className="flex-1 bg-background">

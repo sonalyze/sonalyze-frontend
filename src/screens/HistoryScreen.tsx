@@ -1,136 +1,223 @@
-import { FC, useState } from 'react';
+import { FC } from 'react';
 import {
 	View,
 	Text,
-	FlatList,
+	Dimensions,
+	ScrollView,
 	TouchableOpacity,
-	ActivityIndicator,
-	RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RouteProp } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import Icon from '@react-native-vector-icons/lucide';
+import { LineChart } from 'react-native-chart-kit';
 import { toast } from 'sonner-native';
-
-import { RootStackParamList } from '../App';
+import { useQueryClient } from '@tanstack/react-query';
+import { copyToClipboard } from '../tools/clipboardAccess';
 import SecondaryHeader from '../components/SecondaryHeader';
-import HistoryItem from '../components/HistoryItem';
-import ImportModal from '../components/ImportModal';
-import { importMeasurement } from '../api/measurementRequests';
-import { importRoom } from '../api/roomRequests';
-import { useUnifiedHistory } from '../hooks/useUnifiedHistory';
+import {
+	deleteMeasurement,
+	removeImportedMeasurement,
+} from '../api/measurementRequests';
+import { deleteRoom, removeImportedRoom } from '../api/roomRequests';
+import { formatWithOptions } from 'date-fns/fp';
+import { enUS, de, fr, tr, it, es } from 'date-fns/locale';
+import { RootStackParamList } from '../App';
 
-type HistoryScreenNavigationProps = NativeStackNavigationProp<
+// Types for navigation & route
+type ScreenRouteProp = RouteProp<RootStackParamList, 'HistoryDetailScreen'>;
+type ScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
-	'HistoryScreen'
+	'HistoryDetailScreen'
 >;
 
-type HistoryScreenProps = {
-	navigation: HistoryScreenNavigationProps;
+type Props = {
+	route: ScreenRouteProp;
+	navigation: ScreenNavigationProp;
 };
 
-const HistoryScreen: FC<HistoryScreenProps> = ({ navigation }) => {
+type Measurement = {
+	id: string;
+	name: string;
+	createdAt: string;
+	values?: Array<
+		Array<Record<'rt60' | 'c50' | 'c80' | 'd50' | 'g', number[]>>
+	>;
+	isOwner: boolean;
+};
+
+type Room = {
+	id: string;
+	name: string;
+	lastUpdatedAt: string;
+	hasSimulation: boolean;
+	isOwner: boolean;
+};
+
+// Chart config
+const screenWidth = Dimensions.get('window').width;
+const chartConfig = {
+	backgroundGradientFrom: '#ffffff',
+	backgroundGradientTo: '#ffffff',
+	color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
+	labelColor: () => '#6b7280',
+	strokeWidth: 2,
+	decimalPlaces: 2,
+	propsForDots: { r: '3', strokeWidth: '1', stroke: '#3B82F6' },
+};
+
+// Subcomponent: Measurement Details
+const MeasurementDetail: FC<{ summary: Record<string, number[]> | null }> = ({
+	summary,
+}) => {
 	const { t } = useTranslation();
-	const [showModal, setShowModal] = useState(false);
+	if (!summary) return <Text>{t('noData')}</Text>;
 
-	// Hook lädt Messungen + Räume, liefert Items, Loading, Error & Refetch
-	const { isLoading, error, items: combined, refetch } = useUnifiedHistory();
+	const keys = ['rt60', 'c50', 'c80', 'd50', 'g'] as const;
+	return (
+		<>
+			{keys.map((key) => (
+				<View key={key} className="mb-6">
+					<Text className="text-sm font-semibold mb-2">
+						{key.toUpperCase()}
+					</Text>
+					<LineChart
+						data={{
+							labels: summary[key].map((_, i) => `${i + 1}`),
+							datasets: [{ data: summary[key] }],
+						}}
+						width={screenWidth - 32}
+						height={180}
+						chartConfig={chartConfig}
+						bezier
+						style={{ borderRadius: 8 }}
+					/>
+				</View>
+			))}
+		</>
+	);
+};
 
-	// Import-Handler
-	const handleImport = async (id: string, type: 'measurement' | 'room') => {
-		if (!id.trim()) {
-			toast.error(t('invalidIdError'));
-			return;
-		}
+// Subcomponent: Room Details
+const RoomDetail: FC<{ hasSimulation: boolean }> = ({ hasSimulation }) => {
+	const { t } = useTranslation();
+	return (
+		<View>
+			<View className="mb-4">
+				<Text className="text-sm font-semibold mb-1">
+					{t('simulation')}
+				</Text>
+				<Text className="text-base">
+					{hasSimulation ? t('yes') : t('no')}
+				</Text>
+			</View>
+		</View>
+	);
+};
+
+const HistoryDetailScreen: FC<Props> = ({ route, navigation }) => {
+	const { t, i18n } = useTranslation();
+	const queryClient = useQueryClient();
+
+	const item = route.params.item as Measurement | Room;
+	const isMeasurement = (item as Measurement).values !== undefined;
+	const isOwner = item.isOwner;
+
+	// Delete handler
+	const handleDelete = async (id: string) => {
 		try {
-			if (type === 'measurement') {
-				await importMeasurement(id);
+			if (isMeasurement) {
+				if (!isOwner) {
+					await removeImportedMeasurement(id);
+					toast.success(t('removeImportedSuccess'));
+				} else {
+					await deleteMeasurement(id);
+					toast.success(t('deleteSuccess'));
+				}
 			} else {
-				await importRoom(id);
+				if (!isOwner) {
+					await removeImportedRoom(id);
+					toast.success(t('removeImportedRoomSuccess'));
+				} else {
+					await deleteRoom(id);
+					toast.success(t('deleteRoomSuccess'));
+				}
 			}
-			toast.success(t('importSuccess'));
-			setShowModal(false);
-			refetch();
+			await queryClient.invalidateQueries({ queryKey: ['measurements'] });
+			await queryClient.invalidateQueries({ queryKey: ['rooms'] });
+			navigation.goBack();
 		} catch (err: any) {
-			console.error('[Import] failed:', err);
+			console.error('[Delete] failed:', err);
 			const status = err.response?.status;
-			if (status === 404) toast.error(t('notFoundError'));
+			if (status === 401) toast.error(t('unauthorizedError'));
+			else if (status === 404) toast.error(t('notFoundError'));
 			else if (status === 422) toast.error(t('invalidIdError'));
 			else toast.error(t('genericError'));
 		}
 	};
 
+	// Date formatting
+	const dateValue = isMeasurement
+		? (item as Measurement).createdAt
+		: (item as Room).lastUpdatedAt;
+	const localeMap: Record<string, typeof enUS> = {
+		en: enUS,
+		de,
+		fr,
+		tr,
+		it,
+		es,
+	};
+	const formatLocale = formatWithOptions({
+		locale: localeMap[i18n.language] || enUS,
+	});
+	const formattedDate =
+		i18n.language === 'de'
+			? formatLocale("d. MMMM yyyy 'um' HH:mm 'Uhr'", new Date(dateValue))
+			: formatLocale('PPPp', new Date(dateValue));
+
+	// Summary for measurement
+	const summary = isMeasurement
+		? (item as Measurement).values?.[0]?.[0] || null
+		: null;
+
 	return (
 		<SafeAreaView className="flex-1 bg-background">
 			<SecondaryHeader
-				title={t('historyTitle')}
+				title={item.name}
 				onBack={() => navigation.pop()}
-				rightIconName="plus"
-				rightIconId="import"
-				onRightIconPress={() => setShowModal(true)}
+				rightIconName="trash-2"
+				rightIconId={item.id}
+				onRightIconPress={() => handleDelete(item.id)}
 			/>
 
-			{/* Loading Indicator */}
-			{isLoading && (
-				<View className="flex-1 justify-center items-center">
-					<ActivityIndicator size="large" />
+			<ScrollView className="p-4">
+				<View className="flex-row items-center mb-2">
+					<Text className="text-base text-muted">ID: {item.id}</Text>
+					<TouchableOpacity
+						onPress={() => {
+							copyToClipboard(item.id);
+							toast.success(t('copySuccess'));
+						}}
+						className="ml-2"
+					>
+						<Icon name="copy" size={18} />
+					</TouchableOpacity>
 				</View>
-			)}
 
-			{/* Error Message */}
-			{!isLoading && error && (
-				<Text className="text-red-500 text-center p-4">
-					{t('history.errorLoad')}
+				<Text className="text-base text-muted font-medium mb-4">
+					{formattedDate}
 				</Text>
-			)}
 
-			{/* List */}
-			{!isLoading && !error && (
-				<FlatList
-					contentContainerStyle={{ padding: 8 }}
-					data={combined}
-					keyExtractor={(item) =>
-						`${item.id}-${item.createdAt}-${item.type}`
-					}
-					refreshControl={
-						<RefreshControl
-							refreshing={isLoading}
-							onRefresh={refetch}
-						/>
-					}
-					renderItem={({ item }) => {
-						const displayItem =
-							item.type === 'room'
-								? {
-										...(item.raw as Room),
-										createdAt: item.createdAt,
-									}
-								: (item.raw as Measurement);
-
-						return (
-							<TouchableOpacity
-								className="active-opacity-80"
-								onPress={() =>
-									navigation.push('HistoryDetailScreen', {
-										item: item.raw,
-									})
-								}
-							>
-								<HistoryItem item={displayItem} />
-							</TouchableOpacity>
-						);
-					}}
-				/>
-			)}
-
-			{/* Import Modal */}
-			<ImportModal
-				visible={showModal}
-				onClose={() => setShowModal(false)}
-				onImport={handleImport}
-			/>
+				{isMeasurement ? (
+					<MeasurementDetail summary={summary} />
+				) : (
+					<RoomDetail hasSimulation={(item as Room).hasSimulation} />
+				)}
+			</ScrollView>
 		</SafeAreaView>
 	);
 };
 
-export default HistoryScreen;
+export default HistoryDetailScreen;
