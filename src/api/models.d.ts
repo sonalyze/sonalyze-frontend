@@ -3,7 +3,7 @@ type Room = {
 	name: string;
 	hasSimulation: boolean;
 	isOwner: boolean;
-	createdAt: string;
+	lastUpdatedAt: string;
 };
 
 type RoomScene = {
