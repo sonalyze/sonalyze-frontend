@@ -1,11 +1,10 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { FC } from 'react';
-import Icon from '@react-native-vector-icons/lucide';
 
 type TileProps = {
 	title?: string;
 	subtitle?: string;
-	trailingIcon?: any;
+	trailingIcon?: React.ReactElement;
 	onPress?: () => void;
 };
 
@@ -30,9 +29,7 @@ const Tile: FC<TileProps> = ({ title, subtitle, trailingIcon, onPress }) => {
 				</View>
 
 				{/* Trailing icon */}
-				<View className="pl-2">
-					<Icon name={trailingIcon} size={24} color="#2e2e2e" />
-				</View>
+				<View className="pl-2">{trailingIcon}</View>
 			</View>
 		</TouchableOpacity>
 	);

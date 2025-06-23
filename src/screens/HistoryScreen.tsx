@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner-native';
 import axios from 'axios';
 import { useQueryClient } from '@tanstack/react-query';
+import { Plus } from 'lucide-react-native';
 
 import { RootStackParamList } from '../App';
 import SecondaryHeader from '../components/SecondaryHeader';
@@ -78,7 +79,7 @@ const HistoryScreen: FC<HistoryScreenProps> = ({ navigation }) => {
 			<SecondaryHeader
 				title={t('historyTitle')}
 				onBack={() => navigation.pop()}
-				rightIconName="plus"
+				rightIcon={<Plus size={24} />}
 				rightIconId="import"
 				onRightIconPress={() => setShowModal(true)}
 			/>

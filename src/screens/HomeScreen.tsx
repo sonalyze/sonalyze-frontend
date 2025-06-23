@@ -3,13 +3,13 @@ import { Text, ScrollView, View, TouchableOpacity } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import Icon from '@react-native-vector-icons/lucide';
 import * as Progress from 'react-native-progress';
 
 import { RootStackParamList } from '../App';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import HistoryItem from '../components/HistoryItem';
+import { Settings } from 'lucide-react-native';
 
 import { useUnifiedHistory } from '../hooks/useUnifiedHistory';
 
@@ -34,12 +34,11 @@ const HomeScreen: FC<HomeScreenProps> = (props) => {
 				<Text className="text-2xl font-semibold text-foreground">
 					Sonalyze
 				</Text>
-				<Icon
-					name="settings"
+				<Settings
 					size={24}
 					color="#000"
 					onPress={() => navigation.push('SettingsScreen')}
-					style={{ padding: 8 }}
+					
 				/>
 			</View>
 

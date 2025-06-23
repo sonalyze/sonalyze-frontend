@@ -3,10 +3,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
-import Icon from '@react-native-vector-icons/lucide';
 import { toast } from 'sonner-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { copyToClipboard } from '../tools/clipboardAccess';
+import { Copy } from 'lucide-react-native';
+import { Trash2 } from 'lucide-react-native';
 import SecondaryHeader from '../components/SecondaryHeader';
 import {
 	deleteMeasurement,
@@ -112,7 +113,7 @@ const HistoryDetailScreen = ({ route, navigation }: Props) => {
 			<SecondaryHeader
 				title={item.name}
 				onBack={() => navigation.pop()}
-				rightIconName="trash-2"
+				rightIcon={<Trash2 size={24}  />}
 				rightIconId={item.id}
 				onRightIconPress={confirmDelete}
 			/>
@@ -127,7 +128,7 @@ const HistoryDetailScreen = ({ route, navigation }: Props) => {
 						}}
 						className="ml-2"
 					>
-						<Icon name="copy" size={18} />
+						<Copy size={18} />
 					</TouchableOpacity>
 				</View>
 
