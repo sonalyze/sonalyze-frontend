@@ -10,7 +10,7 @@ export const axiosClient = axios.create({
 
 export function createSocket(): Socket {
 	return io('ws://localhost:8000', {
-		transports: ['websocket'],
+		transports: ['polling'],
 		autoConnect: false,
 		reconnectionAttempts: 5,
 		reconnectionDelay: 1000,

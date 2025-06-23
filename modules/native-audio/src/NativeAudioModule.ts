@@ -14,7 +14,7 @@ declare class NativeAudioModule extends NativeModule<NativeAudioModuleEvents> {
 	getAvailableAudioSessionModes(): string[];
 
 	// File-based recording functions
-	fileStartRecording(fileName: string): Promise<FileRecordingResult>;
+	fileStartRecording(fileName: string, calibrationFactor: number): Promise<FileRecordingResult>;
 	fileStopRecording(): Promise<FileRecordingResult>;
 	isFileRecording(): boolean;
 	deleteRecording(filePath: string): boolean;

@@ -1,7 +1,9 @@
 import React, { useState, useEffect, FC } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { TextInput } from 'react-native';
 import NativeAudio from '../../modules/native-audio';
 import { useSocket } from '../hooks/useSocket';
+import { callMicrotasks } from 'react-native-reanimated/lib/typescript/threads';
 
 type AudioTransmissionTestProps = {};
 
@@ -14,6 +16,7 @@ const AudioTransmissionTest: FC<AudioTransmissionTestProps> = (
     const [recordedFile, setRecordedFile] = useState<string | null>(null);
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [calibrationInput, setCalibrationInput] = useState<string>('1.0');
 
     const socket = useSocket(
 		[],
@@ -77,7 +80,8 @@ const AudioTransmissionTest: FC<AudioTransmissionTestProps> = (
         try {
             setError(null);
             const fileName = `recording-${Date.now()}.wav`;
-            const result = await NativeAudio.fileStartRecording(fileName);
+            const calibrationFactor = parseFloat(calibrationInput);
+            const result = await NativeAudio.fileStartRecording(fileName, calibrationFactor);
 
             if (result.success) {
                 setIsRecording(true);
@@ -200,6 +204,19 @@ const AudioTransmissionTest: FC<AudioTransmissionTestProps> = (
             {hasPermission && (
                 <View className="mb-5 p-4 bg-white rounded-lg shadow">
                     <Text className="text-lg font-bold mb-2.5">Recording</Text>
+                    {/* Eingabefeld für Kalibrierwert */}
+                    <View className="mb-4">
+                        <Text className="font-medium mb-1">Calibration Factor</Text>
+                        <TextInput
+                            className="bg-gray-100 border border-gray-300 rounded-md p-2"
+                            keyboardType="numeric"
+                            value={calibrationInput}
+                            onChangeText={setCalibrationInput}
+                            placeholder="z. B. 0.91"
+                        />
+                    </View>
+
+
                     <View className="flex-row justify-around mb-2.5">
                         <TouchableOpacity
                             className={`py-2 px-4 rounded-md ${isRecording ? 'bg-gray-300' : 'bg-green-500'}`}

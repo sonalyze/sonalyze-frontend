@@ -40,6 +40,10 @@ public class NativeAudioModule: Module {
   private var audioFile: AVAudioFile?
   private var isPlaybackActive = false
   private var playbackEngine: AVAudioEngine?
+
+  private var tempRecordingFile: URL?
+  private var finalRecordingFile: URL?
+  private var recordingMetadata: (Int, Int, Int)?
   
   /**
    * Size of audio buffers for streaming (in frames)
@@ -101,64 +105,103 @@ public class NativeAudioModule: Module {
     // -----------------------------------------------------------------------
     // MARK: - File-based Recording Functions (for debugging and testing)
     
-    AsyncFunction("fileStartRecording") { (fileName: String) -> [String: Any] in
-      
+    AsyncFunction("fileStartRecording") { (fileName: String, calibrationFactor: Double) -> [String: Any] in
       do {
         let audioSession = AVAudioSession.sharedInstance()
-        
-        // Measurement mode provides minimal signal processing for clean recording
-        let availableModes = audioSession.availableModes
-        if availableModes.contains(.measurement) {
+        if audioSession.availableModes.contains(.measurement) {
           try audioSession.setCategory(.record, mode: .measurement)
         } else {
           try audioSession.setCategory(.record, mode: .default)
         }
         try audioSession.setActive(true)
-        
+
+        // Init engine
+        let engine = AVAudioEngine()
+        let inputNode = engine.inputNode
+        let format = inputNode.outputFormat(forBus: 0)
+        let sampleRate = Int(format.sampleRate)
+        let channels = Int(format.channelCount)
+        let bitsPerSample = 32
+
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let fileURL = documentsPath.appendingPathComponent(fileName.hasSuffix(".wav") ? fileName : "\(fileName).wav")
-        
-        audioRecorder = try AVAudioRecorder(url: fileURL, settings: wavSettings)
-        
-        if let recorder = audioRecorder, recorder.record() {
-          return [
-            "success": true,
-            "fileUri": fileURL.absoluteString,
-            "path": fileURL.path
-          ]
-        } else {
-          return ["success": false, "error": "Failed to start recording"]
+        let outputURL = documentsPath.appendingPathComponent(fileName.hasSuffix(".wav") ? fileName : "\(fileName).wav")
+        let tempPCMURL = outputURL.deletingPathExtension().appendingPathExtension("pcm")
+
+        if FileManager.default.fileExists(atPath: tempPCMURL.path) {
+          try FileManager.default.removeItem(at: tempPCMURL)
         }
+
+        FileManager.default.createFile(atPath: tempPCMURL.path, contents: nil)
+        guard let fileHandle = try? FileHandle(forWritingTo: tempPCMURL) else {
+          return ["success": false, "error": "Cannot create file for writing"]
+        }
+
+        // Tap
+        inputNode.installTap(onBus: 0, bufferSize: 4096, format: format) { buffer, _ in
+          let frameLength = Int(buffer.frameLength)
+          guard let channelData = buffer.floatChannelData?[0] else { return }
+
+          let calibratedSamples = UnsafeBufferPointer(start: channelData, count: frameLength).map {
+            Float32($0 * Float(calibrationFactor))
+          }
+
+          var data = Data()
+          for sample in calibratedSamples {
+            var s = sample
+            data.append(UnsafeBufferPointer(start: &s, count: 1))
+          }
+
+          try? fileHandle.seekToEnd()
+          try? fileHandle.write(contentsOf: data)
+        }
+
+        engine.prepare()
+        try engine.start()
+
+        // Save for stopRecording
+        self.audioEngine = engine
+        self.inputNode = inputNode
+        self.isStreamingActive = true
+        self.tempRecordingFile = tempPCMURL
+        self.finalRecordingFile = outputURL
+        self.recordingMetadata = (sampleRate, channels, bitsPerSample)
+
+        return [
+          "success": true,
+          "fileUri": outputURL.absoluteString,
+          "path": outputURL.path
+        ]
       } catch {
         return ["success": false, "error": error.localizedDescription]
       }
     }
+
     
-    AsyncFunction("fileStopRecording") { () -> [String: Any] in     
-      guard let recorder = audioRecorder, recorder.isRecording else {
-        return ["success": false, "error": "No active recording"]
+    AsyncFunction("fileStopRecording") { () -> [String: Any] in
+      guard isStreamingActive,
+            let pcmURL = tempRecordingFile,
+            let wavURL = finalRecordingFile,
+            let (sampleRate, channels, bitsPerSample) = recordingMetadata else {
+        return ["success": false, "error": "No active calibrated recording"]
       }
-      
-      let path = recorder.url.path
-      
-      recorder.stop()
-      
-      // Release audio resources to allow other apps to use audio
-      _ = try? AVAudioSession.sharedInstance().setActive(false)
-      
-      let fileURL = recorder.url
-      audioRecorder = nil
-      
-      if FileManager.default.fileExists(atPath: fileURL.path) {
-        let fileSize = try? FileManager.default.attributesOfItem(atPath: fileURL.path)[.size] as? Int64
+
+      inputNode?.removeTap(onBus: 0)
+      audioEngine?.stop()
+      isStreamingActive = false
+
+      do {
+        try addWavHeader(pcmURL: pcmURL, wavURL: wavURL, sampleRate: sampleRate, channels: channels, bitsPerSample: bitsPerSample)
+        try FileManager.default.removeItem(at: pcmURL)
+        return [
+          "success": true,
+          "fileUri": wavURL.absoluteString,
+          "path": wavURL.path
+        ]
+      } catch {
+        return ["success": false, "error": error.localizedDescription]
       }
-      
-      return [
-        "success": true,
-        "fileUri": fileURL.absoluteString,
-        "path": fileURL.path
-      ]
     }
+
     
     /**
      * Checks if a file recording is currently in progress
@@ -198,6 +241,7 @@ public class NativeAudioModule: Module {
         return false
       }
     }
+
 
     // -----------------------------------------------------------------------
     // MARK: - Streaming Functions
