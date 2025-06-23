@@ -5,6 +5,7 @@ import Card from './Card';
 import { copyToClipboard } from '../tools/clipboardAccess';
 import Button from './Button';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'lucide-react-native';
 
 type QrCodeViewerProps = {
 	type: string;
@@ -35,7 +36,7 @@ const QrCodeViewer: FC<QrCodeViewerProps> = (props: QrCodeViewerProps) => {
 				{/* Copy Button */}
 				{props.allowCopy && (
 					<Button
-						leadingIcon="link"
+						leadingIcon={<Link size={18}  />}
 						label={t('copyToClipboard')}
 						onPress={onCopyCode}
 						extend={false}

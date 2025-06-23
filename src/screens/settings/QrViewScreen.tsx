@@ -10,7 +10,6 @@ import { toast } from 'sonner-native';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 
-
 type QrViewScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
 	'QrViewScreen'
@@ -24,21 +23,16 @@ const QrViewScreen: FC<QrViewScreenProps> = (props: QrViewScreenProps) => {
 	const { settings } = useLocalSettings();
 	const { t } = useTranslation();
 
-
 	// Function to handle the copy action from the QR code viewer.
 	function onCopy(result: 'success' | 'inaccessible-clipboard') {
 		if (result === 'success') {
-			toast.success(t("copySuccess"));
+			toast.success(t('copySuccess'));
 
-			Haptics.notificationAsync(
-                Haptics.NotificationFeedbackType.Success
-            );
+			Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 		} else {
-			toast.error(t("copyError"));
+			toast.error(t('copyError'));
 
-			Haptics.notificationAsync(
-                Haptics.NotificationFeedbackType.Error
-            );
+			Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
 		}
 	}
 
@@ -46,25 +40,25 @@ const QrViewScreen: FC<QrViewScreenProps> = (props: QrViewScreenProps) => {
 		<SafeAreaView className="flex-1 bg-background">
 			{/* Header */}
 			<SecondaryHeader
-				title={t("yourAccountQr")}
+				title={t('yourAccountQr')}
 				onBack={() => props.navigation.pop()}
 			/>
 
 			{/* Content */}
 			<ScrollView className="p-4 flex-grow">
 				<Text className="text-center text-lg font-medium">
-					{t("qrInstruction1")}
+					{t('qrInstruction1')}
 				</Text>
 				<View className="py-6 items-center">
 					<QrCodeViewer
 						type="user-token"
-  						payload={settings.userToken ?? ""}
+						payload={settings.userToken ?? ''}
 						allowCopy={true}
 						onCopy={onCopy}
 					/>
 				</View>
 				<Text className="text-center text-base">
-					{t("qrInstruction2")}
+					{t('qrInstruction2')}
 				</Text>
 			</ScrollView>
 		</SafeAreaView>

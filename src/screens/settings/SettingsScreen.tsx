@@ -6,6 +6,7 @@ import Tile from '../../components/Tile';
 import SecondaryHeader from '../../components/SecondaryHeader';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { Languages, QrCode, Camera, Settings2 } from 'lucide-react-native';
 
 type SettingsScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -35,15 +36,6 @@ const SettingsScreen: FC<SettingsScreenProps> = (
 
 			{/* Content */}
 			<ScrollView className="px-2 flex-grow" bounces={false}>
-				{/* General Section */}
-				<Text className={classNames.sectionLabel}>{t('general')}</Text>
-				<Tile
-					title={t('language')}
-					subtitle={t('languageInfo')}
-					trailingIcon="languages"
-					onPress={() => props.navigation.push('LanguageScreen')}
-				/>
-				<View className="h-2" />
 				{/* Account Transfer Section */}
 				<Text className={classNames.sectionLabel}>
 					{t('accountTransfer')}
@@ -51,21 +43,32 @@ const SettingsScreen: FC<SettingsScreenProps> = (
 				<Tile
 					title={t('showTransferCode')}
 					subtitle={t('showTransferCodeInfo')}
-					trailingIcon="qr-code"
+					trailingIcon={<QrCode size={24} color="#2e2e2e" />}
 					onPress={() => props.navigation.push('QrViewScreen')}
 				/>
 				<View className="h-2" />
+
 				<Tile
 					title={t('scanTransferCode')}
 					subtitle={t('scanTransferCodeInfo')}
-					trailingIcon="camera"
+					trailingIcon={<Camera size={24} color="#2e2e2e" />}
 					onPress={() => props.navigation.push('QrScanScreen')}
 				/>
-				<Text className={classNames.sectionLabel}>{t('dev')}</Text>
+
+				{/* General Section */}
+				<Text className={classNames.sectionLabel}>{t('general')}</Text>
+				<Tile
+					title={t('language')}
+					subtitle={t('languageInfo')}
+					trailingIcon={<Languages size={24} color="#2e2e2e" />}
+					onPress={() => props.navigation.push('LanguageScreen')}
+				/>
+				<View className="h-2" />
+
 				<Tile
 					title={t('devSettings')}
 					subtitle={'Advanced configuration options for developers.'}
-					trailingIcon=""
+					trailingIcon={<Settings2 size={24} color="#2e2e2e" />}
 					onPress={() => props.navigation.push('DevSettingsScreen')}
 				/>
 			</ScrollView>

@@ -1,11 +1,10 @@
 import { TouchableOpacity, Text, View } from 'react-native';
-import { FC } from 'react';
-import Icon from '@react-native-vector-icons/lucide';
+import { FC, ReactElement } from 'react';
 
 type ButtonProps = {
     label: string;
-    leadingIcon?: any;
-    trailingIcon?: any;
+    leadingIcon?: ReactElement;
+    trailingIcon?: ReactElement;
     onPress: () => void;
     type?: "primary" | "secondary" | "ghost";
     extend?: boolean;
@@ -63,23 +62,17 @@ const Button: FC<ButtonProps> = ({
         >
             <View className="flex-row items-center justify-center">
                 {leadingIcon && (
-                    <Icon
-                        name={leadingIcon}
-                        size={18}
-                        color={iconColor}
-                        style={{ paddingRight: 5 }}
-                    />
+                    <View style={{ paddingRight: 5 }}>
+                        {leadingIcon}
+                    </View>
                 )}
                 <Text className={`text-lg text-center font-semibold ${textColor}`}>
                     {label}
                 </Text>
                 {trailingIcon && (
-                    <Icon
-                        name={trailingIcon}
-                        size={18}
-                        color={iconColor}
-                        style={{ paddingLeft: 5 }}
-                    />
+                    <View style={{ paddingLeft: 5 }}>
+                        {trailingIcon}
+                    </View>
                 )}
             </View>
         </TouchableOpacity>
