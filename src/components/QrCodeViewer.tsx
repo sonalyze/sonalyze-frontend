@@ -26,24 +26,22 @@ const QrCodeViewer: FC<QrCodeViewerProps> = (props: QrCodeViewerProps) => {
 	}
 
 	return (
-		<Card>
-			<View className="self-center items-center">
-				{/* QR Code */}
-				<View className="bg-white rounded-xl p-3">
-					<QRCode value={value} size={240} />
-				</View>
-
-				{/* Copy Button */}
-				{props.allowCopy && (
-					<Button
-						leadingIcon="link"
-						label={t('copyToClipboard')}
-						onPress={onCopyCode}
-						expand={false}
-						className="mt-3"
-					/>
-				)}
+		<Card className="self-center items-center">
+			{/* QR Code */}
+			<View className="bg-white rounded-xl p-3">
+				<QRCode value={value} size={240} />
 			</View>
+
+			{/* Copy Button */}
+			{props.allowCopy && (
+				<Button
+					leadingIcon="link"
+					label={t('copyToClipboard')}
+					onPress={onCopyCode}
+					expand={false}
+					className="mt-3"
+				/>
+			)}
 		</Card>
 	);
 };

@@ -1,7 +1,7 @@
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SecondaryHeader from '../components/SecondaryHeader';
 import QrCodeViewer from '../components/QrCodeViewer';
@@ -28,6 +28,9 @@ const StartSessionScreen: FC<StartSessionScreenProps> = (
 ) => {
 	const { t } = useTranslation();
 	const [isLoading, setLoading] = useState(false);
+	const [hasIndexConflict, setIndexConflict] = useState(false);
+	const autoDisconnect = useRef(true);
+
 	const [lobby, setLobby] = useState<string | undefined>(undefined);
 	const [microphones, setMicrophones] = useState<number[]>([]);
 	const [speakers, setSpeakers] = useState<number[]>([]);
@@ -58,13 +61,25 @@ const StartSessionScreen: FC<StartSessionScreenProps> = (
 						speakers: number[];
 					};
 
+					const hasMicConflic = microphones.some(
+						(item, index) => microphones.indexOf(item) !== index
+					);
+
+					const hasSpeakerConflict = speakers.some(
+						(item, index) => speakers.indexOf(item) !== index
+					);
+
+					setIndexConflict(hasMicConflic || hasSpeakerConflict);
 					setMicrophones(microphones);
 					setSpeakers(speakers);
 				},
 			},
 			{
 				event: 'start_measurement',
-				handler: () => props.navigation.replace('MeasurementScreen'),
+				handler: () => {
+					autoDisconnect.current = false;
+					props.navigation.replace('MeasurementScreen');
+				},
 			},
 			{
 				event: 'start_measurement_fail',
@@ -77,13 +92,8 @@ const StartSessionScreen: FC<StartSessionScreenProps> = (
 			},
 		],
 		{
-			onDisconnect: () => {
-				setLobby(undefined);
-				console.log('Disconnected.');
-			},
-			onError: (error) => {
-				setLobby(undefined);
-				setLoading(false);
+			onError: () => {
+				showHapticErrorToast(t('connectionLost'));
 				socket.disconnect();
 				props.navigation.pop();
 			},
@@ -91,17 +101,27 @@ const StartSessionScreen: FC<StartSessionScreenProps> = (
 	);
 
 	useEffect(() => {
+		// Start the connection to the socket server when the screen is first mounted.
 		if (!isLoading && !lobby) {
 			setLoading(true);
 			socket.emit('create_lobby');
 		}
-	}, [socket, lobby, isLoading]);
 
+		// Ensure the connection is closed whenever the screen is popped.
+		props.navigation.addListener('beforeRemove', () => {
+			if (autoDisconnect.current) {
+				socket.disconnect();
+			}
+		});
+	}, [socket, lobby, isLoading, props.navigation, autoDisconnect]);
+
+	// Event handler for the "start measurement" button.
 	function onStartMeasurement() {
+		// @TODO: Args
 		socket.emit('start_measurement');
 	}
 
-	// Function to handle the copy action from the QR code viewer.
+	// Event handler for the "copy to clipboard" button.
 	function onCopy(result: 'success' | 'inaccessible-clipboard') {
 		if (result === 'success') {
 			showHapticSuccessToast(t('copySuccess'));
@@ -110,36 +130,34 @@ const StartSessionScreen: FC<StartSessionScreenProps> = (
 		}
 	}
 
-	// Function to handle the back button press.
-	function onBack() {
-		socket.disconnect();
-		props.navigation.pop();
-	}
-
 	return (
 		<SafeAreaView className="flex-1 bg-background">
-			<SecondaryHeader title={t('startSession')} onBack={onBack} />
+			{/* Header. */}
+			<SecondaryHeader
+				title={t('startSession')}
+				onBack={() => props.navigation.pop()}
+			/>
 
 			{/* Loading Indicator. */}
-			{isLoading && (
+			{isLoading ? (
 				<View className="flex-1 items-center justify-center m-10 mb-24">
 					<ActivityIndicator size="large" />
 					<Text className="text-center text-lg pt-2">
 						{t('connecting')}
 					</Text>
 				</View>
-			)}
+			) : null}
 
 			{/* Page Content. */}
-			{!isLoading && lobby && (
+			{!isLoading && lobby && ownIndex !== undefined ? (
 				<ScrollView className="p-4 flex-grow">
 					<Text className="text-center text-lg font-medium">
-						{t('connectedAsMic')}
+						{t('connectedAs')}
 					</Text>
 					<Text className="text-center text-xl font-medium">
-						{t('number', { number: ownIndex! + 1 })}
+						{t('micNo', { number: ownIndex! + 1 })}
 					</Text>
-					<View className="py-6 items-center">
+					<View className="py-4 items-center">
 						<QrCodeViewer
 							type="lobby-token"
 							payload={lobby}
@@ -147,25 +165,32 @@ const StartSessionScreen: FC<StartSessionScreenProps> = (
 							onCopy={onCopy}
 						/>
 					</View>
+					{hasIndexConflict ? (
+						<Text className="text-red-500 text-center mb-4">
+							{t('numberConflict')}
+						</Text>
+					) : null}
 					<Text className="text-center text-lg font-medium">
+						{t('connectedDevices')}
+					</Text>
+					<Text className="text-center text-xl font-medium">
 						{t('deviceCount', {
 							microphones: microphones.length,
 							speakers: speakers.length,
 						})}
 					</Text>
-					<Text className="text-center text-base">
+					<Text className="py-4 text-center text-base">
 						{t('startHint')}
 					</Text>
 					<Center>
 						<Button
 							label={t('startMeasurement')}
 							onPress={onStartMeasurement}
-							className="mt-6"
 							expand={false}
 						/>
 					</Center>
 				</ScrollView>
-			)}
+			) : null}
 		</SafeAreaView>
 	);
 };

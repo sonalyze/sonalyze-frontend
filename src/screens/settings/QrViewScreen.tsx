@@ -20,19 +20,24 @@ type QrViewScreenProps = {
 };
 
 const QrViewScreen: FC<QrViewScreenProps> = (props: QrViewScreenProps) => {
-	const { settings } = useLocalSettings();
 	const { t } = useTranslation();
+	const { settings } = useLocalSettings();
 
 	// Function to handle the copy action from the QR code viewer.
 	function onCopy(result: 'success' | 'inaccessible-clipboard') {
-		if (result === 'success') {
-			toast.success(t('copySuccess'));
-
-			Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-		} else {
-			toast.error(t('copyError'));
-
-			Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+		switch (result) {
+			case 'success':
+				toast.success(t('copySuccess'));
+				Haptics.notificationAsync(
+					Haptics.NotificationFeedbackType.Success
+				);
+				break;
+			case 'inaccessible-clipboard':
+				toast.error(t('copyError'));
+				Haptics.notificationAsync(
+					Haptics.NotificationFeedbackType.Error
+				);
+				break;
 		}
 	}
 
@@ -49,7 +54,8 @@ const QrViewScreen: FC<QrViewScreenProps> = (props: QrViewScreenProps) => {
 				<Text className="text-center text-lg font-medium">
 					{t('qrInstruction1')}
 				</Text>
-				<View className="py-6 items-center">
+
+				<View className="py-4">
 					<QrCodeViewer
 						type="user-token"
 						payload={settings.userToken ?? ''}
@@ -57,6 +63,7 @@ const QrViewScreen: FC<QrViewScreenProps> = (props: QrViewScreenProps) => {
 						onCopy={onCopy}
 					/>
 				</View>
+
 				<Text className="text-center text-base">
 					{t('qrInstruction2')}
 				</Text>

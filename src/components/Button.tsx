@@ -6,7 +6,7 @@ type ButtonProps = {
 	label: string;
 	leadingIcon?: any;
 	trailingIcon?: any;
-	onPress: () => void;
+	onPress?: () => void;
 	type?: 'primary' | 'secondary' | 'destructive' | 'ghost';
 	expand?: boolean;
 	className?: string;
@@ -55,6 +55,7 @@ const Button: FC<ButtonProps> = (props: ButtonProps) => {
 	return (
 		<TouchableOpacity
 			onPress={props.onPress}
+			disabled={!props.onPress}
 			className={`rounded-xl px-4 py-3 ${width} ${backgroundColor} ${props.className}`}
 		>
 			<View className="flex-row items-center justify-center">
