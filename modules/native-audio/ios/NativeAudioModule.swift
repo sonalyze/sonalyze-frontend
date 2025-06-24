@@ -105,9 +105,12 @@ public class NativeAudioModule: Module {
     // -----------------------------------------------------------------------
     // MARK: - File-based Recording Functions (for debugging and testing)
     
+    private var currentRecordingFileHandle: FileHandle? // NEU
+
     AsyncFunction("fileStartRecording") { (fileName: String, calibrationFactor: Double) -> [String: Any] in
       do {
         let audioSession = AVAudioSession.sharedInstance()
+
         if audioSession.availableModes.contains(.measurement) {
           try audioSession.setCategory(.record, mode: .measurement)
         } else {
@@ -115,32 +118,41 @@ public class NativeAudioModule: Module {
         }
         try audioSession.setActive(true)
 
-        // Init engine
-        let engine = AVAudioEngine()
-        let inputNode = engine.inputNode
-        let format = inputNode.outputFormat(forBus: 0)
+        // Verwende sicheres, definiertes Format: 48kHz, mono, Float32
+        guard let format = AVAudioFormat(standardFormatWithSampleRate: 48000.0, channels: 1) else {
+          return ["success": false, "error": "Failed to create AVAudioFormat"]
+        }
         let sampleRate = Int(format.sampleRate)
         let channels = Int(format.channelCount)
         let bitsPerSample = 32
 
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let outputURL = documentsPath.appendingPathComponent(fileName.hasSuffix(".wav") ? fileName : "\(fileName).wav")
-        let temppcmFile = outputURL.deletingPathExtension().appendingPathExtension("pcm")
+        let tempPCMURL = outputURL.deletingPathExtension().appendingPathExtension("pcm")
 
-        if FileManager.default.fileExists(atPath: temppcmFile.path) {
-          try FileManager.default.removeItem(at: temppcmFile)
+        if FileManager.default.fileExists(atPath: tempPCMURL.path) {
+          try FileManager.default.removeItem(at: tempPCMURL)
         }
 
-        FileManager.default.createFile(atPath: temppcmFile.path, contents: nil)
-        guard let fileHandle = try? FileHandle(forWritingTo: temppcmFile) else {
-          return ["success": false, "error": "Cannot create file for writing"]
+        FileManager.default.createFile(atPath: tempPCMURL.path, contents: nil)
+
+        guard let fileHandle = try? FileHandle(forWritingTo: tempPCMURL) else {
+          return ["success": false, "error": "Cannot open file for writing"]
         }
 
-        // Tap
-        inputNode.installTap(onBus: 0, bufferSize: 4096, format: format) { buffer, _ in
+        self.currentRecordingFileHandle = fileHandle // WICHTIG: Nicht verlieren
+
+        print("Schreibe in: \(tempPCMURL.path)")
+
+        let engine = AVAudioEngine()
+        let inputNode = engine.inputNode
+
+        inputNode.installTap(onBus: 0, bufferSize: 4096, format: format) { [weak self] buffer, _ in
+          guard let self = self,
+                let fileHandle = self.currentRecordingFileHandle,
+                let channelData = buffer.floatChannelData?[0] else { return }
+
           let frameLength = Int(buffer.frameLength)
-          guard let channelData = buffer.floatChannelData?[0] else { return }
-
           let calibratedSamples = UnsafeBufferPointer(start: channelData, count: frameLength).map {
             Float32($0 * Float(calibrationFactor))
           }
@@ -151,18 +163,21 @@ public class NativeAudioModule: Module {
             data.append(UnsafeBufferPointer(start: &s, count: 1))
           }
 
-          try? fileHandle.seekToEnd()
-          try? fileHandle.write(contentsOf: data)
+          do {
+            try fileHandle.seekToEnd()
+            try fileHandle.write(contentsOf: data)
+          } catch {
+            print("Fehler beim Schreiben: \(error)")
+          }
         }
 
         engine.prepare()
         try engine.start()
 
-        // Save for stopRecording
         self.audioEngine = engine
         self.inputNode = inputNode
         self.isStreamingActive = true
-        self.tempRecordingFile = temppcmFile
+        self.tempRecordingFile = tempPCMURL
         self.finalRecordingFile = outputURL
         self.recordingMetadata = (sampleRate, channels, bitsPerSample)
 
@@ -172,9 +187,11 @@ public class NativeAudioModule: Module {
           "path": outputURL.path
         ]
       } catch {
+        print("Aufnahme-Startfehler: \(error)")
         return ["success": false, "error": error.localizedDescription]
       }
     }
+
 
     
     AsyncFunction("fileStopRecording") { () -> [String: Any] in
