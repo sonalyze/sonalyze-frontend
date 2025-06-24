@@ -63,6 +63,7 @@ const RootStack = () => (
 			component={StartSessionScreen}
 			options={{
 				headerShown: false,
+				gestureEnabled: false,
 			}}
 		/>
 		<Stack.Screen
@@ -70,6 +71,7 @@ const RootStack = () => (
 			component={JoinSessionScreen}
 			options={{
 				headerShown: false,
+				gestureEnabled: false,
 			}}
 		/>
 		<Stack.Screen
@@ -77,6 +79,7 @@ const RootStack = () => (
 			component={MeasurementScreen}
 			options={{
 				headerShown: false,
+				gestureEnabled: false,
 			}}
 		/>
 		<Stack.Screen

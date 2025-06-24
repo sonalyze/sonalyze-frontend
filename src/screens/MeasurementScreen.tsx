@@ -6,6 +6,7 @@ import SecondaryHeader from '../components/SecondaryHeader';
 import { useTranslation } from 'react-i18next';
 import { useSocket } from '../hooks/useSocket';
 import { showHapticErrorToast } from '../tools/hapticToasts';
+import { Alert } from 'react-native';
 
 type MeasurementScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -70,6 +71,23 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 		}
 	);
 
+	// Event handler for the back button.
+	function onBack() {
+		Alert.alert(t('popWarningTitle'), t('popWarningDescr'), [
+			{
+				text: t('cancel'),
+				style: 'cancel',
+			},
+			{
+				text: t('proceed'),
+				style: 'destructive',
+				onPress: async () => {
+					props.navigation.pop();
+				},
+			},
+		]);
+	}
+
 	useEffect(() => {
 		props.navigation.addListener('beforeRemove', () => {
 			socket.disconnect();
@@ -78,10 +96,7 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 
 	return (
 		<SafeAreaView className="flex-1 bg-background">
-			<SecondaryHeader
-				title={t('ongoingMeasurement')}
-				onBack={() => props.navigation.pop()}
-			/>
+			<SecondaryHeader title={t('ongoingMeasurement')} onBack={onBack} />
 		</SafeAreaView>
 	);
 };

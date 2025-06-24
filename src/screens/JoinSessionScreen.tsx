@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useSocket } from '../hooks/useSocket';
 import {
 	ActivityIndicator,
+	Alert,
 	FlatList,
 	ScrollView,
 	Text,
@@ -109,6 +110,14 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 				await new Promise((resolve) => setTimeout(resolve, 200));
 				setIsConnecting(false);
 			},
+			onDisconnect: async () => {
+				setIsConnecting(true);
+				setIsJoining(false);
+				setSpeakers(undefined);
+				setMicrophones(undefined);
+				setDeviceType(undefined);
+				setIndex(undefined);
+			},
 			onError: () => {
 				showHapticErrorToast(t('connectionLost'));
 				props.navigation.pop();
@@ -178,6 +187,23 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 		}
 	}
 
+	// Event handler for the back button.
+	function onBack() {
+		Alert.alert(t('popWarningTitle'), t('popWarningDescr'), [
+			{
+				text: t('cancel'),
+				style: 'cancel',
+			},
+			{
+				text: t('proceed'),
+				style: 'destructive',
+				onPress: async () => {
+					props.navigation.pop();
+				},
+			},
+		]);
+	}
+
 	useEffect(
 		() => {
 			// Ensure the connection is closed whenever the screen is popped.
@@ -193,10 +219,7 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 
 	return (
 		<SafeAreaView className="flex-1 bg-background">
-			<SecondaryHeader
-				title={t('joinSession')}
-				onBack={() => props.navigation.pop()}
-			/>
+			<SecondaryHeader title={t('joinSession')} onBack={onBack} />
 
 			{/* Loading Indicator. */}
 			{isConnecting || isJoining ? (
@@ -229,11 +252,9 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 			) : null}
 
 			{/* Page Content. */}
-			{!isConnecting && !isJoining ? (
+			{!isConnecting && !isJoining && index !== undefined ? (
 				<>
-					{index === undefined ||
-					microphones === undefined ||
-					speakers === undefined ? (
+					{microphones === undefined || speakers === undefined ? (
 						<View className="flex-1 items-center justify-center m-10 mb-24">
 							<Icon name="triangle-alert" size={48} />
 							<Text className="text-center text-lg pt-2">

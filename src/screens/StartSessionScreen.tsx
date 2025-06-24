@@ -1,4 +1,4 @@
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { FC, useEffect, useState } from 'react';
@@ -101,6 +101,15 @@ const StartSessionScreen: FC<StartSessionScreenProps> = (
 				setIsCreating(true);
 				socket.emit('create_lobby');
 			},
+			// If the connection is lost.
+			onDisconnect: async () => {
+				setIsConnecting(true);
+				setIsCreating(false);
+				setLobby(undefined);
+				setMicrophones(undefined);
+				setSpeakers(undefined);
+				setIndex(undefined);
+			},
 			// Upon any error, cancel measurement.
 			onError: () => {
 				showHapticErrorToast(t('connectionLost'));
@@ -147,13 +156,27 @@ const StartSessionScreen: FC<StartSessionScreenProps> = (
 		}
 	}
 
+	// Event handler for the back button.
+	function onBack() {
+		Alert.alert(t('popWarningTitle'), t('popWarningDescr'), [
+			{
+				text: t('cancel'),
+				style: 'cancel',
+			},
+			{
+				text: t('proceed'),
+				style: 'destructive',
+				onPress: async () => {
+					props.navigation.pop();
+				},
+			},
+		]);
+	}
+
 	return (
 		<SafeAreaView className="flex-1 bg-background">
 			{/* Header. */}
-			<SecondaryHeader
-				title={t('startSession')}
-				onBack={() => props.navigation.pop()}
-			/>
+			<SecondaryHeader title={t('startSession')} onBack={onBack} />
 
 			{/* Loading Indicator. */}
 			{isConnecting || isCreating ? (
