@@ -1,7 +1,7 @@
 import React, { useState, useEffect, FC } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import NativeAudio from '../../modules/native-audio';
-import { useSocket } from '../hooks/useSocket';
+import NativeAudio from '..';
+import { useSocket } from '../../../src/hooks/useSocket';
 
 type AudioTransmissionTestProps = {};
 
