@@ -127,7 +127,7 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 			{!isLoading && !isConnected && (
 				<View className="flex-1 items-center justify-center m-10 mb-24">
 					<Icon name="cloud-alert" size={48} />
-					<Text className="text-center text-lg">
+					<Text className="text-center text-lg pt-2">
 						{t('connectionError')}
 					</Text>
 					<Text className="text-center pt-2 pb-4">

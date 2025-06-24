@@ -55,6 +55,7 @@
 	"purgeSuccess": "Lokale Einstellungen erfolgreich zurückgesetzt. Bitte starten Sie die App neu.",
 	"serverMigrationError": "Fehler bei der Servermigration: Die URL ist ungültig oder der Server ist nicht erreichbar.",
 	"connecting": "Verbinde...",
+	"creating": "Erstelle Sitzung...",
 	"connectionError": "Verbindungsfehler",
 	"connectionErrorInfo": "Es konnte keine Verbindung zu unserem Server hergestellt werden. Bitte überprüfen Sie Ihre Netzwerkverbindung oder Backend-Konfiguration.",
 	"measurementStartError": "Messung konnte nicht gestartet werden: {{reason}}",
@@ -76,5 +77,7 @@
 	"ongoingMeasurement": "Laufende Messung",
 	"measurementCancelled": "Messung abgebrochen: {{reason}}",
 	"currentNumberConflict": "Konflikt: Die ausgewählte Gerätenummer wird bereits verwendet. Bitte wählen Sie eine andere Nummer.",
-	"numberConflict": "Konflikt: Eine Gerätenummer wird von mehreren Geräten verwendet. Bitte stellen Sie sicher, dass jedes Gerät eine eindeutige Nummer hat."
+	"numberConflict": "Konflikt: Eine Gerätenummer wird von mehreren Geräten verwendet. Bitte stellen Sie sicher, dass jedes Gerät eine eindeutige Nummer hat.",
+	"unknownError": "Unbekannter Fehler",
+	"unknownErrorInfo": "Ein unbekannter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut oder kontaktieren Sie den Support."
 }

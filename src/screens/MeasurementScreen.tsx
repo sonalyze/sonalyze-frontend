@@ -25,19 +25,27 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 		[
 			{
 				event: 'play_sound',
-				handler: () => {},
+				handler: () => {
+					console.log('Playing Sound.');
+				},
 			},
 			{
 				event: 'start_recording',
-				handler: () => {},
+				handler: () => {
+					console.log('Starting Recording.');
+				},
 			},
 			{
 				event: 'end_recording',
-				handler: () => {},
+				handler: () => {
+					console.log('Ending Recording.');
+				},
 			},
 			{
 				event: 'end_measurement',
-				handler: () => {},
+				handler: () => {
+					console.log('Ending Measurement.');
+				},
 			},
 			{
 				event: 'result',

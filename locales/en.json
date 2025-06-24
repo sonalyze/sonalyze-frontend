@@ -55,6 +55,7 @@
 	"purgeSuccess": "Local storage purged successfully. Please restart the app.",
 	"serverMigrationError": "Server migration error: The server URL is not valid or the server is unreachable.",
 	"connecting": "Connecting...",
+	"creating": "Creating Session...",
 	"connectionError": "Connection Error",
 	"connectionErrorInfo": "Failed to connect to our server. Please check your network connection or backend configuration.",
 	"measurementStartError": "Failed to start measurement: {{reason}}",
@@ -77,5 +78,7 @@
 	"ongoingMeasurement": "Ongoing Measurement",
 	"measurementCancelled": "Measurement cancelled: {{reason}}",
 	"currentNumberConflict": "Conflict: The selected device number is already in use. Please choose a different number.",
-	"numberConflict": "Conflict: A device number is used by multiple devices. Please ensure that each device has a unique number."
+	"numberConflict": "Conflict: A device number is used by multiple devices. Please ensure that each device has a unique number.",
+	"unknownError": "Unknown Error",
+	"unknownErrorInfo": "An unknown error occurred. Please try again later or contact support."
 }

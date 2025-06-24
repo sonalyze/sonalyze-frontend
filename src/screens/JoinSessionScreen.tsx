@@ -1,6 +1,6 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
-import { FC, useEffect, useRef, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SecondaryHeader from '../components/SecondaryHeader';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,7 @@ import {
 import { showHapticErrorToast } from '../tools/hapticToasts';
 import QrCodeScanner from '../components/QrCodeScanner';
 import Button from '../components/Button';
+import Icon from '@react-native-vector-icons/lucide';
 
 type JoinSessionScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -25,43 +26,43 @@ type JoinSessionScreenProps = {
 	navigation: JoinSessionScreenNavigationProp;
 };
 
-type DeviceChoice = {
-	deviceType: 'microphone' | 'speaker';
-	index: number;
-};
-
 const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 	props: JoinSessionScreenProps
 ) => {
 	const { t } = useTranslation();
-	const [isLoading, setLoading] = useState(false);
-	const [isJoining, setJoining] = useState(false);
-	const [hasIndexConflict, setIndexConflict] = useState(false);
-	const autoDisconnect = useRef(true);
-
-	const [lobby, setLobby] = useState<string | undefined>(undefined);
-	const [microphones, setMicrophones] = useState<number[]>([]);
-	const [speakers, setSpeakers] = useState<number[]>([]);
-
-	const [deviceChoice, setDeviceChoice] = useState<DeviceChoice | undefined>(
+	const [isConnecting, setIsConnecting] = useState(true);
+	const [isJoining, setIsJoining] = useState(false);
+	const [hasIndexConflict, setHasIndexConflict] = useState(false);
+	const [microphones, setMicrophones] = useState<number[] | undefined>(
 		undefined
 	);
+	const [speakers, setSpeakers] = useState<number[] | undefined>(undefined);
+	const [deviceType, setDeviceType] = useState<
+		'microphone' | 'speaker' | undefined
+	>(undefined);
+	const [index, setIndex] = useState<number | undefined>(undefined);
 
 	const socket = useSocket(
 		[
 			{
 				event: 'join_lobby_success',
-				handler: (data) => {
-					setJoining(false);
-					setDeviceChoice(data as DeviceChoice);
-					setLobby('thisIsTotalPfusch');
+				handler: async (data) => {
+					const { deviceType, index } = data as {
+						deviceType: 'microphone' | 'speaker';
+						index: number;
+					};
+					await new Promise((resolve) => setTimeout(resolve, 200));
+					setDeviceType(deviceType);
+					setIndex(index);
+					setIsJoining(false);
 				},
 			},
 			{
 				event: 'join_lobby_fail',
-				handler: (data) => {
-					setJoining(false);
+				handler: async (data) => {
 					const { reason } = data as { reason: string };
+					await new Promise((resolve) => setTimeout(resolve, 200));
+					setIsJoining(false);
 					showHapticErrorToast(t('joinError', { reason: reason }));
 				},
 			},
@@ -74,17 +75,14 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 					};
 
 					const hasMicConflic =
-						deviceChoice?.deviceType === 'microphone' &&
-						microphones.filter(
-							(item) => item === deviceChoice?.index
-						).length > 1;
+						deviceType === 'microphone' &&
+						microphones.filter((item) => item === index).length > 1;
 
 					const hasSpeakerConflict =
-						deviceChoice?.deviceType === 'speaker' &&
-						speakers.filter((item) => item === deviceChoice?.index)
-							.length > 1;
+						deviceType === 'speaker' &&
+						speakers.filter((item) => item === index).length > 1;
 
-					setIndexConflict(hasMicConflic || hasSpeakerConflict);
+					setHasIndexConflict(hasMicConflic || hasSpeakerConflict);
 					setMicrophones(microphones);
 					setSpeakers(speakers);
 				},
@@ -92,7 +90,6 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 			{
 				event: 'start_measurement',
 				handler: () => {
-					autoDisconnect.current = false;
 					props.navigation.replace('MeasurementScreen');
 				},
 			},
@@ -108,8 +105,9 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 			},
 		],
 		{
-			onConnect: () => {
-				setLoading(false);
+			onConnect: async () => {
+				await new Promise((resolve) => setTimeout(resolve, 200));
+				setIsConnecting(false);
 			},
 			onError: () => {
 				showHapticErrorToast(t('connectionLost'));
@@ -118,64 +116,55 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 		}
 	);
 
+	// Event handler for when the device type is selected.
 	function onSelectDeviceType(newDeviceType: 'microphone' | 'speaker') {
-		if (deviceChoice?.deviceType === newDeviceType) {
-			return;
+		if (deviceType !== newDeviceType) {
+			const newIndex =
+				newDeviceType === 'microphone'
+					? microphones!.length
+					: speakers!.length;
+			const newSpeakers = speakers!;
+			const newMicrophones = microphones!;
+
+			if (newDeviceType === 'microphone') {
+				newMicrophones.push(newIndex);
+				newSpeakers.splice(newSpeakers.indexOf(index || 0));
+			} else {
+				newSpeakers.push(newIndex);
+				newMicrophones.splice(newMicrophones.indexOf(index || 0));
+			}
+
+			socket.emit('chose_device_type', {
+				device: newDeviceType,
+				index: newIndex,
+			});
+
+			setMicrophones(newMicrophones);
+			setSpeakers(newSpeakers);
+			setDeviceType(newDeviceType);
+			setIndex(newIndex);
 		}
-
-		const newIndex =
-			newDeviceType === 'microphone'
-				? microphones.length
-				: speakers.length;
-
-		const newSpeakers = speakers;
-		const newMicrophones = microphones;
-
-		if (newDeviceType === 'microphone') {
-			newMicrophones.push(newIndex);
-
-			// remove from speakers if it was a speaker
-			newSpeakers.splice(newSpeakers.indexOf(deviceChoice?.index || 0));
-		} else {
-			newSpeakers.push(newIndex);
-
-			// remove from microphones if it was a microphone
-			newMicrophones.splice(
-				newMicrophones.indexOf(deviceChoice?.index || 0)
-			);
-		}
-
-		socket.emit('chose_device_type', {
-			device: newDeviceType,
-			index: newIndex,
-		});
-
-		setMicrophones(newMicrophones);
-		setSpeakers(newSpeakers);
-		setDeviceChoice({ deviceType: newDeviceType, index: newIndex });
 	}
 
-	function onSelectIndex(index: number): void {
-		if (deviceChoice?.index === index) {
-			return;
+	// Event handler for when a device number is selected.
+	function onSelectIndex(newIndex: number) {
+		if (newIndex !== index) {
+			socket.emit('chose_device_type', {
+				device: deviceType,
+				index: newIndex,
+			});
+
+			setIndex(newIndex);
 		}
-
-		socket.emit('chose_device_type', {
-			device: deviceChoice!.deviceType,
-			index: index,
-		});
-
-		setDeviceChoice({
-			deviceType: deviceChoice!.deviceType,
-			index: index,
-		});
 	}
 
+	// Event handler for when a QR code is scanned.
 	async function onScanCode(code: string) {
-		setJoining(true);
+		setIsJoining(true);
 		socket.emit('join_lobby', { lobbyId: code });
 	}
 
+	// Event handler for when an error occurs during scanning.
 	function onScanError(
 		error: 'empty-inaccessible-clipboard' | 'invalid-code'
 	) {
@@ -189,14 +178,18 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 		}
 	}
 
-	// Ensure the connection is closed whenever the screen is popped.
-	useEffect(() => {
-		props.navigation.addListener('beforeRemove', () => {
-			if (autoDisconnect.current) {
-				socket.disconnect();
-			}
-		});
-	}, [props.navigation, autoDisconnect, socket]);
+	useEffect(
+		() => {
+			// Ensure the connection is closed whenever the screen is popped.
+			props.navigation.addListener('beforeRemove', (args) => {
+				if (args.data.action.type === 'POP') {
+					socket.disconnect();
+				}
+			});
+		},
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[]
+	);
 
 	return (
 		<SafeAreaView className="flex-1 bg-background">
@@ -206,7 +199,7 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 			/>
 
 			{/* Loading Indicator. */}
-			{isLoading || isJoining ? (
+			{isConnecting || isJoining ? (
 				<View className="flex-1 items-center justify-center m-10 mb-24">
 					<ActivityIndicator size="large" />
 					<Text className="text-center text-lg pt-2">
@@ -216,7 +209,7 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 			) : null}
 
 			{/* QR Code Scanner */}
-			{!isLoading && !isJoining && !lobby ? (
+			{!isConnecting && !isJoining && index === undefined ? (
 				<ScrollView className="p-4 flex-grow">
 					<Text className="text-center text-lg font-medium">
 						{t('joinTitle')}
@@ -235,116 +228,142 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 				</ScrollView>
 			) : null}
 
-			{!isLoading && !isJoining && lobby && deviceChoice ? (
-				<ScrollView className="p-4 flex-grow">
-					<Text className="text-center text-lg font-medium">
-						{t('connectedAs')}
-					</Text>
-					<Text className="text-center text-xl font-medium">
-						{t(
-							deviceChoice.deviceType === 'microphone'
-								? 'micNo'
-								: 'speakerNo',
-							{ number: deviceChoice.index + 1 }
-						)}
-					</Text>
-
-					<View className="my-6">
-						{/* Role Selection */}
-						<Text className="text-center text-lg font-medium mb-2">
-							{t('selectRole')}
-						</Text>
-
-						<View className="flex-row items-center justify-center">
-							<Button
-								type={
-									deviceChoice.deviceType === 'speaker'
-										? 'primary'
-										: 'secondary'
-								}
-								leadingIcon="volume-2"
-								label={t('speaker')}
-								onPress={() => onSelectDeviceType('speaker')}
-								expand={false}
-								className="flex-1"
-							/>
-							<View className="w-2" />
-							<Button
-								type={
-									deviceChoice.deviceType === 'microphone'
-										? 'primary'
-										: 'secondary'
-								}
-								leadingIcon="mic"
-								label={t('microphone')}
-								onPress={() => onSelectDeviceType('microphone')}
-								expand={false}
-								className="flex-1"
-							/>
+			{/* Page Content. */}
+			{!isConnecting && !isJoining ? (
+				<>
+					{index === undefined ||
+					microphones === undefined ||
+					speakers === undefined ? (
+						<View className="flex-1 items-center justify-center m-10 mb-24">
+							<Icon name="triangle-alert" size={48} />
+							<Text className="text-center text-lg pt-2">
+								{t('unknownError')}
+							</Text>
+							<Text className="text-center pt-2 pb-4">
+								{t('unknownErrorInfo')}
+							</Text>
 						</View>
+					) : (
+						<ScrollView className="p-4 flex-grow">
+							<Text className="text-center text-lg font-medium">
+								{t('connectedAs')}
+							</Text>
+							<Text className="text-center text-xl font-medium">
+								{t(
+									deviceType === 'microphone'
+										? 'micNo'
+										: 'speakerNo',
+									{ number: index + 1 }
+								)}
+							</Text>
 
-						<View className="h-4" />
+							<View className="my-6">
+								{/* Role Selection */}
+								<Text className="text-center text-lg font-medium mb-2">
+									{t('selectRole')}
+								</Text>
 
-						{/* Device Number Selection */}
-						<Text className="text-center text-lg font-medium mb-2">
-							{t('selectNumber')}
-						</Text>
-
-						<FlatList
-							data={Array.from({
-								length:
-									deviceChoice?.deviceType === 'microphone'
-										? microphones.length
-										: speakers.length,
-							})}
-							renderItem={({ item, index }) => (
-								<>
+								<View className="flex-row items-center justify-center">
 									<Button
 										type={
-											deviceChoice.index === index
+											deviceType === 'speaker'
 												? 'primary'
 												: 'secondary'
 										}
-										label={`${index + 1}`}
-										onPress={() => onSelectIndex(index)}
+										leadingIcon="volume-2"
+										label={t('speaker')}
+										onPress={() =>
+											onSelectDeviceType('speaker')
+										}
 										expand={false}
+										className="flex-1"
 									/>
-									{index <
-										(deviceChoice?.deviceType ===
-										'microphone'
-											? microphones.length
-											: speakers.length) -
-											1 && <View className="w-2" />}
-								</>
-							)}
-							keyExtractor={(item, index) => index.toString()}
-							horizontal={true}
-							contentContainerStyle={{
-								flexGrow: 1,
-								justifyContent: 'center',
-							}}
-						/>
-						{hasIndexConflict ? (
-							<Text className="text-red-500 text-center mt-4">
-								{t('currentNumberConflict')}
+									<View className="w-2" />
+									<Button
+										type={
+											deviceType === 'microphone'
+												? 'primary'
+												: 'secondary'
+										}
+										leadingIcon="mic"
+										label={t('microphone')}
+										onPress={() =>
+											onSelectDeviceType('microphone')
+										}
+										expand={false}
+										className="flex-1"
+									/>
+								</View>
+
+								<View className="h-4" />
+
+								{/* Device Number Selection */}
+								<Text className="text-center text-lg font-medium mb-2">
+									{t('selectNumber')}
+								</Text>
+
+								<FlatList
+									data={Array.from({
+										length:
+											deviceType === 'microphone'
+												? microphones.length
+												: speakers.length,
+									})}
+									renderItem={(info) => (
+										<>
+											<Button
+												type={
+													index === info.index
+														? 'primary'
+														: 'secondary'
+												}
+												label={`${info.index + 1}`}
+												onPress={() =>
+													onSelectIndex(info.index)
+												}
+												expand={false}
+											/>
+											{info.index <
+												(deviceType === 'microphone'
+													? microphones.length
+													: speakers.length) -
+													1 && (
+												<View className="w-2" />
+											)}
+										</>
+									)}
+									keyExtractor={(item, index) =>
+										index.toString()
+									}
+									horizontal={true}
+									contentContainerStyle={{
+										flexGrow: 1,
+										justifyContent: 'center',
+									}}
+								/>
+								{hasIndexConflict ? (
+									<Text className="text-red-500 text-center mt-4">
+										{t('currentNumberConflict')}
+									</Text>
+								) : null}
+							</View>
+
+							<Text className="text-center text-lg font-medium">
+								{t('connectedDevices')}
 							</Text>
-						) : null}
-					</View>
+							<Text className="text-center text-xl font-medium">
+								{t('deviceCount', {
+									microphones: microphones.length,
+									speakers: speakers.length,
+								})}
+							</Text>
 
-					<Text className="text-center text-lg font-medium">
-						{t('connectedDevices')}
-					</Text>
-					<Text className="text-center text-xl font-medium">
-						{t('deviceCount', {
-							microphones: microphones.length,
-							speakers: speakers.length,
-						})}
-					</Text>
-
-					<Text className="text-center py-4">
-						{t('waitingForHost')}
-					</Text>
-				</ScrollView>
+							<Text className="text-center py-4">
+								{t('waitingForHost')}
+							</Text>
+						</ScrollView>
+					)}
+				</>
 			) : null}
 		</SafeAreaView>
 	);
