@@ -8,8 +8,8 @@ import { locales } from '../../../locales/locales';
 import { useLocalSettings } from '../../contexts/LocalSettingsContext';
 import { useTranslation } from 'react-i18next';
 import Card from '../../components/Card';
-import Icon from '@react-native-vector-icons/lucide';
 import Divider from '../../components/Divider';
+import { Check } from 'lucide-react-native';
 
 type LanguageScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -62,11 +62,7 @@ const LanguageScreen: FC<LanguageScreenProps> = (
 
 									{/* Display a checkmark if this is the selected language. */}
 									{item === settings.locale && (
-										<Icon
-											name="check"
-											size={20}
-											className="ml-auto"
-										/>
+										<Check size={20} className="ml-auto" />
 									)}
 								</View>
 							</TouchableHighlight>

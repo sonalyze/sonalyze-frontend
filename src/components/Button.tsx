@@ -1,16 +1,18 @@
 import { TouchableOpacity, Text, View } from 'react-native';
-import { FC } from 'react';
-import Icon from '@react-native-vector-icons/lucide';
+import { FC, ReactElement } from 'react';
 
 type ButtonProps = {
 	label: string;
-	leadingIcon?: any;
-	trailingIcon?: any;
+	leadingIcon?: ReactElement;
+	trailingIcon?: ReactElement;
 	onPress: () => void;
 	type?: 'primary' | 'secondary' | 'destructive' | 'ghost';
 	expand?: boolean;
 	className?: string;
+	disabled?: boolean;
 };
+
+
 
 const Button: FC<ButtonProps> = (props: ButtonProps) => {
 	// @TODO: Proper state.
@@ -36,6 +38,7 @@ const Button: FC<ButtonProps> = (props: ButtonProps) => {
 	}
 
 	let textColor: string;
+	let iconColor: string;
 
 	switch (type) {
 		case 'primary':
@@ -54,17 +57,14 @@ const Button: FC<ButtonProps> = (props: ButtonProps) => {
 
 	return (
 		<TouchableOpacity
-			onPress={props.onPress}
-			className={`rounded-xl px-4 py-3 ${width} ${backgroundColor} ${props.className}`}
+			onPress={onPress}
+			disabled={disabled}
+			className={`rounded-xl px-4 py-3 ${width} ${backgroundColor} ${className}`}
+			activeOpacity={0.8}
 		>
 			<View className="flex-row items-center justify-center">
-				{/* Leading Icon */}
-				{props.leadingIcon && (
-					<Icon
-						name={props.leadingIcon}
-						size={18}
-						style={{ paddingRight: 5 }}
-					/>
+				{leadingIcon && (
+					<View >{leadingIcon}</View>
 				)}
 				{/* Label */}
 				<Text
@@ -72,13 +72,8 @@ const Button: FC<ButtonProps> = (props: ButtonProps) => {
 				>
 					{props.label}
 				</Text>
-				{/* Trailing Icon */}
-				{props.trailingIcon && (
-					<Icon
-						name={props.trailingIcon}
-						size={18}
-						style={{ paddingLeft: 5 }}
-					/>
+				{trailingIcon && (
+					<View >{trailingIcon}</View>
 				)}
 			</View>
 		</TouchableOpacity>

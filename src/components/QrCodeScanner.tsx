@@ -6,7 +6,7 @@ import {
 	useCameraPermissions,
 } from 'expo-camera';
 import { Text, View } from 'react-native';
-import Icon from '@react-native-vector-icons/lucide';
+import { CameraOff, ScanLine, ClipboardPaste } from 'lucide-react-native';
 import Button from './Button';
 import { getFromClipboard } from '../tools/clipboardAccess';
 import { useTranslation } from 'react-i18next';
@@ -87,7 +87,7 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
 			{/* Missing Camera Permission */}
 			{permission?.granted !== true && (
 				<>
-					<Icon name="camera-off" size={64} />
+					<CameraOff size={64} />
 					<Text className="text-lg text-center font-medium">
 						{t('missingCameraPermission')}
 					</Text>
@@ -125,7 +125,7 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
 					) : (
 						<Button
 							label={t('scanQrCode')}
-							leadingIcon="scan-qr-code"
+							leadingIcon={<ScanLine size={18} />}
 							onPress={onScanCode}
 							expand={false}
 						/>
@@ -139,7 +139,7 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
 					<Text className="text-base my-2">{t('or')}</Text>
 					<Button
 						label={t('pasteFromClipboard')}
-						leadingIcon="clipboard"
+						leadingIcon={<ClipboardPaste size={18} />}
 						onPress={onPasteCode}
 						expand={false}
 					/>
