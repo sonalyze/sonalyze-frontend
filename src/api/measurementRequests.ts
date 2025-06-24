@@ -4,9 +4,8 @@ import { axiosClient } from '../tools/helpers';
  * Get measurement information associated with the user
  * @returns List of measurement information
  */
-export async function getMeasurements(): Promise<Measurement> {
-	const res = await axiosClient.get<Measurement>(`/measurements`);
-
+export async function getMeasurements(): Promise<Measurement[]> {
+	const res = await axiosClient.get<Measurement[]>('/measurements/');
 	return res.data;
 }
 
@@ -24,10 +23,10 @@ export async function deleteMeasurement(id: string): Promise<void> {
  * @returns The measurement information
  */
 export async function importMeasurement(id: string): Promise<Measurement> {
+	// hier wird kein Slash mehr ans Ende gehängt
 	const res = await axiosClient.get<Measurement>(
 		`/measurements/imported/${id}`
 	);
-
 	return res.data;
 }
 

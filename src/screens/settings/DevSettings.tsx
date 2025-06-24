@@ -16,10 +16,10 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner-native';
 import * as Haptics from 'expo-haptics';
 import Card from '../../components/Card';
-import Icon from '@react-native-vector-icons/lucide';
 import Dialog from 'react-native-dialog';
 import Divider from '../../components/Divider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Minus, Check } from 'lucide-react-native';
 
 type DevSettingsScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -42,7 +42,6 @@ const DevSettingsScreen: FC<DevSettingsScreenProps> = (
 
 	async function onSelectServer(server: string) {
 		if (editMode) return;
-
 		await updateSettings({
 			currentServer: server,
 		});
@@ -118,11 +117,7 @@ const DevSettingsScreen: FC<DevSettingsScreenProps> = (
 												}
 												className="p-1 rounded-full bg-warnBackground"
 											>
-												<Icon
-													name="minus"
-													size={15}
-													color="#fff"
-												/>
+												<Minus size={15} color="#fff" />
 											</TouchableOpacity>
 										)}
 										<Text className="text-lg mr-auto">
@@ -130,7 +125,7 @@ const DevSettingsScreen: FC<DevSettingsScreenProps> = (
 										</Text>
 
 										{item === settings.currentServer && (
-											<Icon name="check" size={20} />
+											<Check size={20} />
 										)}
 									</View>
 								</TouchableHighlight>

@@ -1,26 +1,31 @@
-import { Text, ScrollView, TouchableOpacity, View } from 'react-native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
 import { FC } from 'react';
-import Icon from '@react-native-vector-icons/lucide';
-import Button from '../components/Button';
-import Card from '../components/Card';
+import { Text, ScrollView, View, TouchableOpacity } from 'react-native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import * as Progress from 'react-native-progress';
 
+import { RootStackParamList } from '../App';
+import Button from '../components/Button';
+import Card from '../components/Card';
+import HistoryItem from '../components/HistoryItem';
+import { Settings } from 'lucide-react-native';
 
+import { useUnifiedHistory } from '../hooks/useUnifiedHistory';
 
+//Props
 type HomeScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
 	'HomeScreen'
 >;
-
 type HomeScreenProps = {
 	navigation: HomeScreenNavigationProp;
 };
 
-const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
+const HomeScreen: FC<HomeScreenProps> = (props) => {
+	const { navigation } = props;
 	const { t } = useTranslation();
+	const { isLoading, error, items: recent } = useUnifiedHistory(3);
 
 	return (
 		<SafeAreaView className="flex-1 bg-background">
@@ -29,38 +34,99 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 				<Text className="text-2xl font-semibold text-foreground">
 					Sonalyze
 				</Text>
-				<TouchableOpacity
-					onPress={() => props.navigation.push('SettingsScreen')}
-					hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-					style={{ padding: 8 }}
-				>
-					<Icon name="settings" size={24} color="#000000" />
-				</TouchableOpacity>
+				<Settings
+					size={24}
+					color="#000"
+					onPress={() => navigation.push('SettingsScreen')}
+					
+				/>
 			</View>
 
-			{/* Page Content */}
+			{isLoading && (
+				<Progress.Bar
+					indeterminate
+					width={null}
+					color={'#C3E7FF'}
+					unfilledColor={'#F9FAFB'}
+					height={4}
+					borderWidth={0}
+				/>
+			)}
+
 			<ScrollView className="m-2">
+				{/* Cooperative Card */}
 				<Card
-					title={t("cooperativeTitle")}
-					subtitle={t("cooperativeSubtitle")}
+					title={t('cooperativeTitle')}
+					subtitle={t('cooperativeSubtitle')}
 				>
 					<View className="flex-row gap-2">
 						<View className="flex-1">
-							<Button label={t("start")} onPress={() => props.navigation.push("StartSessionScreen")} />
+							<Button
+								label={t('start')}
+								onPress={() =>
+									navigation.push('StartSessionScreen')
+								}
+							/>
 						</View>
 						<View className="flex-1">
-							 <Button label={t("join")} onPress={() => props.navigation.push("JoinSessionScreen")} />
+							<Button
+								label={t('join')}
+								onPress={() =>
+									navigation.push('JoinSessionScreen')
+								}
+							/>
 						</View>
 					</View>
 				</Card>
+
 				<View className="h-2" />
+
+				{/* Simulation Card */}
 				<Card
-					title={t("simulationTitle")}
-  					subtitle={t("simulationSubtitle")}
+					title={t('simulationTitle')}
+					subtitle={t('simulationSubtitle')}
 				>
-					<View className="flex-row">
-						<Button label={t("start")} onPress={() => { }} />
-					</View>
+					<Button label={t('start')} onPress={() => {}} />
+				</Card>
+
+				<View className="h-2" />
+
+				{/* History Card */}
+				<Card title={t('historyTitle')} subtitle={t('historySubtitle')}>
+					{error && (
+						<Text className="text-center">
+							{t('history.errorLoad')}
+						</Text>
+					)}
+
+					{!isLoading &&
+						recent.length > 0 &&
+						recent.map((item) => (
+							<TouchableOpacity
+								key={`${item.id}-${item.createdAt}-${item.type}`}
+								onPress={() =>
+									navigation.navigate('HistoryDetailScreen', {
+										item: item.raw,
+									})
+								}
+							>
+								<HistoryItem
+									item={
+										item.type === 'room'
+											? ({
+													...(item.raw as Room),
+													createdAt: item.createdAt,
+												} as any)
+											: (item.raw as Measurement)
+									}
+								/>
+							</TouchableOpacity>
+						))}
+
+					<Button
+						label={t('viewAll')}
+						onPress={() => navigation.push('HistoryScreen')}
+					/>
 				</Card>
 			</ScrollView>
 		</SafeAreaView>

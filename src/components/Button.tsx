@@ -1,79 +1,76 @@
 import { TouchableOpacity, Text, View } from 'react-native';
-import { FC } from 'react';
-import Icon from '@react-native-vector-icons/lucide';
+import { FC, ReactElement } from 'react';
 
 type ButtonProps = {
 	label: string;
-	leadingIcon?: any;
-	trailingIcon?: any;
+	leadingIcon?: ReactElement;
+	trailingIcon?: ReactElement;
 	onPress: () => void;
-	type?: "primary" | "secondary" | "ghost";
+	type?: 'primary' | 'secondary' | 'ghost';
 	extend?: boolean;
 	className?: string;
+	disabled?: boolean;
 };
 
-
-
-const Button: FC<ButtonProps> = (props: ButtonProps) => {
-	// Default properties.
-	const type = props.type ?? "primary";
-	const extend = props.extend ?? true;
-	const width = extend ? "w-full" : "w-fit";
+const Button: FC<ButtonProps> = ({
+	label,
+	leadingIcon,
+	trailingIcon,
+	onPress,
+	type = 'primary',
+	extend = true,
+	className = '',
+	disabled = false,
+}) => {
+	const width = extend ? 'w-full' : 'w-fit';
 
 	let backgroundColor: string;
-
-	switch (type) {
-		case "primary":
-			backgroundColor = "bg-primary";
-			break;
-		case "secondary":
-			backgroundColor = "bg-secondary";
-			break;
-		case "ghost":
-			backgroundColor = "bg-transparent";
-			break;
-	}
-
 	let textColor: string;
+	let iconColor: string;
 
-	switch (type) {
-		case "primary":
-			textColor = "primaryForeground"
-			break;
-		case "secondary":
-			textColor = "text-secondaryForeground";
-			break;
-		case "ghost":
-			textColor = "foreground";
-			break;
+	if (disabled) {
+		backgroundColor = 'bg-gray-300';
+		textColor = 'text-gray-500';
+		iconColor = '#6b7280';
+	} else {
+		switch (type) {
+			case 'primary':
+				backgroundColor = 'bg-primary';
+				textColor = 'text-primaryForeground';
+				iconColor = '#FFFFFF';
+				break;
+			case 'secondary':
+				backgroundColor = 'bg-secondary';
+				textColor = 'text-secondaryForeground';
+				iconColor = '#000000';
+				break;
+			case 'ghost':
+			default:
+				backgroundColor = 'bg-transparent';
+				textColor = 'text-foreground';
+				iconColor = '#000000';
+				break;
+		}
 	}
-
 
 	return (
 		<TouchableOpacity
-			onPress={props.onPress}
-			className={`rounded-xl px-4 py-3 ${width} ${backgroundColor} ${props.className}`}
+			onPress={onPress}
+			disabled={disabled}
+			className={`rounded-xl px-4 py-3 ${width} ${backgroundColor} ${className}`}
+			activeOpacity={0.8}
 		>
 			<View className="flex-row items-center justify-center">
-				{/* Leading Icon */}
-				{props.leadingIcon && (
-					<Icon
-						name={props.leadingIcon}
-						size={18}
-						style={{ paddingRight: 5 }}
-					/>
+				{leadingIcon && (
+					<View >{leadingIcon}</View>
 				)}
-				{/* Label */}
-				<Text className={`text-lg text-center font-semibold ${textColor}`}>
-					{props.label}
+				<Text
+					className={`text-lg text-center font-semibold ${textColor}`}
+				>
+					{label}
 				</Text>
-				{/* Trailing Icon */}
-				{props.trailingIcon && (
-					<Icon
-						name={props.trailingIcon}
-						size={18}
-						style={{ paddingLeft: 5 }}
-					/>
+				{trailingIcon && (
+					<View >{trailingIcon}</View>
 				)}
 			</View>
 		</TouchableOpacity>
