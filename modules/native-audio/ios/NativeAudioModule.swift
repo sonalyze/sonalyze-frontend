@@ -125,14 +125,14 @@ public class NativeAudioModule: Module {
 
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let outputURL = documentsPath.appendingPathComponent(fileName.hasSuffix(".wav") ? fileName : "\(fileName).wav")
-        let tempPCMURL = outputURL.deletingPathExtension().appendingPathExtension("pcm")
+        let temppcmFile = outputURL.deletingPathExtension().appendingPathExtension("pcm")
 
-        if FileManager.default.fileExists(atPath: tempPCMURL.path) {
-          try FileManager.default.removeItem(at: tempPCMURL)
+        if FileManager.default.fileExists(atPath: temppcmFile.path) {
+          try FileManager.default.removeItem(at: temppcmFile)
         }
 
-        FileManager.default.createFile(atPath: tempPCMURL.path, contents: nil)
-        guard let fileHandle = try? FileHandle(forWritingTo: tempPCMURL) else {
+        FileManager.default.createFile(atPath: temppcmFile.path, contents: nil)
+        guard let fileHandle = try? FileHandle(forWritingTo: temppcmFile) else {
           return ["success": false, "error": "Cannot create file for writing"]
         }
 
@@ -162,7 +162,7 @@ public class NativeAudioModule: Module {
         self.audioEngine = engine
         self.inputNode = inputNode
         self.isStreamingActive = true
-        self.tempRecordingFile = tempPCMURL
+        self.tempRecordingFile = temppcmFile
         self.finalRecordingFile = outputURL
         self.recordingMetadata = (sampleRate, channels, bitsPerSample)
 
@@ -179,8 +179,8 @@ public class NativeAudioModule: Module {
     
     AsyncFunction("fileStopRecording") { () -> [String: Any] in
       guard isStreamingActive,
-            let pcmURL = tempRecordingFile,
-            let wavURL = finalRecordingFile,
+            let pcmFile = tempRecordingFile,
+            let wavFile = finalRecordingFile,
             let (sampleRate, channels, bitsPerSample) = recordingMetadata else {
         return ["success": false, "error": "No active calibrated recording"]
       }
@@ -190,12 +190,12 @@ public class NativeAudioModule: Module {
       isStreamingActive = false
 
       do {
-        try addWavHeader(pcmURL: pcmURL, wavURL: wavURL, sampleRate: sampleRate, channels: channels, bitsPerSample: bitsPerSample)
-        try FileManager.default.removeItem(at: pcmURL)
+        try addWavHeader(from: pcmFile, to: wavFile, sampleRate: sampleRate, channels: channels, bitsPerSample: bitsPerSample)
+        try FileManager.default.removeItem(at: pcmFile)
         return [
           "success": true,
-          "fileUri": wavURL.absoluteString,
-          "path": wavURL.path
+          "fileUri": wavFile.absoluteString,
+          "path": wavFile.path
         ]
       } catch {
         return ["success": false, "error": error.localizedDescription]
@@ -550,6 +550,102 @@ public class NativeAudioModule: Module {
     
 
     _ = try? AVAudioSession.sharedInstance().setActive(false)
+  }
+
+  /// Adds a WAV header to raw PCM audio data.
+  ///
+  /// WAV files require a specific 44-byte header that describes the audio format.
+  /// This function creates that header and prepends it to raw PCM data to make
+  /// a valid WAV file that audio players can recognize.
+  ///
+  /// - Parameters:
+  ///   - pcmFile: URL of the file containing raw PCM audio data.
+  ///   - wavFile: URL where the complete WAV file will be written.
+  ///   - sampleRate: The sample rate in Hz (e.g., 48000).
+  ///   - channels: The number of audio channels (1 for mono, 2 for stereo).
+  ///   - bitsPerSample: The number of bits per sample (e.g., 16, 24, or 32).
+  ///
+  /// - Throws: An error if the file operations fail (e.g., reading the PCM file or writing the WAV file).
+  ///
+  /// - Note: This function creates a new WAV file at the specified location,
+  ///   copying all PCM data into it with the proper header.
+  private func addWavHeader(
+      from pcmFile: URL,
+      to wavFile: URL,
+      sampleRate: Int,
+      channels: Int,
+      bitsPerSample: Int
+  ) throws {
+      // Read the raw PCM data from the input file.
+      let pcmData = try Data(contentsOf: pcmFile)
+      let totalDataLen = pcmData.count
+
+      // The total file size is the PCM data length plus the header size (44 bytes) minus 8 bytes
+      // for the "RIFF" and size fields which are not included in the chunk size.
+      let totalSize = totalDataLen + 36
+
+      // Create a Data object to build the 44-byte WAV header.
+      var header = Data()
+
+      // Helper to append values in little-endian format.
+      func appendLittleEndian<T: FixedWidthInteger>(_ value: T, to data: inout Data) {
+          var littleEndianValue = value.littleEndian
+          withUnsafeBytes(of: &littleEndianValue) {
+              data.append(contentsOf: $0)
+          }
+      }
+
+      // MARK: - RIFF Chunk Descriptor
+      // "RIFF" marker (0-3)
+      header.append("RIFF".data(using: .ascii)!)
+
+      // Overall file size in bytes (4-7)
+      appendLittleEndian(Int32(totalSize), to: &header)
+
+      // "WAVE" marker (8-11)
+      header.append("WAVE".data(using: .ascii)!)
+
+      // MARK: - "fmt " Sub-chunk
+      // "fmt " marker (12-15)
+      header.append("fmt ".data(using: .ascii)!)
+
+      // Sub-chunk size: 16 for PCM (16-19)
+      appendLittleEndian(Int32(16), to: &header)
+
+      // Audio Format: 3 for IEEE float, 1 for PCM. (20-21)
+      // The original Kotlin code used 3 (IEEE float), so we replicate that.
+      // For standard PCM, you would use a value of 1.
+      appendLittleEndian(Int16(3), to: &header)
+
+      // Number of Channels (22-23)
+      appendLittleEndian(Int16(channels), to: &header)
+
+      // Sample Rate (24-27)
+      appendLittleEndian(Int32(sampleRate), to: &header)
+
+      // Byte Rate = SampleRate * NumChannels * BitsPerSample/8 (28-31)
+      let byteRate = sampleRate * channels * (bitsPerSample / 8)
+      appendLittleEndian(Int32(byteRate), to: &header)
+
+      // Block Align = NumChannels * BitsPerSample/8 (32-33)
+      let blockAlign = channels * (bitsPerSample / 8)
+      appendLittleEndian(Int16(blockAlign), to: &header)
+
+      // Bits Per Sample (34-35)
+      appendLittleEndian(Int16(bitsPerSample), to: &header)
+
+      // MARK: - "data" Sub-chunk
+      // "data" marker (36-39)
+      header.append("data".data(using: .ascii)!)
+
+      // Size of the actual audio data in bytes (40-43)
+      appendLittleEndian(Int32(totalDataLen), to: &header)
+
+      // Combine the header with the PCM audio data.
+      let wavData = header + pcmData
+
+      // Write the final WAV data to the output file.
+      try wavData.write(to: wavFile)
   }
 
   /**
