@@ -655,6 +655,68 @@ class NativeAudioModule extends NativeModule<NativeAudioModuleEvents> {
 	isPlaying(): boolean {
 		return this.isPlaybackActive;
 	}
+
+	/**
+	 * Retrieves the raw audio data from a recorded file
+	 * 
+	 * Provides access to the audio data stored in memory for recordings
+	 * made with the NativeAudio module. For web, this retrieves the stored
+	 * Blob and converts it to a base64 encoded string.
+	 * 
+	 * Parameters:
+	 *   - filePath: string - Virtual path to the recording file
+	 * 
+	 * Returns:
+	 *   - Promise<{ success: boolean, data?: string, error?: string }>:
+	 *     - success: boolean - Indicates if data was retrieved successfully
+	 *     - data: string - Base64 encoded audio data (only when success is true)
+	 *     - error: string - Error description (only when success is false)
+	 */
+	async getRecordingData(filePath: string): Promise<{ success: boolean, data?: string, error?: string }> {
+	  try {
+		if (!filePath.startsWith('/_expo_web_recording_/')) {
+		  return { 
+			success: false, 
+			error: 'Invalid recording path format' 
+		  };
+		}
+	
+		const recordingBlob = this.recordingsStorage.get(filePath);
+		if (!recordingBlob) {
+		  return { 
+			success: false, 
+			error: 'Recording not found' 
+		  };
+		}
+	
+		// Convert Blob to base64 string
+		const base64Data = await new Promise<string>((resolve, reject) => {
+		  const reader = new FileReader();
+		  reader.onloadend = () => {
+			const base64 = reader.result?.toString().split(',')[1];
+			if (base64) {
+			  resolve(base64);
+			} else {
+			  reject(new Error('Failed to convert recording to base64'));
+			}
+		  };
+		  reader.onerror = () => reject(reader.error);
+		  reader.readAsDataURL(recordingBlob);
+		});
+	
+		return {
+		  success: true,
+		  data: base64Data
+		};
+	
+	  } catch (error) {
+		console.error('NativeAudio: Error retrieving recording data', error);
+		return {
+		  success: false,
+		  error: error instanceof Error ? error.message : 'Unknown error retrieving recording'
+		};
+	  }
+	}
 }
 
 export default registerWebModule(NativeAudioModule, 'NativeAudio');

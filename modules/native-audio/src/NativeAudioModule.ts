@@ -18,6 +18,11 @@ declare class NativeAudioModule extends NativeModule<NativeAudioModuleEvents> {
 	fileStopRecording(): Promise<FileRecordingResult>;
 	isFileRecording(): boolean;
 	deleteRecording(filePath: string): boolean;
+	getRecordingData(filePath: string): Promise<{ 
+		success: boolean; 
+		data?: string; 
+		error?: string; 
+	}>;
 
 	// Audio streaming functions
 	startStreaming(
