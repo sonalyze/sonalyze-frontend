@@ -46,7 +46,7 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 				>
 					<View className="flex-row gap-2">
 						<View className="flex-1">
-							<Button label={t("start")} onPress={() => props.navigation.push("AudioTransmissionTest")} />
+							<Button label={t("start")} onPress={() => props.navigation.push("StartSessionScreen")} />
 						</View>
 						<View className="flex-1">
 							 <Button label={t("join")} onPress={() => props.navigation.push("JoinSessionScreen")} />
