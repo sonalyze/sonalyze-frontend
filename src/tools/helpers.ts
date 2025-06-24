@@ -9,7 +9,7 @@ export const axiosClient = axios.create({
 });
 
 export function createSocket(): Socket {
-	return io('ws://localhost:8000', {
+	return io('https://api.dev.sonalyze.de', {
 		transports: ['polling'],
 		autoConnect: false,
 		reconnectionAttempts: 5,
