@@ -16,13 +16,15 @@ import QrScanScreen from './screens/settings/QrScanScreen';
 import LanguageScreen from './screens/settings/LanguageScreen';
 import JoinSessionScreen from './screens/JoinSessionScreen';
 import StartSessionScreen from './screens/StartSessionScreen';
-import HistoryScreen from './screens/HistoryScreen';
-import HistoryDetailScreen from './screens/HistoryDetailScreen';
 import DevSettingsScreen from './screens/settings/DevSettings';
+import MeasurementScreen from './screens/MeasurementScreen';
+import MeasurementResultScreen from './screens/MeasurementResultScreen';
+import HistoryDetailScreen from './screens/HistoryDetailScreen';
+import HistoryScreen from './screens/HistoryScreen';
 
 enableScreens();
+
 const queryClient = new QueryClient();
-const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
 	return (
@@ -32,50 +34,7 @@ export default function App() {
 					<QueryClientProvider client={queryClient}>
 						<SocketProvider>
 							<NavigationContainer>
-								<Stack.Navigator
-									screenOptions={{ headerShown: false }}
-								>
-									<Stack.Screen
-										name="HomeScreen"
-										component={HomeScreen}
-									/>
-									<Stack.Screen
-										name="StartSessionScreen"
-										component={StartSessionScreen}
-									/>
-									<Stack.Screen
-										name="JoinSessionScreen"
-										component={JoinSessionScreen}
-									/>
-									<Stack.Screen
-										name="SettingsScreen"
-										component={SettingsScreen}
-									/>
-									<Stack.Screen
-										name="QrScanScreen"
-										component={QrScanScreen}
-									/>
-									<Stack.Screen
-										name="QrViewScreen"
-										component={QrViewScreen}
-									/>
-									<Stack.Screen
-										name="LanguageScreen"
-										component={LanguageScreen}
-									/>
-									<Stack.Screen
-										name="HistoryScreen"
-										component={HistoryScreen}
-									/>
-									<Stack.Screen
-										name="HistoryDetailScreen"
-										component={HistoryDetailScreen}
-									/>
-									<Stack.Screen
-										name="DevSettingsScreen"
-										component={DevSettingsScreen}
-									/>
-								</Stack.Navigator>
+								<RootStack />
 							</NavigationContainer>
 							<Toaster
 								position="bottom-center"
@@ -90,36 +49,111 @@ export default function App() {
 	);
 }
 
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
 const RootStack = () => (
-	<Stack.Navigator screenOptions={{ headerShown: false }}>
-		<Stack.Screen name="HomeScreen" component={HomeScreen} />
+	<Stack.Navigator>
 		<Stack.Screen
-			name="StartSessionScreen"
-			component={StartSessionScreen}
+			name="HomeScreen"
+			component={HomeScreen}
+			options={{
+				headerShown: false,
+			}}
 		/>
-		<Stack.Screen name="JoinSessionScreen" component={JoinSessionScreen} />
-		<Stack.Screen name="SettingsScreen" component={SettingsScreen} />
-		<Stack.Screen name="QrScanScreen" component={QrScanScreen} />
-		<Stack.Screen name="QrViewScreen" component={QrViewScreen} />
-		<Stack.Screen name="LanguageScreen" component={LanguageScreen} />
-		<Stack.Screen name="DevSettingsScreen" component={DevSettingsScreen} />
-		<Stack.Screen name="HistoryScreen" component={HistoryScreen} />
 		<Stack.Screen
 			name="HistoryDetailScreen"
 			component={HistoryDetailScreen}
+			options={{
+				headerShown: false,
+			}}
+		/>
+		<Stack.Screen
+			name="HistoryScreen"
+			component={HistoryScreen}
+			options={{
+				headerShown: false,
+			}}
+		/>
+		<Stack.Screen
+			name="StartSessionScreen"
+			component={StartSessionScreen}
+			options={{
+				headerShown: false,
+				gestureEnabled: false,
+			}}
+		/>
+		<Stack.Screen
+			name="JoinSessionScreen"
+			component={JoinSessionScreen}
+			options={{
+				headerShown: false,
+				gestureEnabled: false,
+			}}
+		/>
+		<Stack.Screen
+			name="MeasurementScreen"
+			component={MeasurementScreen}
+			options={{
+				headerShown: false,
+				gestureEnabled: false,
+			}}
+		/>
+		<Stack.Screen
+			name="MeasurementResultScreen"
+			component={MeasurementResultScreen}
+			options={{
+				headerShown: false,
+			}}
+		/>
+		<Stack.Screen
+			name="SettingsScreen"
+			component={SettingsScreen}
+			options={{
+				headerShown: false,
+			}}
+		/>
+		<Stack.Screen
+			name="QrScanScreen"
+			component={QrScanScreen}
+			options={{
+				headerShown: false,
+			}}
+		/>
+		<Stack.Screen
+			name="QrViewScreen"
+			component={QrViewScreen}
+			options={{
+				headerShown: false,
+			}}
+		/>
+		<Stack.Screen
+			name="LanguageScreen"
+			component={LanguageScreen}
+			options={{
+				headerShown: false,
+			}}
+		/>
+		<Stack.Screen
+			name="DevSettingsScreen"
+			component={DevSettingsScreen}
+			options={{
+				headerShown: false,
+			}}
 		/>
 	</Stack.Navigator>
 );
 
 export type RootStackParamList = {
 	HomeScreen: undefined;
+	HistoryScreen: undefined;
+	HistoryDetailScreen: { item: Measurement | Room };
 	StartSessionScreen: undefined;
 	JoinSessionScreen: undefined;
+	MeasurementScreen: undefined;
+	MeasurementResultScreen: undefined;
 	SettingsScreen: undefined;
 	QrScanScreen: undefined;
 	QrViewScreen: undefined;
 	LanguageScreen: undefined;
-	HistoryScreen: undefined;
-	HistoryDetailScreen: { item: Measurement | Room };
 	DevSettingsScreen: undefined;
 };

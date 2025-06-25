@@ -17,6 +17,7 @@ type QrCodeViewerProps = {
 const QrCodeViewer: FC<QrCodeViewerProps> = (props: QrCodeViewerProps) => {
 	const { t } = useTranslation();
 
+	// @TODO: Proper state.
 	const value = `${props.type}:${props.payload}`;
 
 	// Callback for the "Copy to Clipboard" button.
@@ -26,24 +27,22 @@ const QrCodeViewer: FC<QrCodeViewerProps> = (props: QrCodeViewerProps) => {
 	}
 
 	return (
-		<Card>
-			<View className="self-center items-center">
-				{/* QR Code */}
-				<View className="bg-white rounded-xl p-3">
-					<QRCode value={value} size={240} />
-				</View>
-
-				{/* Copy Button */}
-				{props.allowCopy && (
-					<Button
-						leadingIcon={<Link size={18}  />}
-						label={t('copyToClipboard')}
-						onPress={onCopyCode}
-						extend={false}
-						className="mt-3"
-					/>
-				)}
+		<Card className="self-center items-center">
+			{/* QR Code */}
+			<View className="bg-white rounded-xl p-3">
+				<QRCode value={value} size={240} />
 			</View>
+
+			{/* Copy Button */}
+			{props.allowCopy && (
+				<Button
+					leadingIcon={<Link size={18}  />}
+					label={t('copyToClipboard')}
+					onPress={onCopyCode}
+					expand={false}
+					className="mt-3"
+				/>
+			)}
 		</Card>
 	);
 };

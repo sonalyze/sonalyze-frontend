@@ -6,72 +6,57 @@ type ButtonProps = {
 	leadingIcon?: ReactElement;
 	trailingIcon?: ReactElement;
 	onPress: () => void;
-	type?: 'primary' | 'secondary' | 'ghost';
-	extend?: boolean;
+	type?: 'primary' | 'secondary' | 'destructive' | 'ghost';
+	expand?: boolean;
 	className?: string;
 	disabled?: boolean;
 };
 
-const Button: FC<ButtonProps> = ({
-	label,
-	leadingIcon,
-	trailingIcon,
-	onPress,
-	type = 'primary',
-	extend = true,
-	className = '',
-	disabled = false,
-}) => {
-	const width = extend ? 'w-full' : 'w-fit';
+const Button: FC<ButtonProps> = (props: ButtonProps) => {
+	const type = props.type ?? 'primary';
+	const expand = props.expand ?? true;
+	const width = expand ? 'w-full' : 'w-fit';
 
 	let backgroundColor: string;
 	let textColor: string;
-	let iconColor: string;
 
-	if (disabled) {
-		backgroundColor = 'bg-gray-300';
-		textColor = 'text-gray-500';
-		iconColor = '#6b7280';
-	} else {
-		switch (type) {
-			case 'primary':
-				backgroundColor = 'bg-primary';
-				textColor = 'text-primaryForeground';
-				iconColor = '#FFFFFF';
-				break;
-			case 'secondary':
-				backgroundColor = 'bg-secondary';
-				textColor = 'text-secondaryForeground';
-				iconColor = '#000000';
-				break;
-			case 'ghost':
-			default:
-				backgroundColor = 'bg-transparent';
-				textColor = 'text-foreground';
-				iconColor = '#000000';
-				break;
-		}
+	switch (type) {
+		case 'primary':
+			backgroundColor = 'bg-primary';
+			textColor = 'text-primaryForeground';
+			break;
+		case 'secondary':
+			backgroundColor = 'bg-secondary';
+			textColor = 'text-secondaryForeground';
+			break;
+		case 'destructive':
+			backgroundColor = 'bg-destructive';
+			textColor = 'text-destructiveForeground';
+			break;
+		case 'ghost':
+			backgroundColor = 'bg-transparent';
+			textColor = 'text-foreground';
+			break;
 	}
 
 	return (
 		<TouchableOpacity
-			onPress={onPress}
-			disabled={disabled}
-			className={`rounded-xl px-4 py-3 ${width} ${backgroundColor} ${className}`}
+			onPress={props.onPress}
+			disabled={props.disabled}
+			className={`rounded-xl px-4 py-3 ${width} ${backgroundColor} ${props.className}`}
 			activeOpacity={0.8}
 		>
 			<View className="flex-row items-center justify-center">
-				{leadingIcon && (
-					<View >{leadingIcon}</View>
-				)}
+				{props.leadingIcon ? (
+					<View className="mr-2">{props.leadingIcon}</View>
+				) : null}
+				{/* Label */}
 				<Text
 					className={`text-lg text-center font-semibold ${textColor}`}
 				>
-					{label}
+					{props.label}
 				</Text>
-				{trailingIcon && (
-					<View >{trailingIcon}</View>
-				)}
+				{props.trailingIcon}
 			</View>
 		</TouchableOpacity>
 	);

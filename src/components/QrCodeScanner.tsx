@@ -127,7 +127,7 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
 							label={t('scanQrCode')}
 							leadingIcon={<ScanLine size={18} />}
 							onPress={onScanCode}
-							extend={false}
+							expand={false}
 						/>
 					)}
 				</>
@@ -141,7 +141,7 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
 						label={t('pasteFromClipboard')}
 						leadingIcon={<ClipboardPaste size={18} />}
 						onPress={onPasteCode}
-						extend={false}
+						expand={false}
 					/>
 				</>
 			)}

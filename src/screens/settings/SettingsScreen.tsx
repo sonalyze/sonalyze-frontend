@@ -6,7 +6,7 @@ import Tile from '../../components/Tile';
 import SecondaryHeader from '../../components/SecondaryHeader';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { Languages, QrCode, Camera, Settings2 } from 'lucide-react-native';
+import { Camera, Code, LanguagesIcon, QrCode } from 'lucide-react-native';
 
 type SettingsScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -36,6 +36,15 @@ const SettingsScreen: FC<SettingsScreenProps> = (
 
 			{/* Content */}
 			<ScrollView className="px-2 flex-grow" bounces={false}>
+				{/* General Section */}
+				<Text className={classNames.sectionLabel}>{t('general')}</Text>
+				<Tile
+					title={t('language')}
+					subtitle={t('languageInfo')}
+					trailingIcon={<LanguagesIcon size={24} />}
+					onPress={() => props.navigation.push('LanguageScreen')}
+				/>
+
 				{/* Account Transfer Section */}
 				<Text className={classNames.sectionLabel}>
 					{t('accountTransfer')}
@@ -43,32 +52,23 @@ const SettingsScreen: FC<SettingsScreenProps> = (
 				<Tile
 					title={t('showTransferCode')}
 					subtitle={t('showTransferCodeInfo')}
-					trailingIcon={<QrCode size={24} color="#2e2e2e" />}
+					trailingIcon={<QrCode size={24} />}
 					onPress={() => props.navigation.push('QrViewScreen')}
 				/>
-				<View className="h-2" />
-
+				<View className="h-3" />
 				<Tile
 					title={t('scanTransferCode')}
 					subtitle={t('scanTransferCodeInfo')}
-					trailingIcon={<Camera size={24} color="#2e2e2e" />}
+					trailingIcon={<Camera size={24} />}
 					onPress={() => props.navigation.push('QrScanScreen')}
 				/>
 
-				{/* General Section */}
-				<Text className={classNames.sectionLabel}>{t('general')}</Text>
-				<Tile
-					title={t('language')}
-					subtitle={t('languageInfo')}
-					trailingIcon={<Languages size={24} color="#2e2e2e" />}
-					onPress={() => props.navigation.push('LanguageScreen')}
-				/>
-				<View className="h-2" />
-
+				{/* Misc Section */}
+				<Text className={classNames.sectionLabel}>{t('misc')}</Text>
 				<Tile
 					title={t('devSettings')}
-					subtitle={'Advanced configuration options for developers.'}
-					trailingIcon={<Settings2 size={24} color="#2e2e2e" />}
+					subtitle={t('devSettingsInfo')}
+					trailingIcon={<Code size={24} />}
 					onPress={() => props.navigation.push('DevSettingsScreen')}
 				/>
 			</ScrollView>

@@ -24,12 +24,26 @@ export const useSocket = (
 	const { socket } = useSocketContext();
 	const [connected, setConnected] = useState(false);
 
+	/**
+	 * Emits an event to the socket server with an optional payload.
+	 * @param event - The name of the event to emit.
+	 * @param payload - Optional data to send with the event.
+	 */
 	const emit = useCallback(
 		(event: string, payload?: object) => {
 			socket.emit(event, payload);
 		},
 		[socket]
 	);
+
+	/**
+	 * Disconnects the socket connection if it is currently connected.
+	 */
+	const disconnect = useCallback(() => {
+		if (socket.connected) {
+			socket.disconnect();
+		}
+	}, [socket]);
 
 	useEffect(() => {
 		if (!socket.connected) {
@@ -66,5 +80,5 @@ export const useSocket = (
 		};
 	}, [events, options, socket]);
 
-	return { connected, emit };
+	return { connected, emit, disconnect };
 };

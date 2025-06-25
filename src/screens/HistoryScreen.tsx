@@ -79,9 +79,11 @@ const HistoryScreen: FC<HistoryScreenProps> = ({ navigation }) => {
 			<SecondaryHeader
 				title={t('historyTitle')}
 				onBack={() => navigation.pop()}
-				rightIcon={<Plus size={24} />}
-				rightIconId="import"
-				onRightIconPress={() => setShowModal(true)}
+				suffix={
+					<TouchableOpacity onPress={() => setShowModal(true)}>
+						<Plus size={24} />
+					</TouchableOpacity>
+				}
 			/>
 
 			{/* Loading Indicator */}

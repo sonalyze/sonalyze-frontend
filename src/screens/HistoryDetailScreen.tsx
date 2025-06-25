@@ -113,9 +113,11 @@ const HistoryDetailScreen = ({ route, navigation }: Props) => {
 			<SecondaryHeader
 				title={item.name}
 				onBack={() => navigation.pop()}
-				rightIcon={<Trash2 size={24}  />}
-				rightIconId={item.id}
-				onRightIconPress={confirmDelete}
+				suffix={
+					<TouchableOpacity onPress={confirmDelete}>
+						<Trash2 size={24} />
+					</TouchableOpacity>
+				}
 			/>
 
 			<ScrollView className="p-4">
