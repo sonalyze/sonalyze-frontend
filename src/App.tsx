@@ -154,7 +154,7 @@ const RootStack = () => (
 export type RootStackParamList = {
 	HomeScreen: undefined;
 	HistoryScreen: undefined;
-	HistoryDetailScreen: { item: Measurement | Room };
+	HistoryDetailScreen: { item: Measurement | Room; fromCreate?: boolean };
 	StartSessionScreen: undefined;
 	JoinSessionScreen: undefined;
 	MeasurementScreen: undefined;

@@ -24,7 +24,7 @@
 	"copyError": "Clipboard is inaccessible.",
 	"cooperativeTitle": "Cooperative Measurement",
 	"cooperativeSubtitle": "Perform acoustic measurements using multiple devices as speakers or microphones for precise room analysis.",
-	"simulationTitle": "3D Acoustics Simulation",
+	"simulationTitle": "Room Acoustics Simulation",
 	"simulationSubtitle": "Simulate room acoustics in a virtual 3D space to analyze and optimize sound characteristics.",
 	"start": "Start",
 	"join": "Join",
@@ -154,17 +154,15 @@
 			"addSpeaker": "Add Speaker"
 		}
 	},
+
 	"materials": {
-		"carpet": "Carpet",
-		"curtain": "Curtain",
-		"woodFloor": "Wood ",
-		"parquetFloor": "Parquet ",
-		"acousticFoam": "Acoustic foam",
-		"hardSurface": "Hard surfaces",
-		"windowGlass": "Window glass",
-		"wood": "Wood",
-		"ceramicTiles": "Ceramic tiles"
+		"woodenFloorVarnished": "Holzboden (lackiert)",
+		"acousticCeilingTiles": "Akustik-Deckenplatten",
+		"concreteWallPainted": "Betonwand (gestrichen)",
+		"heavyCurtains": "Schwere Vorhänge",
+		"carpetOnConcrete": "Teppich auf Beton"
 	},
+
 	"toasts": {
 		"incompleteInput": {
 			"title": "Incomplete Input",
@@ -182,5 +180,6 @@
 		"submitError": {
 			"title": "Submission Error"
 		}
-	}
+	},
+	"createNewSimulation": "Create New Simulation"
 }

@@ -18,11 +18,16 @@ import {
 	optionalNumericRules,
 } from './CreateRoom.utils';
 import { ControlledInput } from '../components/ControlledInput';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../App';
 
-const CreateRoomScreen = () => {
+type CreateRoomNavProp = NativeStackNavigationProp<
+	RootStackParamList,
+	'CreateRoomScreen'
+>;
+const CreateRoomScreen: React.FC = () => {
 	const { t } = useTranslation();
-	const navigation = useNavigation();
-
+	const navigation = useNavigation<CreateRoomNavProp>();
 	const {
 		control,
 		handleSubmit,
@@ -100,7 +105,15 @@ const CreateRoomScreen = () => {
 					id: result.id,
 				}),
 			});
-			navigation.goBack();
+			navigation.navigate('HistoryDetailScreen', {
+				item: {
+					id: result.id,
+					name: result.name,
+					lastUpdatedAt: result.lastUpdatedAt,
+					hasSimulation: result.hasSimulation,
+					isOwner: true,
+				},
+			});
 		} catch (error) {
 			console.error(error);
 			toast.error(t('toasts.submitError.title'), {

@@ -7,7 +7,7 @@ import { axiosClient } from '../tools/helpers';
  */
 export async function getSimulationResult(id: string): Promise<Simulation> {
 	const res = await axiosClient.get<Simulation>(
-		`/rooms/${id}/simulation/result`
+		`/room/${id}/simulation/result`
 	);
 
 	return res.data;
@@ -20,7 +20,6 @@ export async function getSimulationResult(id: string): Promise<Simulation> {
  * @returns The simulation results
  */
 export async function simulateRoom(id: string): Promise<Simulation> {
-	const res = await axiosClient.post<Simulation>(`/rooms/${id}/simulation`);
-
+	const res = await axiosClient.get<Simulation>(`/room/${id}/simulation`);
 	return res.data;
 }

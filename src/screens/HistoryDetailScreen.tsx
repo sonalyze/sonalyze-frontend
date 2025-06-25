@@ -1,7 +1,14 @@
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import {
+	View,
+	Text,
+	ScrollView,
+	TouchableOpacity,
+	Alert,
+	BackHandler,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RouteProp } from '@react-navigation/native';
+import { RouteProp, useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner-native';
 import { useQueryClient } from '@tanstack/react-query';
@@ -9,6 +16,7 @@ import { copyToClipboard } from '../tools/clipboardAccess';
 import { Copy } from 'lucide-react-native';
 import { Trash2 } from 'lucide-react-native';
 import SecondaryHeader from '../components/SecondaryHeader';
+import { useCallback } from 'react';
 import {
 	deleteMeasurement,
 	removeImportedMeasurement,
@@ -26,16 +34,30 @@ type ScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
 	'HistoryDetailScreen'
 >;
-type Props = { route: ScreenRouteProp; navigation: ScreenNavigationProp };
-
+type Props = {
+	route: ScreenRouteProp;
+	navigation: ScreenNavigationProp;
+};
 const HistoryDetailScreen = ({ route, navigation }: Props) => {
 	const { t, i18n } = useTranslation();
 	const queryClient = useQueryClient();
-
 	const item = route.params.item as Measurement | Room;
 	const isMeasurement = (item as Measurement).values !== undefined;
 	const isOwner = item.isOwner;
 
+	useFocusEffect(
+		useCallback(() => {
+			const onBackPress = () => {
+				navigation.navigate('HomeScreen');
+				return true;
+			};
+			const subscription = BackHandler.addEventListener(
+				'hardwareBackPress',
+				onBackPress
+			);
+			return () => subscription.remove();
+		}, [navigation])
+	);
 	// Zeigt ein Bestätigungs-Popup vor dem Löschen
 	const confirmDelete = () => {
 		Alert.alert(t('confirmDeletionTitle'), t('confirmDeletionMessage'), [
@@ -112,7 +134,9 @@ const HistoryDetailScreen = ({ route, navigation }: Props) => {
 		<SafeAreaView className="flex-1 bg-background">
 			<SecondaryHeader
 				title={item.name}
-				onBack={() => navigation.pop()}
+				onBack={() =>
+					navigation.navigate('HomeScreen')
+				}
 				suffix={
 					<TouchableOpacity onPress={confirmDelete}>
 						<Trash2 size={24} />
@@ -134,17 +158,20 @@ const HistoryDetailScreen = ({ route, navigation }: Props) => {
 					</TouchableOpacity>
 				</View>
 
-				<Text className="text-base text-muted font-medium mb-4">
+				<Text className="text-base text-muted font-medium mb-2">
 					{formattedDate}
 				</Text>
 				<Text className="text-base text-muted font-medium mb-4">
-					{t('isOwner')}: {item.isOwner ? 'Yes' : 'No'}
+					{item.isOwner ? 'Owner' : 'Imported'}
 				</Text>
 
 				{isMeasurement ? (
 					<MeasurementDetail summary={summary} />
 				) : (
-					<RoomDetail hasSimulation={(item as Room).hasSimulation} />
+					<RoomDetail
+						roomId={item.id}
+						hasSimulation={(item as Room).hasSimulation}
+					/>
 				)}
 			</ScrollView>
 		</SafeAreaView>
