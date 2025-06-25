@@ -110,7 +110,6 @@ public class NativeAudioModule: Module {
     AsyncFunction("fileStartRecording") { (fileName: String, calibrationFactor: Double) -> [String: Any] in
       do {
         let audioSession = AVAudioSession.sharedInstance()
-
         if audioSession.availableModes.contains(.measurement) {
           try audioSession.setCategory(.record, mode: .measurement)
         } else {
@@ -118,14 +117,16 @@ public class NativeAudioModule: Module {
         }
         try audioSession.setActive(true)
 
-        // Verwende sicheres, definiertes Format: 48kHz, mono, Float32
+        // Format: 48kHz, Mono, Float32 (für Kalibrierung notwendig!)
         guard let format = AVAudioFormat(standardFormatWithSampleRate: 48000.0, channels: 1) else {
-          return ["success": false, "error": "Failed to create AVAudioFormat"]
+          return ["success": false, "error": "Audioformat konnte nicht erstellt werden"]
         }
+
         let sampleRate = Int(format.sampleRate)
         let channels = Int(format.channelCount)
         let bitsPerSample = 32
 
+        // Datei vorbereiten
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let outputURL = documentsPath.appendingPathComponent(fileName.hasSuffix(".wav") ? fileName : "\(fileName).wav")
         let tempPCMURL = outputURL.deletingPathExtension().appendingPathExtension("pcm")
@@ -133,34 +134,32 @@ public class NativeAudioModule: Module {
         if FileManager.default.fileExists(atPath: tempPCMURL.path) {
           try FileManager.default.removeItem(at: tempPCMURL)
         }
-
         FileManager.default.createFile(atPath: tempPCMURL.path, contents: nil)
 
         guard let fileHandle = try? FileHandle(forWritingTo: tempPCMURL) else {
-          return ["success": false, "error": "Cannot open file for writing"]
+          return ["success": false, "error": "Kann PCM-Datei nicht öffnen"]
         }
 
-        self.currentRecordingFileHandle = fileHandle // WICHTIG: Nicht verlieren
+        // Vorherige Aufnahme stoppen, falls aktiv
+        audioEngine?.stop()
+        inputNode?.removeTap(onBus: 0)
 
-        print("Schreibe in: \(tempPCMURL.path)")
-
+        // Neue Engine starten
         let engine = AVAudioEngine()
         let inputNode = engine.inputNode
 
         inputNode.installTap(onBus: 0, bufferSize: 4096, format: format) { [weak self] buffer, _ in
-          guard let self = self,
-                let fileHandle = self.currentRecordingFileHandle,
-                let channelData = buffer.floatChannelData?[0] else { return }
-
+          guard let channelData = buffer.floatChannelData?[0] else { return }
           let frameLength = Int(buffer.frameLength)
+
+          // Kalibrierung anwenden
           let calibratedSamples = UnsafeBufferPointer(start: channelData, count: frameLength).map {
             Float32($0 * Float(calibrationFactor))
           }
 
           var data = Data()
-          for sample in calibratedSamples {
-            var s = sample
-            data.append(UnsafeBufferPointer(start: &s, count: 1))
+          for var sample in calibratedSamples {
+            data.append(UnsafeBufferPointer(start: &sample, count: 1))
           }
 
           do {
@@ -174,12 +173,14 @@ public class NativeAudioModule: Module {
         engine.prepare()
         try engine.start()
 
+        // Zustand speichern
         self.audioEngine = engine
         self.inputNode = inputNode
-        self.isStreamingActive = true
+        self.currentRecordingFileHandle = fileHandle
         self.tempRecordingFile = tempPCMURL
         self.finalRecordingFile = outputURL
         self.recordingMetadata = (sampleRate, channels, bitsPerSample)
+        self.isStreamingActive = true
 
         return [
           "success": true,
@@ -187,10 +188,12 @@ public class NativeAudioModule: Module {
           "path": outputURL.path
         ]
       } catch {
-        print("Aufnahme-Startfehler: \(error)")
         return ["success": false, "error": error.localizedDescription]
       }
     }
+
+
+
 
 
     
