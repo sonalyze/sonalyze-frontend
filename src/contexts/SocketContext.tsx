@@ -1,6 +1,7 @@
 import React, { createContext, FC, ReactNode, useContext } from 'react';
 import { Socket } from 'socket.io-client';
 import { createSocket } from '../tools/helpers';
+import { useLocalSettings } from './LocalSettingsContext';
 
 type SocketContextType = {
 	socket: Socket;
@@ -13,7 +14,12 @@ type SocketProviderProps = {
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
 
 export const SocketProvider: FC<SocketProviderProps> = ({ children }) => {
-	const socket = React.useMemo(() => createSocket(), []);
+	const { settings } = useLocalSettings();
+
+	const socket = React.useMemo(
+		() => createSocket(settings.currentServer, settings.userToken),
+		[settings.currentServer, settings.userToken]
+	);
 	return (
 		<SocketContext.Provider value={{ socket }}>
 			{children}
