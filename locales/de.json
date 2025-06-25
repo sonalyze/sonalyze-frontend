@@ -80,7 +80,7 @@
 	"numberConflict": "Konflikt: Eine Gerätenummer wird von mehreren Geräten verwendet. Bitte stellen Sie sicher, dass jedes Gerät eine eindeutige Nummer hat.",
 	"unknownError": "Unbekannter Fehler",
 	"unknownErrorInfo": "Ein unbekannter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut oder kontaktieren Sie den Support.",
-	"popWarningTitle": "Bro, dein Ernst?",
+	"popWarningTitle": "Sitzung verlassen?",
 	"popWarningDescr": "Wenn Sie zurückgehen, wird der aktuelle Messvorgang abgebrochen. Dies kann nicht rückgängig gemacht werden. Möchten Sie wirklich fortfahren?",
 	"proceed": "Fortfahren",
 	"historyTitle": "Verlauf",

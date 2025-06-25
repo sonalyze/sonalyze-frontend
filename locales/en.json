@@ -80,7 +80,7 @@
 	"numberConflict": "Conflict: A device number is used by multiple devices. Please ensure that each device has a unique number.",
 	"unknownError": "Unknown Error",
 	"unknownErrorInfo": "An unknown error occurred. Please try again later or contact support.",
-	"popWarningTitle": "Bro, are you serious?",
+	"popWarningTitle": "Leave Session?",
 	"popWarningDescr": "If you go back, the current measurement will be cancelled. This cannot be undone. Do you really want to proceed?",
 	"proceed": "Proceed",
 	"historyTitle": "History",

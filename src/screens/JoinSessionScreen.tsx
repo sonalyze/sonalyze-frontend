@@ -16,7 +16,7 @@ import {
 import { showHapticErrorToast } from '../tools/hapticToasts';
 import QrCodeScanner from '../components/QrCodeScanner';
 import Button from '../components/Button';
-import Icon from '@react-native-vector-icons/lucide';
+import { Mic, TriangleAlert, Volume2 } from 'lucide-react-native';
 
 type JoinSessionScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -256,7 +256,7 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 				<>
 					{microphones === undefined || speakers === undefined ? (
 						<View className="flex-1 items-center justify-center m-10 mb-24">
-							<Icon name="triangle-alert" size={48} />
+							<TriangleAlert size={48} />
 							<Text className="text-center text-lg pt-2">
 								{t('unknownError')}
 							</Text>
@@ -291,7 +291,7 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 												? 'primary'
 												: 'secondary'
 										}
-										leadingIcon="volume-2"
+										leadingIcon={<Volume2 size={24} />}
 										label={t('speaker')}
 										onPress={() =>
 											onSelectDeviceType('speaker')
@@ -306,7 +306,7 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 												? 'primary'
 												: 'secondary'
 										}
-										leadingIcon="mic"
+										leadingIcon={<Mic size={24} />}
 										label={t('microphone')}
 										onPress={() =>
 											onSelectDeviceType('microphone')

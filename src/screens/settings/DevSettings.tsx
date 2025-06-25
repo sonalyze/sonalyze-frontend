@@ -9,12 +9,12 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner-native';
 import * as Haptics from 'expo-haptics';
 import Card from '../../components/Card';
-import Icon from '@react-native-vector-icons/lucide';
 import Divider from '../../components/Divider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Button from '../../components/Button';
 import Center from '../../components/Center';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
+import { Check, Plus } from 'lucide-react-native';
 
 type DevSettingsScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -117,7 +117,7 @@ const DevSettingsScreen: FC<DevSettingsScreenProps> = (
 						<Text className="text-lg mr-auto">{server}</Text>
 
 						{server === settings.currentServer && (
-							<Icon name="check" size={20} />
+							<Check size={20} />
 						)}
 					</View>
 				</TouchableHighlight>
@@ -169,7 +169,7 @@ const DevSettingsScreen: FC<DevSettingsScreenProps> = (
 						<Button
 							label={t('addServer')}
 							onPress={onAddServer}
-							leadingIcon="plus"
+							leadingIcon={<Plus size={24} />}
 							expand={false}
 						/>
 					</Center>

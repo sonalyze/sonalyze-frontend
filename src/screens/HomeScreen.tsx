@@ -8,7 +8,6 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { FC, useCallback, useEffect, useState } from 'react';
-import Icon from '@react-native-vector-icons/lucide';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,6 +17,9 @@ import { useLocalSettings } from '../contexts/LocalSettingsContext';
 import { register } from '../api/userRequests';
 import { axiosClient } from '../tools/helpers';
 import { checkApiReachable } from '../api/generalRequests';
+import { CloudAlert, Settings } from 'lucide-react-native';
+import { useUnifiedHistory } from '../hooks/useUnifiedHistory';
+import HistoryItem from '../components/HistoryItem';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -34,6 +36,7 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 	const [isLoading, setLoading] = useState(false);
 	const [isConnected, setConnected] = useState(false);
 	const { settings, updateSettings, initial } = useLocalSettings();
+	const history = useUnifiedHistory(3);
 
 	const refreshConnectionState = useCallback(async () => {
 		// If the settings have not been loaded yet, do not do anything.
@@ -43,6 +46,9 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 
 		// Set base URL to currently selected backend server.
 		axiosClient.defaults.baseURL = settings.currentServer;
+		axiosClient.defaults.headers.common = {
+			Authorization: `Bearer ${settings.userToken}`,
+		};
 
 		if (networkState.isInternetReachable !== true) {
 			setConnected(false);
@@ -109,24 +115,24 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 					hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
 					style={{ padding: 8 }}
 				>
-					<Icon name="settings" size={24} color="#000000" />
+					<Settings size={24} color="#000000" />
 				</TouchableOpacity>
 			</View>
 
 			{/* Loading Indicator. */}
-			{isLoading && (
+			{isLoading || history.isLoading ? (
 				<View className="flex-1 items-center justify-center m-10 mb-24">
 					<ActivityIndicator size="large" />
 					<Text className="text-center text-lg pt-2">
 						{t('connecting')}
 					</Text>
 				</View>
-			)}
+			) : null}
 
 			{/* Connection Error. */}
-			{!isLoading && !isConnected && (
+			{!isLoading && !history.isLoading && !isConnected ? (
 				<View className="flex-1 items-center justify-center m-10 mb-24">
-					<Icon name="cloud-alert" size={48} />
+					<CloudAlert size={48} />
 					<Text className="text-center text-lg pt-2">
 						{t('connectionError')}
 					</Text>
@@ -140,11 +146,12 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 						type="secondary"
 					/>
 				</View>
-			)}
+			) : null}
 
 			{/* Page Content. */}
-			{!isLoading && isConnected && (
+			{!isLoading && !history.isLoading && isConnected && (
 				<ScrollView className="m-2">
+					{/* Cooperative Card */}
 					<Card
 						title={t('cooperativeTitle')}
 						subtitle={t('cooperativeSubtitle')}
@@ -173,6 +180,8 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 						</View>
 					</Card>
 					<View className="h-2" />
+
+					{/* History Card */}
 					<Card
 						title={t('simulationTitle')}
 						subtitle={t('simulationSubtitle')}
@@ -180,6 +189,54 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 						<View className="flex-row">
 							<Button label={t('start')} onPress={() => {}} />
 						</View>
+					</Card>
+					<View className="h-2" />
+
+					{/* History Card */}
+					<Card
+						title={t('historyTitle')}
+						subtitle={t('historySubtitle')}
+					>
+						{history.error ? (
+							<Text className="text-center">
+								{t('history.errorLoad')}
+							</Text>
+						) : null}
+
+						{!isLoading &&
+							history.items.length > 0 &&
+							history.items.map((item) => (
+								<TouchableOpacity
+									key={`${item.id}-${item.createdAt}-${item.type}`}
+									onPress={() =>
+										props.navigation.push(
+											'HistoryDetailScreen',
+											{
+												item: item.raw,
+											}
+										)
+									}
+								>
+									<HistoryItem
+										item={
+											item.type === 'room'
+												? ({
+														...(item.raw as Room),
+														createdAt:
+															item.createdAt,
+													} as any)
+												: (item.raw as Measurement)
+										}
+									/>
+								</TouchableOpacity>
+							))}
+
+						<Button
+							label={t('viewAll')}
+							onPress={() =>
+								props.navigation.push('HistoryScreen')
+							}
+						/>
 					</Card>
 				</ScrollView>
 			)}

@@ -13,7 +13,7 @@ import {
 	showHapticErrorToast,
 	showHapticSuccessToast,
 } from '../tools/hapticToasts';
-import Icon from '@react-native-vector-icons/lucide';
+import { TriangleAlert } from 'lucide-react-native';
 
 type StartSessionScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -196,7 +196,7 @@ const StartSessionScreen: FC<StartSessionScreenProps> = (
 					microphones === undefined ||
 					speakers === undefined ? (
 						<View className="flex-1 items-center justify-center m-10 mb-24">
-							<Icon name="triangle-alert" size={48} />
+							<TriangleAlert size={48} />
 							<Text className="text-center text-lg pt-2">
 								{t('unknownError')}
 							</Text>

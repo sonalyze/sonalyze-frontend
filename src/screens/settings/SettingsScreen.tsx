@@ -6,6 +6,7 @@ import Tile from '../../components/Tile';
 import SecondaryHeader from '../../components/SecondaryHeader';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { Camera, Code, LanguagesIcon, QrCode } from 'lucide-react-native';
 
 type SettingsScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -40,7 +41,7 @@ const SettingsScreen: FC<SettingsScreenProps> = (
 				<Tile
 					title={t('language')}
 					subtitle={t('languageInfo')}
-					trailingIcon="languages"
+					trailingIcon={<LanguagesIcon size={24} />}
 					onPress={() => props.navigation.push('LanguageScreen')}
 				/>
 
@@ -51,14 +52,14 @@ const SettingsScreen: FC<SettingsScreenProps> = (
 				<Tile
 					title={t('showTransferCode')}
 					subtitle={t('showTransferCodeInfo')}
-					trailingIcon="qr-code"
+					trailingIcon={<QrCode size={24} />}
 					onPress={() => props.navigation.push('QrViewScreen')}
 				/>
 				<View className="h-3" />
 				<Tile
 					title={t('scanTransferCode')}
 					subtitle={t('scanTransferCodeInfo')}
-					trailingIcon="camera"
+					trailingIcon={<Camera size={24} />}
 					onPress={() => props.navigation.push('QrScanScreen')}
 				/>
 
@@ -67,7 +68,7 @@ const SettingsScreen: FC<SettingsScreenProps> = (
 				<Tile
 					title={t('devSettings')}
 					subtitle={t('devSettingsInfo')}
-					trailingIcon="code"
+					trailingIcon={<Code size={24} />}
 					onPress={() => props.navigation.push('DevSettingsScreen')}
 				/>
 			</ScrollView>

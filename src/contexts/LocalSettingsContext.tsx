@@ -54,6 +54,7 @@ export const LocalSettingsProvider: React.FC<LocalSettingsProviderProps> = (
 
 			setInitial(false);
 			setSettings(loadedSettings);
+
 			i18n.changeLanguage(loadedSettings.locale);
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
