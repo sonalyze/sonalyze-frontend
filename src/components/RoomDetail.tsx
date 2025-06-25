@@ -8,14 +8,9 @@ import { toast } from 'sonner-native';
 type RoomDetailProps = {
 	roomId: string;
 	hasSimulation: boolean;
-	onEdit?: () => void;
 };
 
-const RoomDetail: React.FC<RoomDetailProps> = ({
-	roomId,
-	hasSimulation,
-	onEdit = () => {},
-}) => {
+const RoomDetail: React.FC<RoomDetailProps> = ({ roomId, hasSimulation }) => {
 	const { t } = useTranslation();
 	const [simulation, setSimulation] = useState<Simulation | null>(null);
 	const [loading, setLoading] = useState(false);
@@ -53,15 +48,6 @@ const RoomDetail: React.FC<RoomDetailProps> = ({
 			<View className="w-full h-[200px] bg-gray-200 justify-center items-center mb-2">
 				<Text className="text-base">{t('roomView')}</Text>
 			</View>
-
-			{/* Edit-Button */}
-			<Button
-				label={t('edit')}
-				onPress={onEdit}
-				type="secondary"
-				expand={false}
-				className="mb-4"
-			/>
 
 			{/* Simulation-Header & Button */}
 			<Text className="text-lg font-semibold ml-1 px-2 py-2 ">

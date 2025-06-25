@@ -39,7 +39,7 @@ const MeasurementDetail: React.FC<MeasurementDetailProps> = ({ summary }) => {
   const { t } = useTranslation();
   if (!summary) return <Text>{t('noData')}</Text>;
 
-  const keys = ['rt60', 'c50', 'c80', 'd50', 'g'] as const;
+  const keys = ['rt60', 'c50', 'c80', 'd50', 'g', 'ir'] as const;
   return (
     <>
       {keys.map((key) => (
