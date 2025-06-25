@@ -116,5 +116,8 @@
 	"deleteSuccess": "Messung erfolgreich gelöscht.",
 	"removeImportedRoomSuccess": "Importierter Raum erfolgreich entfernt.",
 	"deleteRoomSuccess": "Raum erfolgreich gelöscht.",
-	"unauthorizedError": "Sie sind nicht berechtigt, diese Aktion durchzuführen."
+	"unauthorizedError": "Sie sind nicht berechtigt, diese Aktion durchzuführen.",
+	"missingMicPermission": "Fehlender Mikrofonzugriff",
+	"micPermissionInfo": "Sonalyze hat keine Berechtigung, auf das Mikrofon zuzugreifen. Bitte gewähren Sie den Mikrofonzugriff in den Geräteeinstellungen.",
+	"micPermissionError": "Fehler beim Abrufen der Mikrofonberechtigung."
 }

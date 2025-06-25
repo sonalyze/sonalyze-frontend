@@ -17,9 +17,12 @@ import { useLocalSettings } from '../contexts/LocalSettingsContext';
 import { register } from '../api/userRequests';
 import { axiosClient } from '../tools/helpers';
 import { checkApiReachable } from '../api/generalRequests';
-import { CloudAlert, Settings } from 'lucide-react-native';
+import { CloudAlert, MicOff, Settings } from 'lucide-react-native';
 import { useUnifiedHistory } from '../hooks/useUnifiedHistory';
 import HistoryItem from '../components/HistoryItem';
+import NativeAudio from '../../modules/native-audio';
+import { showHapticErrorToast } from '../tools/hapticToasts';
+import SoundPlayer from 'react-native-sound-player';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -35,6 +38,7 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 	const networkState = useNetworkState();
 	const [isLoading, setLoading] = useState(false);
 	const [isConnected, setConnected] = useState(false);
+	const [hasMicPermission, setHasMicPermission] = useState(false);
 	const { settings, updateSettings, initial } = useLocalSettings();
 	const history = useUnifiedHistory(3);
 
@@ -103,6 +107,26 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 		refreshConnectionState,
 	]);
 
+	// Request microphone permission when component mounts
+	useEffect(
+		() => {
+			const requestPermission = async () => {
+				try {
+					const granted =
+						await NativeAudio.requestMicrophonePermission();
+					setHasMicPermission(granted);
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+				} catch (err) {
+					showHapticErrorToast(t('micPermissionError'));
+				}
+			};
+
+			requestPermission();
+		},
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[]
+	);
+
 	return (
 		<SafeAreaView className="flex-1 bg-background">
 			{/* Header */}
@@ -148,98 +172,127 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 				</View>
 			) : null}
 
+			{/* Missing Microphone Permission. */}
+			{!isLoading &&
+			!history.isLoading &&
+			isConnected &&
+			!hasMicPermission ? (
+				<View className="flex-1 items-center justify-center m-10 mb-24">
+					<MicOff size={48} />
+					<Text className="text-center text-lg pt-2">
+						{t('missingMicPermission')}
+					</Text>
+					<Text className="text-center pt-2 pb-4">
+						{t('micPermissionInfo')}
+					</Text>
+				</View>
+			) : null}
+
 			{/* Page Content. */}
-			{!isLoading && !history.isLoading && isConnected && (
-				<ScrollView className="m-2">
-					{/* Cooperative Card */}
-					<Card
-						title={t('cooperativeTitle')}
-						subtitle={t('cooperativeSubtitle')}
-					>
-						<View className="flex-row gap-2">
-							<View className="flex-1">
-								<Button
-									label={t('start')}
-									onPress={() =>
-										props.navigation.push(
-											'StartSessionScreen'
-										)
-									}
-								/>
-							</View>
-							<View className="flex-1">
-								<Button
-									label={t('join')}
-									onPress={() =>
-										props.navigation.push(
-											'JoinSessionScreen'
-										)
-									}
-								/>
-							</View>
-						</View>
-					</Card>
-					<View className="h-2" />
-
-					{/* History Card */}
-					<Card
-						title={t('simulationTitle')}
-						subtitle={t('simulationSubtitle')}
-					>
-						<View className="flex-row">
-							<Button label={t('start')} onPress={() => {}} />
-						</View>
-					</Card>
-					<View className="h-2" />
-
-					{/* History Card */}
-					<Card
-						title={t('historyTitle')}
-						subtitle={t('historySubtitle')}
-					>
-						{history.error ? (
-							<Text className="text-center">
-								{t('history.errorLoad')}
-							</Text>
-						) : null}
-
-						{!isLoading &&
-							history.items.length > 0 &&
-							history.items.map((item) => (
-								<TouchableOpacity
-									key={`${item.id}-${item.createdAt}-${item.type}`}
-									onPress={() =>
-										props.navigation.push(
-											'HistoryDetailScreen',
-											{
-												item: item.raw,
-											}
-										)
-									}
-								>
-									<HistoryItem
-										item={
-											item.type === 'room'
-												? ({
-														...(item.raw as Room),
-														createdAt:
-															item.createdAt,
-													} as any)
-												: (item.raw as Measurement)
+			{!isLoading &&
+				!history.isLoading &&
+				isConnected &&
+				hasMicPermission && (
+					<ScrollView className="m-2">
+						{/* Cooperative Card */}
+						<Card
+							title={t('cooperativeTitle')}
+							subtitle={t('cooperativeSubtitle')}
+						>
+							<View className="flex-row gap-2">
+								<View className="flex-1">
+									<Button
+										label={t('start')}
+										onPress={() =>
+											props.navigation.push(
+												'StartSessionScreen'
+											)
 										}
 									/>
-								</TouchableOpacity>
-							))}
+								</View>
+								<View className="flex-1">
+									<Button
+										label={t('join')}
+										onPress={() =>
+											props.navigation.push(
+												'JoinSessionScreen'
+											)
+										}
+									/>
+								</View>
+							</View>
+						</Card>
+						<View className="h-2" />
 
-						<Button
-							label={t('viewAll')}
-							onPress={() =>
-								props.navigation.push('HistoryScreen')
-							}
-						/>
-					</Card>
-				</ScrollView>
-			)}
+						{/* History Card */}
+						<Card
+							title={t('simulationTitle')}
+							subtitle={t('simulationSubtitle')}
+						>
+							<View className="flex-row">
+								<Button label={t('start')} onPress={() => {}} />
+							</View>
+						</Card>
+						<View className="h-2" />
+
+						{/* History Card */}
+						<Card
+							title={t('historyTitle')}
+							subtitle={t('historySubtitle')}
+						>
+							{history.error ? (
+								<Text className="text-center">
+									{t('history.errorLoad')}
+								</Text>
+							) : null}
+
+							{!isLoading &&
+								history.items.length > 0 &&
+								history.items.map((item) => (
+									<TouchableOpacity
+										key={`${item.id}-${item.createdAt}-${item.type}`}
+										onPress={() =>
+											props.navigation.push(
+												'HistoryDetailScreen',
+												{
+													item: item.raw,
+												}
+											)
+										}
+									>
+										<HistoryItem
+											item={
+												item.type === 'room'
+													? ({
+															...(item.raw as Room),
+															createdAt:
+																item.createdAt,
+														} as any)
+													: (item.raw as Measurement)
+											}
+										/>
+									</TouchableOpacity>
+								))}
+
+							<Button
+								label={t('viewAll')}
+								onPress={
+									async () => {
+										try {
+											SoundPlayer.playUrl(
+												'https://cloud.lukasengel.net/public.php/dav/files/sBk9HoNM86HmMcA/'
+											);
+										} catch (error) {
+											console.log(error);
+										}
+									}
+
+									//	props.navigation.push('HistoryScreen')
+								}
+							/>
+						</Card>
+					</ScrollView>
+				)}
 		</SafeAreaView>
 	);
 };

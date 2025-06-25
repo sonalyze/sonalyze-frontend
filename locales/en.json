@@ -116,5 +116,8 @@
 	"deleteSuccess": "Measurement deleted successfully.",
 	"removeImportedRoomSuccess": "Successfully removed imported room.",
 	"deleteRoomSuccess": "Room deleted successfully.",
-	"unauthorizedError": "You are not authorized to perform this action."
+	"unauthorizedError": "You are not authorized to perform this action.",
+	"missingMicPermission": "Missing Microphone Permission",
+	"micPermissionInfo": "Sonalyze does not have permission to access your microphone. Open your device settings to enable microphone access.",
+	"micPermissionError": "Failed to resolve microphone permission."
 }
