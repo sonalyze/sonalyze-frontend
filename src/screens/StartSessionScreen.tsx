@@ -121,11 +121,16 @@ const StartSessionScreen: FC<StartSessionScreenProps> = (
 	useEffect(
 		() => {
 			// Ensure the connection is closed whenever the screen is popped.
-			props.navigation.addListener('beforeRemove', (args) => {
-				if (args.data.action.type === 'POP') {
-					socket.disconnect();
+			const unsubscribe = props.navigation.addListener(
+				'beforeRemove',
+				(args) => {
+					if (args.data.action.type === 'POP') {
+						socket.disconnect();
+					}
 				}
-			});
+			);
+
+			return unsubscribe;
 		},
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[]

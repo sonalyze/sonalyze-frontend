@@ -89,9 +89,11 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 	}
 
 	useEffect(() => {
-		props.navigation.addListener('beforeRemove', () => {
+		const unsubscribe = props.navigation.addListener('beforeRemove', () => {
 			socket.disconnect();
 		});
+
+		return unsubscribe;
 	}, [props.navigation, socket]);
 
 	return (
