@@ -76,6 +76,17 @@ High-quality WAV recording settings optimized for audio analysis:
 - **Returns**: `boolean` – `true` if deleted, `false` on error
 - **Notes**: Useful for cleanup after analysis
 
+#### `getRecordingData(filePath: string)`
+
+- **Description**: Retrieves raw data from a recorded file as base64 string
+- **Parameters**:
+    - `filePath`: Full path to the recording file
+- **Returns**:
+    - `success`: `boolean`
+    - `data`: `string` - Base64 encoded audio data (when success is true)
+    - `error`: `string` - Error description (when success is false)
+- **Notes**: Useful for processing or transmitting recorded audio data in JavaScript
+
 ### Streaming Functions
 
 #### `startStreaming(options?: { bufferSize?: number })`
