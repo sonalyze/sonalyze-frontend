@@ -20,31 +20,38 @@ const Button: FC<ButtonProps> = (props: ButtonProps) => {
 	let backgroundColor: string;
 	let textColor: string;
 
-	switch (type) {
-		case 'primary':
-			backgroundColor = 'bg-primary';
-			textColor = 'text-primaryForeground';
-			break;
-		case 'secondary':
-			backgroundColor = 'bg-secondary';
-			textColor = 'text-secondaryForeground';
-			break;
-		case 'destructive':
-			backgroundColor = 'bg-destructive';
-			textColor = 'text-destructiveForeground';
-			break;
-		case 'ghost':
-			backgroundColor = 'bg-transparent';
-			textColor = 'text-foreground';
-			break;
+    // Prüft, ob der Button deaktiviert ist, und passt die Farben an
+	if (props.disabled) {
+		backgroundColor = 'bg-gray-300';
+		textColor = 'text-gray-500';
+	} else {
+		switch (type) {
+			case 'primary':
+				backgroundColor = 'bg-primary';
+				textColor = 'text-primaryForeground';
+				break;
+			case 'secondary':
+				backgroundColor = 'bg-secondary';
+				textColor = 'text-secondaryForeground';
+				break;
+			case 'destructive':
+				backgroundColor = 'bg-destructive';
+				textColor = 'text-destructiveForeground';
+				break;
+			case 'ghost':
+				backgroundColor = 'bg-transparent';
+				textColor = 'text-foreground';
+				break;
+		}
 	}
+
 
 	return (
 		<TouchableOpacity
 			onPress={props.onPress}
 			disabled={props.disabled}
 			className={`rounded-xl px-4 py-3 ${width} ${backgroundColor} ${props.className}`}
-			activeOpacity={0.8}
+			activeOpacity={props.disabled ? 1 : 0.8}
 		>
 			<View className="flex-row items-center justify-center">
 				{props.leadingIcon ? (

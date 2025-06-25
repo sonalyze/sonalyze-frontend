@@ -116,5 +116,71 @@
 	"deleteSuccess": "Measurement deleted successfully.",
 	"removeImportedRoomSuccess": "Successfully removed imported room.",
 	"deleteRoomSuccess": "Room deleted successfully.",
-	"unauthorizedError": "You are not authorized to perform this action."
+	"unauthorizedError": "You are not authorized to perform this action.",
+
+	"common": {
+		"general": "General",
+		"width": "Width",
+		"height": "Height",
+		"depth": "Depth",
+		"positionX": "X",
+		"positionY": "Y",
+		"submitting": "Submitting...",
+		"unknownError": "An unknown error occurred.",
+		"backButtonPressed": "Back button pressed"
+	},
+	"createRoom": {
+		"title": "Create New Room",
+		"sections": {
+			"dimensions": "Room Dimensions (in m)",
+			"materials": "Wall Materials",
+			"furniture": "Furniture",
+			"microphone": "Microphone",
+			"speaker": "Speaker"
+		},
+		"placeholders": {
+			"roomName": "Name of the room",
+			"selectMaterialFor_east": "East wall",
+			"selectMaterialFor_west": "West wall",
+			"selectMaterialFor_north": "North wall",
+			"selectMaterialFor_south": "South wall",
+			"selectMaterialFor_floor": "Floor",
+			"selectMaterialFor_ceiling": "Ceiling"
+		},
+		"buttons": {
+			"create": "Create Room",
+			"addFurniture": "Add Furniture",
+			"addMicrophone": "Add Microphone",
+			"addSpeaker": "Add Speaker"
+		}
+	},
+	"materials": {
+		"carpet": "Carpet",
+		"curtain": "Curtain",
+		"woodFloor": "Wood ",
+		"parquetFloor": "Parquet ",
+		"acousticFoam": "Acoustic foam",
+		"hardSurface": "Hard surfaces",
+		"windowGlass": "Window glass",
+		"wood": "Wood",
+		"ceramicTiles": "Ceramic tiles"
+	},
+	"toasts": {
+		"incompleteInput": {
+			"title": "Incomplete Input",
+			"message": "Please fill in all required fields."
+		},
+		"invalidNumber": {
+			"message": "Invalid number input. Please check all fields."
+		},
+		"success": {
+			"title": "Success"
+		},
+		"createRoomSuccess": {
+			"message": "Room \"{{name}}\" created successfully."
+		},
+		"submitError": {
+			"title": "Submission Error"
+		}
+	}
 }

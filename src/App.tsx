@@ -21,6 +21,7 @@ import MeasurementScreen from './screens/MeasurementScreen';
 import MeasurementResultScreen from './screens/MeasurementResultScreen';
 import HistoryDetailScreen from './screens/HistoryDetailScreen';
 import HistoryScreen from './screens/HistoryScreen';
+import CreateRoomScreen from './screens/CreateRoomScreen';
 
 enableScreens();
 
@@ -140,6 +141,13 @@ const RootStack = () => (
 				headerShown: false,
 			}}
 		/>
+		<Stack.Screen
+			name="CreateRoomScreen"
+			component={CreateRoomScreen}
+			options={{
+				headerShown: false,
+			}}
+		/>
 	</Stack.Navigator>
 );
 
@@ -156,4 +164,5 @@ export type RootStackParamList = {
 	QrViewScreen: undefined;
 	LanguageScreen: undefined;
 	DevSettingsScreen: undefined;
+	CreateRoomScreen: undefined;
 };

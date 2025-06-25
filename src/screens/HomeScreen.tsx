@@ -187,7 +187,12 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 						subtitle={t('simulationSubtitle')}
 					>
 						<View className="flex-row">
-							<Button label={t('start')} onPress={() => {}} />
+							<Button
+								label={t('start')}
+								onPress={() =>
+									props.navigation.push('CreateRoomScreen')
+								}
+							/>
 						</View>
 					</Card>
 					<View className="h-2" />
