@@ -29,6 +29,11 @@ public class NativeAudioModule: Module {
   
   // MARK: - File Recording Properties
   private var audioRecorder: AVAudioRecorder?
+  private var isRecording = false
+  private var calibrationFactor: Float = 1.0
+  private var sampleRate: Double = 48000.0
+  private var recordedSamples: [Float] = []
+  private var fileURL: URL!
   
   // MARK: - Streaming Properties
   private var audioEngine: AVAudioEngine?
@@ -40,10 +45,6 @@ public class NativeAudioModule: Module {
   private var audioFile: AVAudioFile?
   private var isPlaybackActive = false
   private var playbackEngine: AVAudioEngine?
-
-  private var tempRecordingFile: URL?
-  private var finalRecordingFile: URL?
-  private var recordingMetadata: (Int, Int, Int)?
   
   /**
    * Size of audio buffers for streaming (in frames)
@@ -105,118 +106,94 @@ public class NativeAudioModule: Module {
     // -----------------------------------------------------------------------
     // MARK: - File-based Recording Functions (for debugging and testing)
     
-    private var currentRecordingFileHandle: FileHandle? // NEU
-
-    AsyncFunction("fileStartRecording") { (fileName: String, calibrationFactor: Double) -> [String: Any] in
+    AsyncFunction("fileStartRecording") { (fileName: String, calibration: Double) -> [String: Any] in
       do {
-        let audioSession = AVAudioSession.sharedInstance()
-        if audioSession.availableModes.contains(.measurement) {
-          try audioSession.setCategory(.record, mode: .measurement)
+        // Stop ongoing recording if needed
+        if self.isStreamingActive {
+          self.audioEngine?.stop()
+          self.inputNode?.removeTap(onBus: 0)
+          self.isStreamingActive = false
+        }
+
+        // Initialize sample buffer
+        self.recordedSamples = []
+        self.calibrationFactor = Float(calibration)
+
+        // Set up audio session
+        let session = AVAudioSession.sharedInstance()
+        if session.availableModes.contains(.measurement) {
+          try session.setCategory(.record, mode: .measurement)
         } else {
-          try audioSession.setCategory(.record, mode: .default)
+          try session.setCategory(.record, mode: .default)
         }
-        try audioSession.setActive(true)
+        try session.setActive(true)
 
-        // Format: 48kHz, Mono, Float32 (für Kalibrierung notwendig!)
-        guard let format = AVAudioFormat(standardFormatWithSampleRate: 48000.0, channels: 1) else {
-          return ["success": false, "error": "Audioformat konnte nicht erstellt werden"]
-        }
-
-        let sampleRate = Int(format.sampleRate)
-        let channels = Int(format.channelCount)
-        let bitsPerSample = 32
-
-        // Datei vorbereiten
+        // File path for the output WAV file
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let outputURL = documentsPath.appendingPathComponent(fileName.hasSuffix(".wav") ? fileName : "\(fileName).wav")
-        let tempPCMURL = outputURL.deletingPathExtension().appendingPathExtension("pcm")
+        self.fileURL = documentsPath.appendingPathComponent(fileName.hasSuffix(".wav") ? fileName : "\(fileName).wav")
 
-        if FileManager.default.fileExists(atPath: tempPCMURL.path) {
-          try FileManager.default.removeItem(at: tempPCMURL)
-        }
-        FileManager.default.createFile(atPath: tempPCMURL.path, contents: nil)
-
-        guard let fileHandle = try? FileHandle(forWritingTo: tempPCMURL) else {
-          return ["success": false, "error": "Kann PCM-Datei nicht öffnen"]
+        // Create and configure audio engine
+        self.audioEngine = AVAudioEngine()
+        guard let engine = self.audioEngine else {
+          return ["success": false, "error": "Failed to initialize AVAudioEngine"]
         }
 
-        // Vorherige Aufnahme stoppen, falls aktiv
-        audioEngine?.stop()
-        inputNode?.removeTap(onBus: 0)
+        self.inputNode = engine.inputNode
+        guard let inputNode = self.inputNode else {
+          return ["success": false, "error": "Failed to access input node"]
+        }
 
-        // Neue Engine starten
-        let engine = AVAudioEngine()
-        let inputNode = engine.inputNode
+        let format = inputNode.outputFormat(forBus: 0)
+        self.sampleRate = format.sampleRate
 
-        inputNode.installTap(onBus: 0, bufferSize: 4096, format: format) { [weak self] buffer, _ in
-          guard let channelData = buffer.floatChannelData?[0] else { return }
-          let frameLength = Int(buffer.frameLength)
-
-          // Kalibrierung anwenden
-          let calibratedSamples = UnsafeBufferPointer(start: channelData, count: frameLength).map {
-            Float32($0 * Float(calibrationFactor))
-          }
-
-          var data = Data()
-          for var sample in calibratedSamples {
-            data.append(UnsafeBufferPointer(start: &sample, count: 1))
-          }
-
-          do {
-            try fileHandle.seekToEnd()
-            try fileHandle.write(contentsOf: data)
-          } catch {
-            print("Fehler beim Schreiben: \(error)")
+        // Install a tap to capture audio and apply calibration
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
+          let channels = UnsafeBufferPointer(start: buffer.floatChannelData, count: Int(format.channelCount))
+          if let channelData = channels.first {
+            for i in 0..<Int(buffer.frameLength) {
+              let calibrated = max(min(channelData[i] * self.calibrationFactor, 1.0), -1.0)
+              self.recordedSamples.append(calibrated)
+            }
           }
         }
 
-        engine.prepare()
         try engine.start()
-
-        // Zustand speichern
-        self.audioEngine = engine
-        self.inputNode = inputNode
-        self.currentRecordingFileHandle = fileHandle
-        self.tempRecordingFile = tempPCMURL
-        self.finalRecordingFile = outputURL
-        self.recordingMetadata = (sampleRate, channels, bitsPerSample)
         self.isStreamingActive = true
 
         return [
           "success": true,
-          "fileUri": outputURL.absoluteString,
-          "path": outputURL.path
+          "fileUri": self.fileURL.absoluteString,
+          "path": self.fileURL.path
         ]
       } catch {
         return ["success": false, "error": error.localizedDescription]
       }
     }
-
-
-
-
-
     
     AsyncFunction("fileStopRecording") { () -> [String: Any] in
-      guard isStreamingActive,
-            let pcmFile = tempRecordingFile,
-            let wavFile = finalRecordingFile,
-            let (sampleRate, channels, bitsPerSample) = recordingMetadata else {
-        return ["success": false, "error": "No active calibrated recording"]
-      }
-
-      inputNode?.removeTap(onBus: 0)
-      audioEngine?.stop()
-      isStreamingActive = false
-
       do {
-        try addWavHeader(from: pcmFile, to: wavFile, sampleRate: sampleRate, channels: channels, bitsPerSample: bitsPerSample)
-        try FileManager.default.removeItem(at: pcmFile)
+        // Ensure recording was active
+        guard self.isStreamingActive else {
+          return ["success": false, "error": "No active recording"]
+        }
+
+        // Stop audio engine and remove the input tap
+        self.audioEngine?.stop()
+        self.inputNode?.removeTap(onBus: 0)
+        self.isStreamingActive = false
+
+        // Deactivate audio session
+        try? AVAudioSession.sharedInstance().setActive(false)
+
+        // Write the collected and calibrated samples to a WAV file
+        try self.writeWAVFile(from: self.recordedSamples, sampleRate: self.sampleRate, to: self.fileURL)
+
         return [
           "success": true,
-          "fileUri": wavFile.absoluteString,
-          "path": wavFile.path
+          "fileUri": self.fileURL.absoluteString,
+          "path": self.fileURL.path
         ]
+
       } catch {
         return ["success": false, "error": error.localizedDescription]
       }
@@ -262,12 +239,10 @@ public class NativeAudioModule: Module {
       }
     }
 
-
     // -----------------------------------------------------------------------
     // MARK: - Streaming Functions
     
     AsyncFunction("startStreaming") { (options: [String: Any]?) -> [String: Any] in
-      
       do {
         // Clean up any existing streaming session
         if isStreamingActive {
@@ -548,6 +523,28 @@ public class NativeAudioModule: Module {
     }
   }
   
+  private func writeWAVFile(from samples: [Float], sampleRate: Double, to url: URL) throws {
+    let format = AVAudioFormat(commonFormat: .pcmFormatFloat32,
+                              sampleRate: sampleRate,
+                              channels: 1,
+                              interleaved: false)!
+
+    let frameCount = AVAudioFrameCount(samples.count)
+
+    guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else {
+      throw NSError(domain: "WAVError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to create PCM buffer"])
+    }
+
+    buffer.frameLength = frameCount
+    for i in 0..<samples.count {
+      buffer.floatChannelData?.pointee[i] = samples[i]
+    }
+
+    let file = try AVAudioFile(forWriting: url, settings: format.settings)
+    try file.write(from: buffer)
+  }
+
+
   /**
    * Cleanly stops the audio streaming process and releases all resources
    * 
@@ -570,102 +567,6 @@ public class NativeAudioModule: Module {
     
 
     _ = try? AVAudioSession.sharedInstance().setActive(false)
-  }
-
-  /// Adds a WAV header to raw PCM audio data.
-  ///
-  /// WAV files require a specific 44-byte header that describes the audio format.
-  /// This function creates that header and prepends it to raw PCM data to make
-  /// a valid WAV file that audio players can recognize.
-  ///
-  /// - Parameters:
-  ///   - pcmFile: URL of the file containing raw PCM audio data.
-  ///   - wavFile: URL where the complete WAV file will be written.
-  ///   - sampleRate: The sample rate in Hz (e.g., 48000).
-  ///   - channels: The number of audio channels (1 for mono, 2 for stereo).
-  ///   - bitsPerSample: The number of bits per sample (e.g., 16, 24, or 32).
-  ///
-  /// - Throws: An error if the file operations fail (e.g., reading the PCM file or writing the WAV file).
-  ///
-  /// - Note: This function creates a new WAV file at the specified location,
-  ///   copying all PCM data into it with the proper header.
-  private func addWavHeader(
-      from pcmFile: URL,
-      to wavFile: URL,
-      sampleRate: Int,
-      channels: Int,
-      bitsPerSample: Int
-  ) throws {
-      // Read the raw PCM data from the input file.
-      let pcmData = try Data(contentsOf: pcmFile)
-      let totalDataLen = pcmData.count
-
-      // The total file size is the PCM data length plus the header size (44 bytes) minus 8 bytes
-      // for the "RIFF" and size fields which are not included in the chunk size.
-      let totalSize = totalDataLen + 36
-
-      // Create a Data object to build the 44-byte WAV header.
-      var header = Data()
-
-      // Helper to append values in little-endian format.
-      func appendLittleEndian<T: FixedWidthInteger>(_ value: T, to data: inout Data) {
-          var littleEndianValue = value.littleEndian
-          withUnsafeBytes(of: &littleEndianValue) {
-              data.append(contentsOf: $0)
-          }
-      }
-
-      // MARK: - RIFF Chunk Descriptor
-      // "RIFF" marker (0-3)
-      header.append("RIFF".data(using: .ascii)!)
-
-      // Overall file size in bytes (4-7)
-      appendLittleEndian(Int32(totalSize), to: &header)
-
-      // "WAVE" marker (8-11)
-      header.append("WAVE".data(using: .ascii)!)
-
-      // MARK: - "fmt " Sub-chunk
-      // "fmt " marker (12-15)
-      header.append("fmt ".data(using: .ascii)!)
-
-      // Sub-chunk size: 16 for PCM (16-19)
-      appendLittleEndian(Int32(16), to: &header)
-
-      // Audio Format: 3 for IEEE float, 1 for PCM. (20-21)
-      // The original Kotlin code used 3 (IEEE float), so we replicate that.
-      // For standard PCM, you would use a value of 1.
-      appendLittleEndian(Int16(3), to: &header)
-
-      // Number of Channels (22-23)
-      appendLittleEndian(Int16(channels), to: &header)
-
-      // Sample Rate (24-27)
-      appendLittleEndian(Int32(sampleRate), to: &header)
-
-      // Byte Rate = SampleRate * NumChannels * BitsPerSample/8 (28-31)
-      let byteRate = sampleRate * channels * (bitsPerSample / 8)
-      appendLittleEndian(Int32(byteRate), to: &header)
-
-      // Block Align = NumChannels * BitsPerSample/8 (32-33)
-      let blockAlign = channels * (bitsPerSample / 8)
-      appendLittleEndian(Int16(blockAlign), to: &header)
-
-      // Bits Per Sample (34-35)
-      appendLittleEndian(Int16(bitsPerSample), to: &header)
-
-      // MARK: - "data" Sub-chunk
-      // "data" marker (36-39)
-      header.append("data".data(using: .ascii)!)
-
-      // Size of the actual audio data in bytes (40-43)
-      appendLittleEndian(Int32(totalDataLen), to: &header)
-
-      // Combine the header with the PCM audio data.
-      let wavData = header + pcmData
-
-      // Write the final WAV data to the output file.
-      try wavData.write(to: wavFile)
   }
 
   /**
