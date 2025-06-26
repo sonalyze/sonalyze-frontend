@@ -119,5 +119,8 @@
 	"unauthorizedError": "Sie sind nicht berechtigt, diese Aktion durchzuführen.",
 	"missingMicPermission": "Fehlender Mikrofonzugriff",
 	"micPermissionInfo": "Sonalyze hat keine Berechtigung, auf das Mikrofon zuzugreifen. Bitte gewähren Sie den Mikrofonzugriff in den Geräteeinstellungen.",
-	"micPermissionError": "Fehler beim Abrufen der Mikrofonberechtigung."
+	"micPermissionError": "Fehler beim Abrufen der Mikrofonberechtigung.",
+	"playing": "Ton wird abgespielt...",
+	"recording": "Aufnahme läuft...",
+	"measurementActive": "Messung im Gange. Bitte warten."
 }

@@ -22,7 +22,6 @@ import { useUnifiedHistory } from '../hooks/useUnifiedHistory';
 import HistoryItem from '../components/HistoryItem';
 import NativeAudio from '../../modules/native-audio';
 import { showHapticErrorToast } from '../tools/hapticToasts';
-import SoundPlayer from 'react-native-sound-player';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -276,18 +275,8 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 
 							<Button
 								label={t('viewAll')}
-								onPress={
-									async () => {
-										try {
-											SoundPlayer.playUrl(
-												'https://cloud.lukasengel.net/public.php/dav/files/sBk9HoNM86HmMcA/'
-											);
-										} catch (error) {
-											console.log(error);
-										}
-									}
-
-									//	props.navigation.push('HistoryScreen')
+								onPress={() =>
+									props.navigation.push('HistoryScreen')
 								}
 							/>
 						</Card>

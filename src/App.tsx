@@ -149,8 +149,8 @@ export type RootStackParamList = {
 	HistoryDetailScreen: { item: Measurement | Room };
 	StartSessionScreen: undefined;
 	JoinSessionScreen: undefined;
-	MeasurementScreen: undefined;
-	MeasurementResultScreen: undefined;
+	MeasurementScreen: { deviceType: 'microphone' | 'speaker' };
+	MeasurementResultScreen: { item: Measurement };
 	SettingsScreen: undefined;
 	QrScanScreen: undefined;
 	QrViewScreen: undefined;
