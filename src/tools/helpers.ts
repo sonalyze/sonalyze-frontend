@@ -10,7 +10,6 @@ export const axiosClient = axios.create({
 
 export function createSocket(): Socket {
 	return io('https://api.dev.sonalyze.de', {
-		transports: ['polling'],
 		autoConnect: false,
 		reconnectionAttempts: 5,
 		reconnectionDelay: 1000,
