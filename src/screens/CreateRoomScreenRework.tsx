@@ -8,8 +8,10 @@ import SecondaryHeader from '../components/SecondaryHeader';
 import { useTranslation } from 'react-i18next';
 import Card from '../components/Card';
 import MultiInput from '../components/MutliInput';
-import { createEmpyRoomScene } from '../tools/helpers';
+import { createEmpyRoomScene, validateRoomScene } from '../tools/helpers';
 import Button from '../components/Button';
+import { showHapticErrorToast } from '../tools/hapticToasts';
+import { createRoom } from '../api/roomRequests';
 
 type CreateRoomNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -162,8 +164,8 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 								furniture: [
 									...prev.furniture,
 									{
-										height: '0',
-										points: [{ x: '0', y: '0' }],
+										height: '',
+										points: [{ x: '', y: '' }],
 									},
 								],
 							}));
@@ -208,6 +210,23 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 						values={scene.speakers}
 					/>
 				</Card>
+				<Button
+					label="Save Room"
+					onPress={async () => {
+						if (!roomName.trim()) {
+							showHapticErrorToast('Please enter a room name');
+
+							return;
+						}
+						const validate = validateRoomScene(scene);
+						if (!validate.valid) {
+							showHapticErrorToast(validate.errors.join('\n'));
+						}
+
+						await createRoom(roomName, scene);
+					}}
+					className="mt-4"
+				/>
 			</ScrollView>
 		</SafeAreaView>
 	);
