@@ -11,6 +11,7 @@ import {
 	showHapticErrorToast,
 	showHapticSuccessToast,
 } from '../../tools/hapticToasts';
+import { migrateUser } from '../../api/userRequests';
 
 type QrScanScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -30,6 +31,7 @@ const QrScanScreen: FC<QrScanScreenProps> = (props: QrScanScreenProps) => {
 		const validToken = RegExp(/\b[a-f0-9]{24}\b/g).test(code);
 
 		if (validToken) {
+			await migrateUser(code);
 			await updateSettings({
 				userToken: code,
 			});

@@ -79,7 +79,9 @@ const StartSessionScreen: FC<StartSessionScreenProps> = (
 			{
 				event: 'start_measurement',
 				handler: () => {
-					props.navigation.replace('MeasurementScreen');
+					props.navigation.replace('MeasurementScreen', {
+						deviceType: 'microphone',
+					});
 				},
 			},
 			// If the measurement could not be started, show an error toast.

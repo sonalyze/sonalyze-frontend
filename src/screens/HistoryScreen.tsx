@@ -126,11 +126,16 @@ const HistoryScreen: FC<HistoryScreenProps> = ({ navigation }) => {
 						return (
 							<TouchableOpacity
 								className="active-opacity-80"
-								onPress={() =>
-									navigation.push('HistoryDetailScreen', {
-										item: item.raw,
-									})
-								}
+								onPress={() => {
+									if (item.type === 'measurement') {
+										navigation.push(
+											'MeasurementDetailScreen',
+											{
+												item: item.raw as Measurement,
+											}
+										);
+									}
+								}}
 							>
 								<HistoryItem item={displayItem} />
 							</TouchableOpacity>

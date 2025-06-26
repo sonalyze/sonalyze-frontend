@@ -91,7 +91,9 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 			{
 				event: 'start_measurement',
 				handler: () => {
-					props.navigation.replace('MeasurementScreen');
+					props.navigation.replace('MeasurementScreen', {
+						deviceType: deviceType!,
+					});
 				},
 			},
 			{

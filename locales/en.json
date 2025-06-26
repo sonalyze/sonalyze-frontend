@@ -117,7 +117,12 @@
 	"removeImportedRoomSuccess": "Successfully removed imported room.",
 	"deleteRoomSuccess": "Room deleted successfully.",
 	"unauthorizedError": "You are not authorized to perform this action.",
-
+	"missingMicPermission": "Missing Microphone Permission",
+	"micPermissionInfo": "Sonalyze does not have permission to access your microphone. Open your device settings to enable microphone access.",
+	"micPermissionError": "Failed to resolve microphone permission.",
+	"playing": "Playing sound...",
+	"recording": "Recording...",
+	"measurementActive": "Measurement in progress. Please wait.",
 	"common": {
 		"general": "General",
 		"width": "Width",
@@ -154,7 +159,6 @@
 			"addSpeaker": "Add Speaker"
 		}
 	},
-
 	"materials": {
 		"woodenFloorVarnished": "Holzboden (lackiert)",
 		"acousticCeilingTiles": "Akustik-Deckenplatten",
@@ -162,7 +166,6 @@
 		"heavyCurtains": "Schwere Vorhänge",
 		"carpetOnConcrete": "Teppich auf Beton"
 	},
-
 	"toasts": {
 		"incompleteInput": {
 			"title": "Incomplete Input",
@@ -181,5 +184,6 @@
 			"title": "Submission Error"
 		}
 	},
-	"createNewSimulation": "Create New Simulation"
+	"createNewSimulation": "Create New Simulation",
+	"dateFormat": "{{datetime, MM/DD/YYYY}}"
 }
