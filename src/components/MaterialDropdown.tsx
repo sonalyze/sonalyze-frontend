@@ -21,6 +21,7 @@ function getMaterials(key: MaterialKey) {
 
 type MaterialDropdownProps = {
 	onChange: (key: MaterialKey, value: string) => void;
+	initialValues: Record<MaterialKey, string> | undefined;
 };
 
 const MaterialDropdown: FC<MaterialDropdownProps> = (props) => {
@@ -31,10 +32,11 @@ const MaterialDropdown: FC<MaterialDropdownProps> = (props) => {
 		}, {} as MaterialsOpenState)
 	);
 	const [value, setValue] = useState<MaterialsValueState>(
-		keys.reduce((acc, key) => {
-			acc[key] = null;
-			return acc;
-		}, {} as MaterialsValueState)
+		props.initialValues ||
+			keys.reduce((acc, key) => {
+				acc[key] = null;
+				return acc;
+			}, {} as MaterialsValueState)
 	);
 	function setOpenByKey(
 		key: MaterialKey,

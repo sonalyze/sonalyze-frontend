@@ -66,8 +66,9 @@ export function validateRoomScene(scene: RoomScene): {
 
 	for (const dim of ['width', 'height', 'depth'] as const) {
 		const val = scene.dimensions[dim];
-		if (!isValidFloat(val))
+		if (!isValidFloat(val)) {
 			errors.push(`dimensions.${dim} is not a valid float: "${val}"`);
+		}
 	}
 
 	for (const face of [

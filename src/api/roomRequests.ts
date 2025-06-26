@@ -70,7 +70,40 @@ export async function updateRoom(id: string, name: string): Promise<void> {
  */
 export async function getRoomScene(id: string): Promise<RoomScene> {
 	const data = await axiosClient.get<RoomScene>(`/room/${id}/scene`);
-	return data.data;
+	const scene = data.data;
+	return {
+		roomId: scene.roomId,
+		dimensions: {
+			width: scene.dimensions.width.toString(),
+			height: scene.dimensions.height.toString(),
+			depth: scene.dimensions.depth.toString(),
+		},
+		materials: {
+			east: scene.materials.east.toString(),
+			west: scene.materials.west.toString(),
+			north: scene.materials.north.toString(),
+			south: scene.materials.south.toString(),
+			floor: scene.materials.floor.toString(),
+			ceiling: scene.materials.ceiling.toString(),
+		},
+		furniture: scene.furniture.map((f: any) => ({
+			height: f.height.toString(),
+			points: f.points.map((p: any) => ({
+				x: p.x.toString(),
+				y: p.y.toString(),
+			})),
+		})),
+		microphones: scene.microphones.map((m: any) => ({
+			x: m.x.toString(),
+			y: m.y.toString(),
+			z: m.z.toString(),
+		})),
+		speakers: scene.speakers.map((s: any) => ({
+			x: s.x.toString(),
+			y: s.y.toString(),
+			z: s.z.toString(),
+		})),
+	};
 }
 
 /**

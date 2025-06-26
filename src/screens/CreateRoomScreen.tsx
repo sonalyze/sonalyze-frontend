@@ -11,10 +11,12 @@ import MultiInput from '../components/MutliInput';
 import { createEmpyRoomScene, validateRoomScene } from '../tools/helpers';
 import Button from '../components/Button';
 import { showHapticErrorToast } from '../tools/hapticToasts';
-import { createRoom } from '../api/roomRequests';
+import { createRoom, updateRoomScene } from '../api/roomRequests';
 import MaterialDropdown from '../components/MaterialDropdown';
 import { X } from 'lucide-react-native';
+import { RouteProp } from '@react-navigation/native';
 
+type ScreenRouteProp = RouteProp<RootStackParamList, 'CreateRoomScreen'>;
 type CreateRoomNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
 	'CreateRoomScreen'
@@ -22,17 +24,21 @@ type CreateRoomNavigationProp = NativeStackNavigationProp<
 
 type CreateRoomScreenProps = {
 	navigation: CreateRoomNavigationProp;
-	roomId?: string;
-	roomScene?: RoomScene;
+	route: ScreenRouteProp;
 };
 
 const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 	props: CreateRoomScreenProps
 ) => {
+	const roomId = props.route.params.roomId;
+	const initialRoomScene = props.route.params.roomScene;
+
 	const [scene, setScene] = useState<RoomScene>(
-		props.roomScene ?? createEmpyRoomScene()
+		initialRoomScene ?? createEmpyRoomScene()
 	);
-	const [roomName, setRoomName] = useState<string>('');
+	const [roomName, setRoomName] = useState<string>(
+		props.route.params.roomName || ''
+	);
 
 	const { t } = useTranslation();
 
@@ -249,6 +255,9 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 								};
 							})
 						}
+						initialValues={
+							roomId ? initialRoomScene?.materials : undefined
+						}
 					/>
 				</Card>
 				<Button
@@ -256,23 +265,24 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 					onPress={async () => {
 						if (!roomName.trim()) {
 							showHapticErrorToast('Please enter a room name');
-
 							return;
 						}
+						console.log('1');
 						const validate = validateRoomScene(scene);
 						if (!validate.valid) {
 							showHapticErrorToast(validate.errors.join('\n'));
 						}
 
+						if (roomId && initialRoomScene) {
+							await updateRoomScene(roomId, scene);
+							props.navigation.replace('RoomDetailScreen', {
+								roomId: roomId,
+							});
+						}
+
 						const result = await createRoom(roomName, scene);
-						props.navigation.replace('HistoryDetailScreen', {
-							item: {
-								id: result.id,
-								name: result.name,
-								lastUpdatedAt: result.lastUpdatedAt,
-								hasSimulation: result.hasSimulation,
-								isOwner: true,
-							},
+						props.navigation.replace('RoomDetailScreen', {
+							roomId: result.id,
 						});
 					}}
 					className="mt-4"

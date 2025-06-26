@@ -190,7 +190,10 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 							<Button
 								label={t('start')}
 								onPress={() =>
-									props.navigation.push('CreateRoomScreen')
+									props.navigation.push(
+										'CreateRoomScreen',
+										{}
+									)
 								}
 							/>
 						</View>
@@ -213,14 +216,19 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 							history.items.map((item) => (
 								<TouchableOpacity
 									key={`${item.id}-${item.createdAt}-${item.type}`}
-									onPress={() =>
-										props.navigation.push(
-											'HistoryDetailScreen',
-											{
-												item: item.raw,
-											}
-										)
-									}
+									onPress={() => {
+										if ('hasSimulation' in item.raw) {
+											props.navigation.push(
+												'RoomDetailScreen',
+												{ roomId: item.raw.id }
+											);
+										} else {
+											props.navigation.push(
+												'HistoryDetailScreen',
+												{ item: item.raw }
+											);
+										}
+									}}
 								>
 									<HistoryItem
 										item={
