@@ -28,8 +28,8 @@
 	},
 	{ "label": "wood", "value": "wood", "type": ["floor", "wall", "ceiling"] },
 	{
-		"label": "Ceramic tiles with smooth surfac",
-		"value": "Ceramic tiles with smooth surfac",
+		"label": "Ceramic tiles with smooth surface",
+		"value": "Ceramic tiles with smooth surface",
 		"type": ["floor", "wall"]
 	}
 ]
