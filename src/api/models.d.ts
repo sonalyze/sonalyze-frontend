@@ -21,21 +21,9 @@ type RoomScene = {
 		floor: string;
 		ceiling: string;
 	};
-	// Die eckigen Klammern [] stehen jetzt nach der geschweiften Klammer
-	furniture: {
-		height: number;
-		points: [{ x: number; y: number }];
-	}[];
-	microphones: {
-		x: number;
-		y: number;
-		z: number;
-	}[];
-	speakers: {
-		x: number;
-		y: number;
-		z: number;
-	}[];
+	furniture: [{ height: number; points: [{ x: number; y: number }] }];
+	microphones: [{ x: number; y: number; z: number }];
+	speakers: [{ x: number; y: number; z: number }];
 };
 
 type AcousticParameters = {
