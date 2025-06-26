@@ -21,7 +21,6 @@ import MeasurementScreen from './screens/MeasurementScreen';
 import MeasurementResultScreen from './screens/MeasurementResultScreen';
 import HistoryDetailScreen from './screens/HistoryDetailScreen';
 import HistoryScreen from './screens/HistoryScreen';
-import CreateRoomScreenRework from './screens/CreateRoomScreenRework';
 import CreateRoomScreen from './screens/CreateRoomScreen';
 
 enableScreens();
@@ -144,7 +143,7 @@ const RootStack = () => (
 		/>
 		<Stack.Screen
 			name="CreateRoomScreen"
-			component={CreateRoomScreenRework}
+			component={CreateRoomScreen}
 			options={{
 				headerShown: false,
 			}}

@@ -1,136 +1,49 @@
-import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTranslation } from 'react-i18next';
-import { useNavigation } from '@react-navigation/native';
-import { toast } from 'sonner-native';
-import { useForm, useFieldArray } from 'react-hook-form';
-import { X } from 'lucide-react-native';
-import { createRoom } from '../api/roomRequests';
-import SecondaryHeader from '../components/SecondaryHeader';
-import DropDownPicker from 'react-native-dropdown-picker';
-import Button from '../components/Button';
-import {
-	FormData,
-	materialKeys,
-	getOptionsForSurface,
-	parseFloatWithDefault,
-	requiredNumericRules,
-	optionalNumericRules,
-} from './CreateRoom.utils';
-import { ControlledInput } from '../components/ControlledInput';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Text, TextInput, View } from 'react-native';
 import { RootStackParamList } from '../App';
-import { SetStateAction, useState } from 'react';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useEffect, useState } from 'react';
+import { ScrollView } from 'react-native-gesture-handler';
+import SecondaryHeader from '../components/SecondaryHeader';
+import { useTranslation } from 'react-i18next';
+import Card from '../components/Card';
+import MultiInput from '../components/MutliInput';
+import { createEmpyRoomScene, validateRoomScene } from '../tools/helpers';
+import Button from '../components/Button';
+import { showHapticErrorToast } from '../tools/hapticToasts';
+import { createRoom } from '../api/roomRequests';
 import MaterialDropdown from '../components/MaterialDropdown';
 
-type CreateRoomNavProp = NativeStackNavigationProp<
+type CreateRoomNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
 	'CreateRoomScreen'
 >;
-const CreateRoomScreen: React.FC = () => {
+
+type CreateRoomScreenProps = {
+	navigation: CreateRoomNavigationProp;
+	roomId?: string;
+	roomScene?: RoomScene;
+};
+
+const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
+	props: CreateRoomScreenProps
+) => {
+	const [scene, setScene] = useState<RoomScene>(
+		props.roomScene ?? createEmpyRoomScene()
+	);
+	const [roomName, setRoomName] = useState<string>('');
+
 	const { t } = useTranslation();
-	const navigation = useNavigation<CreateRoomNavProp>();
-	const {
-		control,
-		handleSubmit,
-		formState: { isValid, isSubmitting },
-	} = useForm<FormData>({
-		mode: 'onChange',
-		defaultValues: {
-			roomName: '',
-			dimensions: { width: '', height: '', depth: '' },
-			materials: {
-				east: '',
-				west: '',
-				north: '',
-				south: '',
-				floor: '',
-				ceiling: '',
-			},
-			furniture: [],
-			microphone: [{ x: '', y: '', z: '' }],
-			speaker: [{ x: '', y: '', z: '' }],
-		},
-	});
-	const {
-		fields: furnitureFields,
-		append: appendFurniture,
-		remove: removeFurniture,
-	} = useFieldArray({ control, name: 'furniture' });
-	const {
-		fields: microphoneFields,
-		append: appendMicrophone,
-		remove: removeMicrophone,
-	} = useFieldArray({ control, name: 'microphone' });
-	const {
-		fields: speakerFields,
-		append: appendSpeaker,
-		remove: removeSpeaker,
-	} = useFieldArray({ control, name: 'speaker' });
 
-	const onSubmit = async (data: FormData) => {
-		try {
-			const sceneData: RoomScene = {
-				roomId: '',
-				dimensions: {
-					width: parseFloatWithDefault(data.dimensions.width),
-					height: parseFloatWithDefault(data.dimensions.height),
-					depth: parseFloatWithDefault(data.dimensions.depth),
-				},
-				materials: data.materials,
-				furniture: data.furniture.map((f) => ({
-					height: parseFloatWithDefault(f.height),
-					points: [
-						{
-							x: parseFloatWithDefault(f.points.x),
-							y: parseFloatWithDefault(f.points.y),
-						},
-					],
-				})),
-				microphones: data.microphone.map((m) => ({
-					x: parseFloatWithDefault(m.x),
-					y: parseFloatWithDefault(m.y),
-					z: parseFloatWithDefault(m.z),
-				})),
-				speakers: data.speaker.map((s) => ({
-					x: parseFloatWithDefault(s.x),
-					y: parseFloatWithDefault(s.y),
-					z: parseFloatWithDefault(s.z),
-				})),
-			};
-
-			const result = await createRoom(data.roomName, sceneData);
-			toast.success(t('toasts.success.title'), {
-				description: t('toasts.createRoomSuccess.message', {
-					name: result.name,
-					id: result.id,
-				}),
-			});
-			navigation.navigate('HistoryDetailScreen', {
-				item: {
-					id: result.id,
-					name: result.name,
-					lastUpdatedAt: result.lastUpdatedAt,
-					hasSimulation: result.hasSimulation,
-					isOwner: true,
-				},
-			});
-		} catch (error) {
-			console.error(error);
-			toast.error(t('toasts.submitError.title'), {
-				description:
-					error instanceof Error
-						? error.message
-						: t('common.unknownError'),
-			});
-		}
-	};
+	useEffect(() => {
+		console.log(scene);
+	}, [scene]);
 
 	return (
 		<SafeAreaView className="flex-1 bg-background">
 			<SecondaryHeader
 				title={t('createRoom.title')}
-				onBack={() => navigation.goBack()}
+				onBack={() => props.navigation.goBack()}
 			/>
 
 			<ScrollView
@@ -141,234 +54,207 @@ const CreateRoomScreen: React.FC = () => {
 				}}
 				keyboardShouldPersistTaps="handled"
 			>
-				{/* Allgemeine Informationen */}
-				<View className="bg-white rounded-xl p-4 mb-2 border border-gray-200">
-					<ControlledInput
-						control={control}
-						name="roomName"
-						rules={{ required: true }}
-						placeholder={t('createRoom.placeholders.roomName')}
+				<Card className="mt-5">
+					<Text className="text-lg font-semibold mb-2">
+						Room name
+					</Text>
+					<TextInput
+						keyboardType="default"
+						className="border border-gray-300 rounded-md p-2"
+						placeholder="Mein toller Raum"
+						value={roomName}
+						onChange={(e) => setRoomName(e.nativeEvent.text)}
 					/>
-				</View>
+				</Card>
 
-				{/* Raum-Dimensionen */}
-				<View className="bg-white rounded-xl p-4 mb-2 border border-gray-200">
-					<Text className="text-xl font-semibold mb-4 text-gray-700">
-						{t('createRoom.sections.dimensions')}
+				<Card className="mt-5">
+					<Text className="text-lg font-semibold mb-2">
+						Room Dimensions
 					</Text>
-					<View className="flex-row justify-between">
-						<ControlledInput
-							control={control}
-							name="dimensions.width"
-							rules={requiredNumericRules}
-							placeholder={t('common.width')}
-							keyboardType="numeric"
-							containerClassName="flex-1 mx-1"
-						/>
-						<ControlledInput
-							control={control}
-							name="dimensions.height"
-							rules={requiredNumericRules}
-							placeholder={t('common.height')}
-							keyboardType="numeric"
-							containerClassName="flex-1 mx-1"
-						/>
-						<ControlledInput
-							control={control}
-							name="dimensions.depth"
-							rules={requiredNumericRules}
-							placeholder={t('common.depth')}
-							keyboardType="numeric"
-							containerClassName="flex-1 mx-1"
-						/>
-					</View>
-				</View>
+					<MultiInput
+						labels={['Width', 'Height', 'Depth']}
+						onChange={(values) => {
+							setScene((scene) => ({
+								...scene,
+								dimensions: {
+									width: values[0].x ?? '0',
+									height: values[0].y ?? '0',
+									depth: values[0].z ?? '0',
+								},
+							}));
+						}}
+						values={[
+							{
+								x: scene.dimensions.width,
+								y: scene.dimensions.height,
+								z: scene.dimensions.depth,
+							},
+						]}
+						notExpandable
+					/>
+				</Card>
 
-				{/* Möbel */}
-				<View className="bg-white rounded-xl p-4 mb-2 border border-gray-200">
-					<Text className="text-xl font-semibold mb-4 text-gray-700">
-						{t('createRoom.sections.furniture')}
+				<Card className="mt-5">
+					<Text className="text-lg font-semibold mb-2">
+						Furniture
 					</Text>
-					{furnitureFields.map((field, index) => (
+					{scene.furniture.map((value, index) => (
 						<View
-							key={field.id}
-							className="p-3 mb-3 border border-gray-200 rounded-lg relative"
+							key={index}
+							className="bg-white rounded-xl gap-2 mb-2 px-4 py-2"
 						>
-							<View className="flex-row justify-between">
-								<ControlledInput
-									control={control}
-									name={`furniture.${index}.height`}
-									rules={optionalNumericRules}
-									placeholder={t('common.height')}
-									keyboardType="numeric"
-									containerClassName="flex-1 mx-1"
-								/>
-								<ControlledInput
-									control={control}
-									name={`furniture.${index}.points.x`}
-									rules={optionalNumericRules}
-									placeholder={t('common.positionX')}
-									keyboardType="numeric"
-									containerClassName="flex-1 mx-1"
-								/>
-								<ControlledInput
-									control={control}
-									name={`furniture.${index}.points.y`}
-									rules={optionalNumericRules}
-									placeholder={t('common.positionY')}
-									keyboardType="numeric"
-									containerClassName="flex-1 mx-1"
+							<MultiInput
+								labels={['x', 'y']}
+								onChange={(values) => {
+									setScene((prev) => {
+										const newFurniture = [
+											...prev.furniture,
+										];
+										newFurniture[index] = {
+											...newFurniture[index],
+											points: values.map((v) => ({
+												x: v.x,
+												y: v.y,
+											})),
+										};
+										return {
+											...prev,
+											furniture: newFurniture,
+										};
+									});
+								}}
+								values={value.points.map((f) => ({
+									x: f.x,
+									y: f.y,
+								}))}
+							/>
+							<View className="flex justify-around m-2 mt-6">
+								<Text className="m-auto mb-2">Height</Text>
+								<TextInput
+									keyboardType="decimal-pad"
+									className="border border-gray-300 rounded-md w-2/3 m-auto p-2"
+									placeholder="Mein toller Raum"
+									value={value.height.toString()}
+									onChange={(e) =>
+										setScene((prev) => {
+											const newFurniture = [
+												...prev.furniture,
+											];
+											newFurniture[index] = {
+												...newFurniture[index],
+												height: e.nativeEvent.text.replaceAll(
+													',',
+													'.'
+												),
+											};
+											return {
+												...prev,
+												furniture: newFurniture,
+											};
+										})
+									}
 								/>
 							</View>
-							<TouchableOpacity
-								onPress={() => removeFurniture(index)}
-								className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1"
-							>
-								<X size={16} color="white" />
-							</TouchableOpacity>
 						</View>
 					))}
 					<Button
-						label={t('createRoom.buttons.addFurniture')}
-						type="secondary"
-						onPress={() =>
-							appendFurniture({
-								height: '',
-								points: { x: '', y: '' },
+						label="Add"
+						onPress={() => {
+							setScene((prev) => ({
+								...prev,
+								furniture: [
+									...prev.furniture,
+									{
+										height: '',
+										points: [{ x: '', y: '' }],
+									},
+								],
+							}));
+						}}
+						className="mt-2"
+					/>
+				</Card>
+
+				<Card className="mt-5">
+					<Text className="text-lg font-semibold mb-2">
+						Microphones
+					</Text>
+					<MultiInput
+						labels={['x', 'y', 'z']}
+						onChange={(values) => {
+							setScene((scene) => ({
+								...scene,
+								microphones: values as {
+									x: string;
+									y: string;
+									z: string;
+								}[],
+							}));
+						}}
+						values={scene.microphones}
+					/>
+				</Card>
+				<Card className="mt-5">
+					<Text className="text-lg font-semibold mb-2">Speakers</Text>
+					<MultiInput
+						labels={['x', 'y', 'z']}
+						onChange={(values) => {
+							setScene((scene) => ({
+								...scene,
+								speakers: values as {
+									x: string;
+									y: string;
+									z: string;
+								}[],
+							}));
+						}}
+						values={scene.speakers}
+					/>
+				</Card>
+				<Card className="mt-5">
+					<Text className="text-lg font-semibold mb-2">
+						Materials
+					</Text>
+					<MaterialDropdown
+						onChange={(key, val) =>
+							setScene((prev) => {
+								return {
+									...prev,
+									materials: {
+										...prev.materials,
+										[key]: val,
+									},
+								};
 							})
 						}
 					/>
-				</View>
+				</Card>
+				<Button
+					label="Save Room"
+					onPress={async () => {
+						if (!roomName.trim()) {
+							showHapticErrorToast('Please enter a room name');
 
-				{/* Mikrofon */}
-				<View className="bg-white rounded-xl p-4 mb-2 border border-gray-200">
-					<Text className="text-xl font-semibold mb-4 text-gray-700">
-						{t('createRoom.sections.microphone')}
-					</Text>
-					{microphoneFields.map((field, index) => (
-						<View
-							key={field.id}
-							className="p-3 mb-3 border border-gray-200 rounded-lg relative"
-						>
-							<View className="flex-row justify-between">
-								<ControlledInput
-									control={control}
-									name={`microphone.${index}.x`}
-									rules={requiredNumericRules}
-									placeholder="X"
-									keyboardType="numeric"
-									containerClassName="flex-1 mx-1"
-								/>
-								<ControlledInput
-									control={control}
-									name={`microphone.${index}.y`}
-									rules={requiredNumericRules}
-									placeholder="Y"
-									keyboardType="numeric"
-									containerClassName="flex-1 mx-1"
-								/>
-								<ControlledInput
-									control={control}
-									name={`microphone.${index}.z`}
-									rules={requiredNumericRules}
-									placeholder="Z"
-									keyboardType="numeric"
-									containerClassName="flex-1 mx-1"
-								/>
-							</View>
-							{microphoneFields.length > 1 && (
-								<TouchableOpacity
-									onPress={() => removeMicrophone(index)}
-									className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1"
-								>
-									<X size={16} color="white" />
-								</TouchableOpacity>
-							)}
-						</View>
-					))}
-					<Button
-						label={t('createRoom.buttons.addMicrophone')}
-						type="secondary"
-						onPress={() =>
-							appendMicrophone({ x: '', y: '', z: '' })
+							return;
 						}
-					/>
-				</View>
-
-				{/* Lautsprecher */}
-				<View className="bg-white rounded-xl p-4 mb-2 border border-gray-200">
-					<Text className="text-xl font-semibold mb-4 text-gray-700">
-						{t('createRoom.sections.speaker')}
-					</Text>
-					{speakerFields.map((field, index) => (
-						<View
-							key={field.id}
-							className="p-3 mb-3 border border-gray-200 rounded-lg relative"
-						>
-							<View className="flex-row justify-between">
-								<ControlledInput
-									control={control}
-									name={`speaker.${index}.x`}
-									rules={requiredNumericRules}
-									placeholder="X"
-									keyboardType="numeric"
-									containerClassName="flex-1 mx-1"
-								/>
-								<ControlledInput
-									control={control}
-									name={`speaker.${index}.y`}
-									rules={requiredNumericRules}
-									placeholder="Y"
-									keyboardType="numeric"
-									containerClassName="flex-1 mx-1"
-								/>
-								<ControlledInput
-									control={control}
-									name={`speaker.${index}.z`}
-									rules={requiredNumericRules}
-									placeholder="Z"
-									keyboardType="numeric"
-									containerClassName="flex-1 mx-1"
-								/>
-							</View>
-							{speakerFields.length > 1 && (
-								<TouchableOpacity
-									onPress={() => removeSpeaker(index)}
-									className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1"
-								>
-									<X size={16} color="white" />
-								</TouchableOpacity>
-							)}
-						</View>
-					))}
-					<Button
-						label={t('createRoom.buttons.addSpeaker')}
-						type="secondary"
-						onPress={() => appendSpeaker({ x: '', y: '', z: '' })}
-					/>
-				</View>
-
-				{/* Wandmaterialien */}
-				<View className="bg-white rounded-xl p-4 mb-2 border border-gray-200">
-					<Text className="text-xl font-semibold mb-4 text-gray-700">
-						{t('createRoom.sections.materials')}
-					</Text>
-					<MaterialDropdown />
-				</View>
-
-				{/* Button zum Absenden */}
-				<View className="mt-2">
-					<Button
-						label={
-							isSubmitting
-								? t('common.submitting')
-								: t('createRoom.buttons.create')
+						const validate = validateRoomScene(scene);
+						if (!validate.valid) {
+							showHapticErrorToast(validate.errors.join('\n'));
 						}
-						onPress={handleSubmit(onSubmit)}
-						disabled={!isValid || isSubmitting}
-						type="primary"
-					/>
-				</View>
+
+						const result = await createRoom(roomName, scene);
+						props.navigation.replace('HistoryDetailScreen', {
+							item: {
+								id: result.id,
+								name: result.name,
+								lastUpdatedAt: result.lastUpdatedAt,
+								hasSimulation: result.hasSimulation,
+								isOwner: true,
+							},
+						});
+					}}
+					className="mt-4"
+				/>
 			</ScrollView>
 		</SafeAreaView>
 	);
