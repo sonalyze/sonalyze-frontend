@@ -101,7 +101,7 @@ public class NativeAudioModule: Module {
     // -----------------------------------------------------------------------
     // MARK: - File-based Recording Functions (for debugging and testing)
     
-    AsyncFunction("fileStartRecording") { (fileName: String) -> [String: Any] in
+    AsyncFunction("fileStartRecording") { (fileName: String, calibrationFactor: Double) -> [String: Any] in
       
       do {
         let audioSession = AVAudioSession.sharedInstance()
