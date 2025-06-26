@@ -159,7 +159,6 @@
 			"addSpeaker": "Add Speaker"
 		}
 	},
-
 	"materials": {
 		"woodenFloorVarnished": "Holzboden (lackiert)",
 		"acousticCeilingTiles": "Akustik-Deckenplatten",
@@ -167,7 +166,6 @@
 		"heavyCurtains": "Schwere Vorhänge",
 		"carpetOnConcrete": "Teppich auf Beton"
 	},
-
 	"toasts": {
 		"incompleteInput": {
 			"title": "Incomplete Input",
@@ -186,5 +184,6 @@
 			"title": "Submission Error"
 		}
 	},
-	"createNewSimulation": "Create New Simulation"
+	"createNewSimulation": "Create New Simulation",
+	"dateFormat": "{{datetime, MM/DD/YYYY}}"
 }

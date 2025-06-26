@@ -13,32 +13,34 @@ import {
 	deleteMeasurement,
 	removeImportedMeasurement,
 } from '../api/measurementRequests';
-import { deleteRoom, removeImportedRoom } from '../api/roomRequests';
-import { formatWithOptions } from 'date-fns/fp';
-import { enUS, de, fr, tr, it, es } from 'date-fns/locale';
 import { RootStackParamList } from '../App';
 import MeasurementDetail from '../components/MeasurementDetail';
-import RoomDetail from '../components/RoomDetail';
+import {
+	showHapticErrorToast,
+	showHapticSuccessToast,
+} from '../tools/hapticToasts';
 
-// Typen für Navigation und Route
-type ScreenRouteProp = RouteProp<RootStackParamList, 'HistoryDetailScreen'>;
-type ScreenNavigationProp = NativeStackNavigationProp<
+type MeasurementDetailScreenRouteProp = RouteProp<
 	RootStackParamList,
-	'HistoryDetailScreen'
+	'MeasurementDetailScreen'
 >;
-type Props = {
-	route: ScreenRouteProp;
-	navigation: ScreenNavigationProp;
-};
-const HistoryDetailScreen = ({ route, navigation }: Props) => {
-	const { t, i18n } = useTranslation();
-	const queryClient = useQueryClient();
-	const item = route.params.item as Measurement | Room;
-	const isMeasurement = (item as Measurement).values !== undefined;
-	const isOwner = item.isOwner;
 
-	// Zeigt ein Bestätigungs-Popup vor dem Löschen
-	const confirmDelete = () => {
+type MeasurementDetailScreenNavigationProp = NativeStackNavigationProp<
+	RootStackParamList,
+	'MeasurementDetailScreen'
+>;
+
+type MeasurementDetailScreenProps = {
+	route: MeasurementDetailScreenRouteProp;
+	navigation: MeasurementDetailScreenNavigationProp;
+};
+
+const MeasurementDetailScreen = (props: MeasurementDetailScreenProps) => {
+	const { t } = useTranslation();
+	const queryClient = useQueryClient();
+	const item = props.route.params.item;
+
+	function confirmDelete() {
 		Alert.alert(t('confirmDeletionTitle'), t('confirmDeletionMessage'), [
 			{ text: t('cancel'), style: 'cancel' },
 			{
@@ -47,30 +49,21 @@ const HistoryDetailScreen = ({ route, navigation }: Props) => {
 				onPress: () => handleDelete(item.id),
 			},
 		]);
-	};
+	}
 
 	const handleDelete = async (id: string) => {
 		try {
-			if (isMeasurement) {
-				if (!isOwner) {
-					await removeImportedMeasurement(id);
-					toast.success(t('removeImportedSuccess'));
-				} else {
-					await deleteMeasurement(id);
-					toast.success(t('deleteSuccess'));
-				}
+			if (!item.isOwner) {
+				await removeImportedMeasurement(id);
+				toast.success(t('removeImportedSuccess'));
 			} else {
-				if (!isOwner) {
-					await removeImportedRoom(id);
-					toast.success(t('removeImportedRoomSuccess'));
-				} else {
-					await deleteRoom(id);
-					toast.success(t('deleteRoomSuccess'));
-				}
+				await deleteMeasurement(id);
+				toast.success(t('deleteSuccess'));
 			}
+
 			await queryClient.invalidateQueries({ queryKey: ['measurements'] });
 			await queryClient.invalidateQueries({ queryKey: ['rooms'] });
-			navigation.goBack();
+			props.navigation.goBack();
 		} catch (err: unknown) {
 			console.error('[Delete] failed:', err);
 			let status: number | undefined;
@@ -86,34 +79,24 @@ const HistoryDetailScreen = ({ route, navigation }: Props) => {
 		}
 	};
 
-	const dateValue = isMeasurement
-		? (item as Measurement).createdAt
-		: (item as Room).lastUpdatedAt;
-	const localeMap: Record<string, typeof enUS> = {
-		en: enUS,
-		de,
-		fr,
-		tr,
-		it,
-		es,
-	};
-	const formatLocale = formatWithOptions({
-		locale: localeMap[i18n.language] || enUS,
-	});
-	const formattedDate =
-		i18n.language === 'de'
-			? formatLocale("d. MMMM yyyy 'um' HH:mm 'Uhr'", new Date(dateValue))
-			: formatLocale('PPPp', new Date(dateValue));
+	async function onCopy() {
+		const success = await copyToClipboard(item.id);
 
-	const summary = isMeasurement
-		? (item as Measurement).values?.[0]?.[0] || null
-		: null;
+		if (success) {
+			showHapticSuccessToast(t('copySuccess'));
+		} else {
+			showHapticErrorToast(t('copyError'));
+		}
+	}
+
+	// @TODO: Format date!
+	const date = new Date(item.createdAt);
 
 	return (
 		<SafeAreaView className="flex-1 bg-background">
 			<SecondaryHeader
 				title={item.name}
-				onBack={() => navigation.pop()}
+				onBack={() => props.navigation.pop()}
 				suffix={
 					<TouchableOpacity onPress={confirmDelete}>
 						<Trash2 size={24} />
@@ -124,35 +107,22 @@ const HistoryDetailScreen = ({ route, navigation }: Props) => {
 			<ScrollView className="p-4">
 				<View className="flex-row items-center mb-2">
 					<Text className="text-base text-muted">ID: {item.id}</Text>
-					<TouchableOpacity
-						onPress={() => {
-							copyToClipboard(item.id);
-							toast.success(t('copySuccess'));
-						}}
-						className="ml-2"
-					>
+					<TouchableOpacity onPress={onCopy} className="ml-2">
 						<Copy size={18} />
 					</TouchableOpacity>
 				</View>
 
 				<Text className="text-base text-muted font-medium mb-2">
-					{formattedDate}
+					{t('dateFormat', { datetime: date })}
 				</Text>
 				<Text className="text-base text-muted font-medium mb-4">
 					{item.isOwner ? 'Owner' : 'Imported'}
 				</Text>
 
-				{isMeasurement ? (
-					<MeasurementDetail summary={summary} />
-				) : (
-					<RoomDetail
-						roomId={item.id}
-						hasSimulation={(item as Room).hasSimulation}
-					/>
-				)}
+				<MeasurementDetail values={item.values} />
 			</ScrollView>
 		</SafeAreaView>
 	);
 };
 
-export default HistoryDetailScreen;
+export default MeasurementDetailScreen;

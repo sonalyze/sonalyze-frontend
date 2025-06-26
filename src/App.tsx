@@ -18,8 +18,7 @@ import JoinSessionScreen from './screens/JoinSessionScreen';
 import StartSessionScreen from './screens/StartSessionScreen';
 import DevSettingsScreen from './screens/settings/DevSettings';
 import MeasurementScreen from './screens/MeasurementScreen';
-import MeasurementResultScreen from './screens/MeasurementResultScreen';
-import HistoryDetailScreen from './screens/HistoryDetailScreen';
+import MeasurementDetailScreen from './screens/MeasurementDetailScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import CreateRoomScreen from './screens/CreateRoomScreen';
 import RoomDetailScreen from './screens/RoomDetailScreen';
@@ -63,8 +62,8 @@ const RootStack = () => (
 			}}
 		/>
 		<Stack.Screen
-			name="HistoryDetailScreen"
-			component={HistoryDetailScreen}
+			name="MeasurementDetailScreen"
+			component={MeasurementDetailScreen}
 			options={{
 				headerShown: false,
 			}}
@@ -98,13 +97,6 @@ const RootStack = () => (
 			options={{
 				headerShown: false,
 				gestureEnabled: false,
-			}}
-		/>
-		<Stack.Screen
-			name="MeasurementResultScreen"
-			component={MeasurementResultScreen}
-			options={{
-				headerShown: false,
 			}}
 		/>
 		<Stack.Screen
@@ -162,11 +154,10 @@ const RootStack = () => (
 export type RootStackParamList = {
 	HomeScreen: undefined;
 	HistoryScreen: undefined;
-	HistoryDetailScreen: { item: Measurement | Room };
+	MeasurementDetailScreen: { item: Measurement };
 	StartSessionScreen: undefined;
 	JoinSessionScreen: undefined;
 	MeasurementScreen: { deviceType: 'microphone' | 'speaker' };
-	MeasurementResultScreen: { item: Measurement };
 	SettingsScreen: undefined;
 	QrScanScreen: undefined;
 	QrViewScreen: undefined;

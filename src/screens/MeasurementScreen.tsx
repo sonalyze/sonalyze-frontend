@@ -110,7 +110,21 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 			{
 				event: 'results',
 				handler: (data) => {
-					console.log(data);
+					const { results, id, name } = data as {
+						results: AcousticParameters[][];
+						id: string;
+						name: string;
+					};
+
+					props.navigation.replace('MeasurementDetailScreen', {
+						item: {
+							values: results,
+							id: id,
+							name: name,
+							createdAt: `${Date.now()}`,
+							isOwner: false,
+						},
+					});
 				},
 			},
 			{

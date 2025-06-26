@@ -34,7 +34,7 @@ const HistoryItem: FC<HistoryItemProps> = (props) => {
 	const formattedDate = format(new Date(item.createdAt), 'P p', { locale });
 
 	return (
-		<Card className="mb-2 bg-white shadow-lg p-4">
+		<Card className="mb-2 bg-white  p-4">
 			<View>
 				<Text className="text-base font-medium">{item.name}</Text>
 				<Text className="text-sm">
