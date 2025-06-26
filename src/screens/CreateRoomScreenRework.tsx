@@ -2,13 +2,14 @@ import { Text, TextInput, View } from 'react-native';
 import { RootStackParamList } from '../App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
 import SecondaryHeader from '../components/SecondaryHeader';
 import { useTranslation } from 'react-i18next';
 import Card from '../components/Card';
 import MultiInput from '../components/MutliInput';
 import { createEmpyRoomScene } from '../tools/helpers';
+import Button from '../components/Button';
 
 type CreateRoomNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -28,8 +29,13 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 		props.roomScene ?? createEmpyRoomScene()
 	);
 	const [roomName, setRoomName] = useState<string>('');
+	const [editedHeight, setEditedHeight] = useState<string>('');
 
 	const { t } = useTranslation();
+
+	useEffect(() => {
+		console.log(scene);
+	}, [scene]);
 
 	return (
 		<SafeAreaView className="flex-1 bg-background">
@@ -54,6 +60,8 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 						keyboardType="default"
 						className="border border-gray-300 rounded-md p-2"
 						placeholder="Mein toller Raum"
+						value={roomName}
+						onChange={(e) => setRoomName(e.nativeEvent.text)}
 					/>
 				</Card>
 				<Card className="mt-5">
@@ -82,6 +90,111 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 						notExpandable
 					/>
 				</Card>
+				<Card className="mt-5">
+					<Text className="text-lg font-semibold mb-2">
+						Room Dimensions
+					</Text>
+					<MultiInput
+						labels={['Width', 'Height', 'Depth']}
+						onChange={(values) => {
+							setScene((scene) => ({
+								...scene,
+								dimensions: {
+									width: values[0].x ?? 0,
+									height: values[0].y ?? 0,
+									depth: values[0].z ?? 0,
+								},
+							}));
+						}}
+						values={[
+							{
+								x: scene.dimensions.width,
+								y: scene.dimensions.height,
+								z: scene.dimensions.depth,
+							},
+						]}
+						notExpandable
+					/>
+				</Card>
+
+				<Card className="mt-5">
+					<Text className="text-lg font-semibold mb-2">
+						Furniture
+					</Text>
+					{scene.furniture.map((value, index) => (
+						<View
+							key={index}
+							className="bg-white rounded-xl gap-2 mb-2 px-4 py-2"
+						>
+							<MultiInput
+								labels={['x', 'y']}
+								onChange={(values) => {
+									setScene((prev) => {
+										const newFurniture = [
+											...prev.furniture,
+										];
+										newFurniture[index] = {
+											...newFurniture[index],
+											points: values.map((v) => ({
+												x: v.x,
+												y: v.y,
+											})),
+										};
+										return {
+											...prev,
+											furniture: newFurniture,
+										};
+									});
+								}}
+								values={value.points.map((f) => ({
+									x: f.x,
+									y: f.y,
+								}))}
+							/>
+							<View className="flex justify-around m-2 mt-6">
+								<Text className="m-auto mb-2">Height</Text>
+								<TextInput
+									keyboardType="decimal-pad"
+									className="border border-gray-300 rounded-md w-2/3 m-auto p-2"
+									placeholder="Mein toller Raum"
+									value={value.height.toString()}
+									onChange={(e) =>
+										setScene((prev) => {
+											const newFurniture = [
+												...prev.furniture,
+											];
+											newFurniture[index] = {
+												...newFurniture[index],
+												height: e.nativeEvent.text.replaceAll(
+													',',
+													'.'
+												),
+											};
+											return {
+												...prev,
+												furniture: newFurniture,
+											};
+										})
+									}
+								/>
+							</View>
+						</View>
+					))}
+					<Button
+						label="Add"
+						onPress={() => {
+							setScene((prev) => ({
+								...prev,
+								furniture: [
+									...prev.furniture,
+									{ height: '0', points: [{ x: 0, y: 0 }] },
+								],
+							}));
+						}}
+						className="mt-2"
+					/>
+				</Card>
+
 				<Card className="mt-5">
 					<Text className="text-lg font-semibold mb-2">
 						Microphones

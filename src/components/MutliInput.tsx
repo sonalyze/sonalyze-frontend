@@ -1,5 +1,5 @@
-import { FC, useState } from 'react';
-import { KeyboardTypeOptions, Text, View } from 'react-native';
+import { FC, useEffect, useState } from 'react';
+import { Text, View } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import Button from './Button';
 
@@ -8,13 +8,28 @@ type MultiInputProps = {
 	values: { x: number; y: number; z?: number }[];
 	onChange: (values: { x: number; y: number; z?: number }[]) => void;
 	notExpandable?: boolean;
-	type?: KeyboardTypeOptions;
 };
 
 const MultiInput: FC<MultiInputProps> = (props: MultiInputProps) => {
 	const [values, setValues] = useState<
-		{ x: number | ''; y: number | ''; z?: number | '' }[]
-	>([...props.values]);
+		{ x: string; y: string; z?: string }[]
+	>(
+		props.values.map((value) => ({
+			x: value.x.toString(),
+			y: value.y.toString(),
+			z: value.z !== undefined ? value.z.toString() : undefined,
+		}))
+	);
+
+	useEffect(() => {
+		setValues(
+			props.values.map((value) => ({
+				x: value.x.toString(),
+				y: value.y.toString(),
+				z: value.z !== undefined ? value.z.toString() : undefined,
+			}))
+		);
+	}, [props.values]);
 
 	function hasOnlyValidNumbers() {
 		for (const value of values) {
@@ -23,6 +38,17 @@ const MultiInput: FC<MultiInputProps> = (props: MultiInputProps) => {
 			}
 		}
 		return true;
+	}
+
+	function onSubmit() {
+		if (hasOnlyValidNumbers())
+			props.onChange(
+				values.map((v) => ({
+					x: parseFloat(v.x.replace(',', '.')),
+					y: parseFloat(v.y.replace(',', '.')),
+					z: v.z ? parseFloat(v.z.replace(',', '.')) : undefined,
+				}))
+			);
 	}
 
 	return (
@@ -36,31 +62,16 @@ const MultiInput: FC<MultiInputProps> = (props: MultiInputProps) => {
 							</Text>
 						)}
 						<TextInput
-							keyboardType={props.type}
+							keyboardType="decimal-pad"
 							className="border border-gray-300 rounded-md p-2"
 							placeholder="Mein toller Raum"
 							value={value.x.toString()}
 							onChange={(e) => {
 								const newValues = [...values];
-								if (e.nativeEvent.text === '') {
-									newValues[index].x = '';
-								} else {
-									newValues[index].x = parseFloat(
-										e.nativeEvent.text
-									);
-								}
+								newValues[index].x = e.nativeEvent.text;
 								setValues(newValues);
 							}}
-							onSubmitEditing={() => {
-								if (hasOnlyValidNumbers())
-									props.onChange(
-										values as {
-											x: number;
-											y: number;
-											z?: number;
-										}[]
-									);
-							}}
+							onBlur={onSubmit}
 						/>
 					</View>
 					<View className="flex w-[28%]">
@@ -70,31 +81,16 @@ const MultiInput: FC<MultiInputProps> = (props: MultiInputProps) => {
 							</Text>
 						)}
 						<TextInput
-							keyboardType={props.type}
+							keyboardType="numeric"
 							className="border border-gray-300 rounded-md p-2"
 							placeholder="Mein toller Raum"
 							value={value.y.toString()}
 							onChange={(e) => {
 								const newValues = [...values];
-								if (e.nativeEvent.text === '') {
-									newValues[index].y = '';
-								} else {
-									newValues[index].y = parseFloat(
-										e.nativeEvent.text
-									);
-								}
+								newValues[index].y = e.nativeEvent.text;
 								setValues(newValues);
 							}}
-							onSubmitEditing={() => {
-								if (hasOnlyValidNumbers())
-									props.onChange(
-										values as {
-											x: number;
-											y: number;
-											z?: number;
-										}[]
-									);
-							}}
+							onBlur={onSubmit}
 						/>
 					</View>
 					{value.z !== undefined && (
@@ -105,31 +101,16 @@ const MultiInput: FC<MultiInputProps> = (props: MultiInputProps) => {
 								</Text>
 							)}
 							<TextInput
-								keyboardType={props.type}
+								keyboardType="numeric"
 								className="border border-gray-300 rounded-md p-2"
 								placeholder="Mein toller Raum"
 								value={value.z.toString()}
 								onChange={(e) => {
 									const newValues = [...values];
-									if (e.nativeEvent.text === '') {
-										newValues[index].z = '';
-									} else {
-										newValues[index].z = parseFloat(
-											e.nativeEvent.text
-										);
-									}
+									newValues[index].z = e.nativeEvent.text;
 									setValues(newValues);
 								}}
-								onSubmitEditing={() => {
-									if (hasOnlyValidNumbers())
-										props.onChange(
-											values as {
-												x: number;
-												y: number;
-												z?: number;
-											}[]
-										);
-								}}
+								onBlur={onSubmit}
 							/>
 						</View>
 					)}
@@ -142,9 +123,9 @@ const MultiInput: FC<MultiInputProps> = (props: MultiInputProps) => {
 						setValues((prevValues) => [
 							...prevValues,
 							{
-								x: 0,
-								y: 0,
-								z: props.values[0].z != null ? 0 : undefined,
+								x: '',
+								y: '',
+								z: values[0].z != null ? '' : undefined,
 							},
 						]);
 					}}

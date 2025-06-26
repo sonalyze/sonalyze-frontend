@@ -22,7 +22,7 @@ type RoomScene = {
 		ceiling: string;
 	};
 	furniture: {
-		height: number;
+		height: string;
 		points: { x: number; y: number }[];
 	}[];
 	microphones: {

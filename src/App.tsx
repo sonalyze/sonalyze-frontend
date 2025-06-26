@@ -22,6 +22,7 @@ import MeasurementResultScreen from './screens/MeasurementResultScreen';
 import HistoryDetailScreen from './screens/HistoryDetailScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import CreateRoomScreenRework from './screens/CreateRoomScreenRework';
+import CreateRoomScreen from './screens/CreateRoomScreen';
 
 enableScreens();
 
