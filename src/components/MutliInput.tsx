@@ -5,55 +5,15 @@ import Button from './Button';
 
 type MultiInputProps = {
 	labels: string[];
-	values: { x: number; y: number; z?: number }[];
-	onChange: (values: { x: number; y: number; z?: number }[]) => void;
+	values: { x: string; y: string; z?: string }[];
+	onChange: (values: { x: string; y: string; z?: string }[]) => void;
 	notExpandable?: boolean;
 };
 
 const MultiInput: FC<MultiInputProps> = (props: MultiInputProps) => {
-	const [values, setValues] = useState<
-		{ x: string; y: string; z?: string }[]
-	>(
-		props.values.map((value) => ({
-			x: value.x.toString(),
-			y: value.y.toString(),
-			z: value.z !== undefined ? value.z.toString() : undefined,
-		}))
-	);
-
-	useEffect(() => {
-		setValues(
-			props.values.map((value) => ({
-				x: value.x.toString(),
-				y: value.y.toString(),
-				z: value.z !== undefined ? value.z.toString() : undefined,
-			}))
-		);
-	}, [props.values]);
-
-	function hasOnlyValidNumbers() {
-		for (const value of values) {
-			if (value.x === '' || value.y === '' || value.z === '') {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	function onSubmit() {
-		if (hasOnlyValidNumbers())
-			props.onChange(
-				values.map((v) => ({
-					x: parseFloat(v.x.replace(',', '.')),
-					y: parseFloat(v.y.replace(',', '.')),
-					z: v.z ? parseFloat(v.z.replace(',', '.')) : undefined,
-				}))
-			);
-	}
-
 	return (
 		<View className="flex flex-col justify-between gap-2">
-			{values.map((value, index) => (
+			{props.values.map((value, index) => (
 				<View className="flex flex-row justify-around" key={index}>
 					<View className="flex w-[28%]">
 						{index === 0 && (
@@ -64,14 +24,14 @@ const MultiInput: FC<MultiInputProps> = (props: MultiInputProps) => {
 						<TextInput
 							keyboardType="decimal-pad"
 							className="border border-gray-300 rounded-md p-2"
-							placeholder="Mein toller Raum"
+							placeholder={props.labels[0]}
 							value={value.x.toString()}
 							onChange={(e) => {
-								const newValues = [...values];
-								newValues[index].x = e.nativeEvent.text;
-								setValues(newValues);
+								const newValues = [...props.values];
+								newValues[index].x =
+									e.nativeEvent.text.replaceAll(',', '.');
+								props.onChange(newValues);
 							}}
-							onBlur={onSubmit}
 						/>
 					</View>
 					<View className="flex w-[28%]">
@@ -83,14 +43,14 @@ const MultiInput: FC<MultiInputProps> = (props: MultiInputProps) => {
 						<TextInput
 							keyboardType="numeric"
 							className="border border-gray-300 rounded-md p-2"
-							placeholder="Mein toller Raum"
+							placeholder={props.labels[1]}
 							value={value.y.toString()}
 							onChange={(e) => {
-								const newValues = [...values];
-								newValues[index].y = e.nativeEvent.text;
-								setValues(newValues);
+								const newValues = [...props.values];
+								newValues[index].y =
+									e.nativeEvent.text.replaceAll(',', '.');
+								props.onChange(newValues);
 							}}
-							onBlur={onSubmit}
 						/>
 					</View>
 					{value.z !== undefined && (
@@ -103,14 +63,14 @@ const MultiInput: FC<MultiInputProps> = (props: MultiInputProps) => {
 							<TextInput
 								keyboardType="numeric"
 								className="border border-gray-300 rounded-md p-2"
-								placeholder="Mein toller Raum"
+								placeholder={props.labels[2]}
 								value={value.z.toString()}
 								onChange={(e) => {
-									const newValues = [...values];
-									newValues[index].z = e.nativeEvent.text;
-									setValues(newValues);
+									const newValues = [...props.values];
+									newValues[index].z =
+										e.nativeEvent.text.replaceAll(',', '.');
+									props.onChange(newValues);
 								}}
-								onBlur={onSubmit}
 							/>
 						</View>
 					)}
@@ -120,12 +80,12 @@ const MultiInput: FC<MultiInputProps> = (props: MultiInputProps) => {
 				<Button
 					label="Add"
 					onPress={() => {
-						setValues((prevValues) => [
-							...prevValues,
+						props.onChange([
+							...props.values,
 							{
 								x: '',
 								y: '',
-								z: values[0].z != null ? '' : undefined,
+								z: props.values[0].z != null ? '' : undefined,
 							},
 						]);
 					}}

@@ -29,7 +29,6 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 		props.roomScene ?? createEmpyRoomScene()
 	);
 	const [roomName, setRoomName] = useState<string>('');
-	const [editedHeight, setEditedHeight] = useState<string>('');
 
 	const { t } = useTranslation();
 
@@ -64,6 +63,7 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 						onChange={(e) => setRoomName(e.nativeEvent.text)}
 					/>
 				</Card>
+
 				<Card className="mt-5">
 					<Text className="text-lg font-semibold mb-2">
 						Room Dimensions
@@ -74,35 +74,9 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 							setScene((scene) => ({
 								...scene,
 								dimensions: {
-									width: values[0].x ?? 0,
-									height: values[0].y ?? 0,
-									depth: values[0].z ?? 0,
-								},
-							}));
-						}}
-						values={[
-							{
-								x: scene.dimensions.width,
-								y: scene.dimensions.height,
-								z: scene.dimensions.depth,
-							},
-						]}
-						notExpandable
-					/>
-				</Card>
-				<Card className="mt-5">
-					<Text className="text-lg font-semibold mb-2">
-						Room Dimensions
-					</Text>
-					<MultiInput
-						labels={['Width', 'Height', 'Depth']}
-						onChange={(values) => {
-							setScene((scene) => ({
-								...scene,
-								dimensions: {
-									width: values[0].x ?? 0,
-									height: values[0].y ?? 0,
-									depth: values[0].z ?? 0,
+									width: values[0].x ?? '0',
+									height: values[0].y ?? '0',
+									depth: values[0].z ?? '0',
 								},
 							}));
 						}}
@@ -187,7 +161,10 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 								...prev,
 								furniture: [
 									...prev.furniture,
-									{ height: '0', points: [{ x: 0, y: 0 }] },
+									{
+										height: '0',
+										points: [{ x: '0', y: '0' }],
+									},
 								],
 							}));
 						}}
@@ -205,9 +182,9 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 							setScene((scene) => ({
 								...scene,
 								microphones: values as {
-									x: number;
-									y: number;
-									z: number;
+									x: string;
+									y: string;
+									z: string;
 								}[],
 							}));
 						}}
@@ -222,9 +199,9 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 							setScene((scene) => ({
 								...scene,
 								speakers: values as {
-									x: number;
-									y: number;
-									z: number;
+									x: string;
+									y: string;
+									z: string;
 								}[],
 							}));
 						}}

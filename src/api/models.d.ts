@@ -9,9 +9,9 @@ type Room = {
 type RoomScene = {
 	roomId: string;
 	dimensions: {
-		width: number;
-		height: number;
-		depth: number;
+		width: string;
+		height: string;
+		depth: string;
 	};
 	materials: {
 		east: string;
@@ -23,17 +23,17 @@ type RoomScene = {
 	};
 	furniture: {
 		height: string;
-		points: { x: number; y: number }[];
+		points: { x: string; y: string }[];
 	}[];
 	microphones: {
-		x: number;
-		y: number;
-		z: number;
+		x: string;
+		y: string;
+		z: string;
 	}[];
 	speakers: {
-		x: number;
-		y: number;
-		z: number;
+		x: string;
+		y: string;
+		z: string;
 	}[];
 };
 
