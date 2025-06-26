@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Platform } from 'react-native';
 import { io, Socket } from 'socket.io-client';
 
 export const axiosClient = axios.create({
@@ -16,7 +17,7 @@ export const axiosClient = axios.create({
  */
 export function createSocket(url: string, userToken: string): Socket {
 	return io(url, {
-		transports: ['polling'],
+		transports: [Platform.OS === 'web' ? 'websocket' : 'polling'],
 		autoConnect: false,
 		reconnectionAttempts: 5,
 		reconnectionDelay: 1000,
