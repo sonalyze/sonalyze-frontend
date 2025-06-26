@@ -2,7 +2,7 @@ import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { RootStackParamList } from '../App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ScrollView, Swipeable } from 'react-native-gesture-handler';
 import SecondaryHeader from '../components/SecondaryHeader';
 import { useTranslation } from 'react-i18next';
