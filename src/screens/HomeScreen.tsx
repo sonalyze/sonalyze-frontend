@@ -234,7 +234,7 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 						<Button
 							label={t('viewAll')}
 							onPress={() =>
-								props.navigation.push('HistoryScreen')
+								props.navigation.push('ValidationScreen')
 							}
 						/>
 					</Card>

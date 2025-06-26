@@ -21,6 +21,7 @@ import MeasurementScreen from './screens/MeasurementScreen';
 import MeasurementResultScreen from './screens/MeasurementResultScreen';
 import HistoryDetailScreen from './screens/HistoryDetailScreen';
 import HistoryScreen from './screens/HistoryScreen';
+import ValidationScreen from './screens/ValidationScreen';
 
 enableScreens();
 
@@ -99,6 +100,13 @@ const RootStack = () => (
 			}}
 		/>
 		<Stack.Screen
+			name="ValidationScreen"
+			component={ValidationScreen}
+			options={{
+				headerShown: false,
+			}}
+		/>
+		<Stack.Screen
 			name="MeasurementResultScreen"
 			component={MeasurementResultScreen}
 			options={{
@@ -150,6 +158,10 @@ export type RootStackParamList = {
 	StartSessionScreen: undefined;
 	JoinSessionScreen: undefined;
 	MeasurementScreen: undefined;
+	ValidationScreen: {
+		measurement: Simulation;
+		simulation: Simulation;
+	};
 	MeasurementResultScreen: undefined;
 	SettingsScreen: undefined;
 	QrScanScreen: undefined;
