@@ -45,7 +45,7 @@ export async function createRoom(
 	name: string,
 	scene: RoomScene
 ): Promise<Room> {
-	const data = await axiosClient.post<Room>('/room', {
+	const data = await axiosClient.post<Room>('/room/', {
 		name,
 		scene,
 	});

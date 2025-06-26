@@ -45,7 +45,7 @@ export const allMaterialOptions = [
 ];
 
 // Schlüssel für die Material-Iteration
-export const materialKeys: Array<keyof FormData['materials']> = [
+export const materialKeys: (keyof FormData['materials'])[] = [
 	'east',
 	'west',
 	'north',

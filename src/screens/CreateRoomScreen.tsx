@@ -3,11 +3,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { toast } from 'sonner-native';
-import { useForm, Controller, useFieldArray } from 'react-hook-form';
-import { Picker } from '@react-native-picker/picker';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { X } from 'lucide-react-native';
 import { createRoom } from '../api/roomRequests';
 import SecondaryHeader from '../components/SecondaryHeader';
+import DropDownPicker from 'react-native-dropdown-picker';
 import Button from '../components/Button';
 import {
 	FormData,
@@ -20,6 +20,8 @@ import {
 import { ControlledInput } from '../components/ControlledInput';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
+import { SetStateAction, useState } from 'react';
+import MaterialDropdown from '../components/MaterialDropdown';
 
 type CreateRoomNavProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -50,7 +52,6 @@ const CreateRoomScreen: React.FC = () => {
 			speaker: [{ x: '', y: '', z: '' }],
 		},
 	});
-
 	const {
 		fields: furnitureFields,
 		append: appendFurniture,
@@ -352,46 +353,7 @@ const CreateRoomScreen: React.FC = () => {
 					<Text className="text-xl font-semibold mb-4 text-gray-700">
 						{t('createRoom.sections.materials')}
 					</Text>
-					{materialKeys.map((key) => {
-						const options = getOptionsForSurface(key);
-						return (
-							<Controller
-								key={key}
-								control={control}
-								name={`materials.${key}`}
-								rules={{ required: true }}
-								render={({ field: { onChange, value } }) => (
-									<View className="bg-gray-100 rounded-lg mb-3 h-12 justify-center">
-										<Picker
-											selectedValue={value}
-											onValueChange={(itemValue) =>
-												onChange(itemValue)
-											}
-											style={{
-												color: value
-													? '#000'
-													: '#9ca3af',
-											}}
-										>
-											<Picker.Item
-												label={t(
-													`createRoom.placeholders.selectMaterialFor_${key}`
-												)}
-												value=""
-											/>
-											{options.map((option) => (
-												<Picker.Item
-													key={option.value}
-													label={t(option.labelKey)}
-													value={option.value}
-												/>
-											))}
-										</Picker>
-									</View>
-								)}
-							/>
-						);
-					})}
+					<MaterialDropdown />
 				</View>
 
 				{/* Button zum Absenden */}

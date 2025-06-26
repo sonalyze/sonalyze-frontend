@@ -5,6 +5,7 @@ export const axiosClient = axios.create({
 	baseURL: 'https://api.dev.sonalyze.de',
 	headers: {
 		'Content-Type': 'application/json',
+		Authorization: 'Bearer 685d19145e0bec065e1b5ff6',
 	},
 });
 

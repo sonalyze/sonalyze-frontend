@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Button from './Button';
 import { getSimulationResult, simulateRoom } from '../api/simulationRequests';
-import { toast } from 'sonner-native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 type RoomDetailProps = {
 	roomId: string;
@@ -12,28 +12,21 @@ type RoomDetailProps = {
 
 const RoomDetail: React.FC<RoomDetailProps> = ({ roomId, hasSimulation }) => {
 	const { t } = useTranslation();
-	const [simulation, setSimulation] = useState<Simulation | null>(null);
-	const [loading, setLoading] = useState(false);
 	const [running, setRunning] = useState(false);
 
-	// Debug: prüfen, ob roomId ankommt
-	useEffect(() => {
-		console.log('RoomDetail received roomId =', roomId);
-		if (hasSimulation) {
-			setLoading(true);
-			getSimulationResult(roomId)
-				.then((data) => setSimulation(data))
-				.finally(() => setLoading(false));
-		}
-	}, [hasSimulation, roomId]);
+	const simulationQuery = useQuery<Simulation, Error>({
+		queryKey: ['simulation', roomId],
+		queryFn: () => getSimulationResult(roomId),
+	});
+	const queryClient = useQueryClient();
 
 	// Handler für “Create / Rerun Simulation”
 	const handleCreateSimulation = async () => {
 		setRunning(true);
 		try {
-			const data = await simulateRoom(roomId);
-			console.log('→ simulation result from API:', data);
-			setSimulation(data);
+			await simulateRoom(roomId);
+			console.log('Simulation completed');
+			queryClient.invalidateQueries({ queryKey: ['simulation', roomId] });
 		} finally {
 			setRunning(false);
 		}
@@ -66,12 +59,12 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ roomId, hasSimulation }) => {
 			/>
 
 			{/* Lade-Indikator */}
-			{(loading || running) && (
+			{(simulationQuery.isLoading || running) && (
 				<ActivityIndicator size="small" className="mt-4" />
 			)}
 
 			{/* Simulationsergebnis */}
-			{simulation && (
+			{simulationQuery.data && (
 				<View className="mt-4">
 					<Text className="text-sm font-semibold mb-2">
 						{t('simulationResult')}
@@ -82,7 +75,7 @@ const RoomDetail: React.FC<RoomDetailProps> = ({ roomId, hasSimulation }) => {
 						showsHorizontalScrollIndicator={false}
 						className="flex-row"
 					>
-						{simulation.values.map(
+						{simulationQuery.data.values.map(
 							(row: AcousticParameters[], rowIndex) => (
 								<View key={rowIndex} className="flex-col mr-4">
 									{row.map((param, colIndex) => (

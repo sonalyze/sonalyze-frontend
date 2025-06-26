@@ -12,6 +12,7 @@ import { createEmpyRoomScene, validateRoomScene } from '../tools/helpers';
 import Button from '../components/Button';
 import { showHapticErrorToast } from '../tools/hapticToasts';
 import { createRoom } from '../api/roomRequests';
+import MaterialDropdown from '../components/MaterialDropdown';
 
 type CreateRoomNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -210,6 +211,24 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 						values={scene.speakers}
 					/>
 				</Card>
+				<Card className="mt-5">
+					<Text className="text-lg font-semibold mb-2">
+						Materials
+					</Text>
+					<MaterialDropdown
+						onChange={(key, val) =>
+							setScene((prev) => {
+								return {
+									...prev,
+									materials: {
+										...prev.materials,
+										[key]: val,
+									},
+								};
+							})
+						}
+					/>
+				</Card>
 				<Button
 					label="Save Room"
 					onPress={async () => {
@@ -223,7 +242,16 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 							showHapticErrorToast(validate.errors.join('\n'));
 						}
 
-						await createRoom(roomName, scene);
+						const result = await createRoom(roomName, scene);
+						props.navigation.replace('HistoryDetailScreen', {
+							item: {
+								id: result.id,
+								name: result.name,
+								lastUpdatedAt: result.lastUpdatedAt,
+								hasSimulation: result.hasSimulation,
+								isOwner: true,
+							},
+						});
 					}}
 					className="mt-4"
 				/>

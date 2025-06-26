@@ -6,7 +6,7 @@ type ButtonProps = {
 	leadingIcon?: ReactElement;
 	trailingIcon?: ReactElement;
 	onPress: () => void;
-	type?: 'primary' | 'secondary' | 'destructive' | 'ghost';
+	type?: 'primary' | 'secondary' | 'destructive' | 'ghost' | 'disabled';
 	expand?: boolean;
 	className?: string;
 	disabled?: boolean;
@@ -20,31 +20,28 @@ const Button: FC<ButtonProps> = (props: ButtonProps) => {
 	let backgroundColor: string;
 	let textColor: string;
 
-    // Prüft, ob der Button deaktiviert ist, und passt die Farben an
-	if (props.disabled) {
-		backgroundColor = 'bg-gray-300';
-		textColor = 'text-gray-500';
-	} else {
-		switch (type) {
-			case 'primary':
-				backgroundColor = 'bg-primary';
-				textColor = 'text-primaryForeground';
-				break;
-			case 'secondary':
-				backgroundColor = 'bg-secondary';
-				textColor = 'text-secondaryForeground';
-				break;
-			case 'destructive':
-				backgroundColor = 'bg-destructive';
-				textColor = 'text-destructiveForeground';
-				break;
-			case 'ghost':
-				backgroundColor = 'bg-transparent';
-				textColor = 'text-foreground';
-				break;
-		}
+	// Prüft, ob der Button deaktiviert ist, und passt die Farben an
+	switch (type) {
+		case 'primary':
+			backgroundColor = 'bg-primary';
+			textColor = 'text-primaryForeground';
+			break;
+		case 'secondary':
+			backgroundColor = 'bg-secondary';
+			textColor = 'text-secondaryForeground';
+			break;
+		case 'destructive':
+			backgroundColor = 'bg-destructive';
+			textColor = 'text-destructiveForeground';
+			break;
+		case 'ghost':
+			backgroundColor = 'bg-transparent';
+			textColor = 'text-foreground';
+			break;
+		case 'disabled':
+			backgroundColor = 'bg-gray-300';
+			textColor = 'text-gray-500';
 	}
-
 
 	return (
 		<TouchableOpacity
