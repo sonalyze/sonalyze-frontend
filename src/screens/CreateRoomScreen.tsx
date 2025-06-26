@@ -1,9 +1,9 @@
-import { Text, TextInput, View } from 'react-native';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { RootStackParamList } from '../App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
-import { ScrollView } from 'react-native-gesture-handler';
+import { ScrollView, Swipeable } from 'react-native-gesture-handler';
 import SecondaryHeader from '../components/SecondaryHeader';
 import { useTranslation } from 'react-i18next';
 import Card from '../components/Card';
@@ -13,6 +13,7 @@ import Button from '../components/Button';
 import { showHapticErrorToast } from '../tools/hapticToasts';
 import { createRoom } from '../api/roomRequests';
 import MaterialDropdown from '../components/MaterialDropdown';
+import { X } from 'lucide-react-native';
 
 type CreateRoomNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -34,10 +35,6 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 	const [roomName, setRoomName] = useState<string>('');
 
 	const { t } = useTranslation();
-
-	useEffect(() => {
-		console.log(scene);
-	}, [scene]);
 
 	return (
 		<SafeAreaView className="flex-1 bg-background">
@@ -99,63 +96,88 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 						Furniture
 					</Text>
 					{scene.furniture.map((value, index) => (
-						<View
+						<Swipeable
+							overshootLeft={false}
+							overshootRight={false}
 							key={index}
-							className="bg-white rounded-xl gap-2 mb-2 px-4 py-2"
+							renderRightActions={() => {
+								return (
+									<TouchableOpacity
+										className="bg-red-500 flex mb-2 justify-center rounded-md px-2"
+										onPress={() =>
+											setScene((prev) => ({
+												...prev,
+												furniture: [
+													...prev.furniture.filter(
+														(_, i) => i !== index
+													),
+												],
+											}))
+										}
+									>
+										<X size={24} color="#fff" />
+									</TouchableOpacity>
+								);
+							}}
 						>
-							<MultiInput
-								labels={['x', 'y']}
-								onChange={(values) => {
-									setScene((prev) => {
-										const newFurniture = [
-											...prev.furniture,
-										];
-										newFurniture[index] = {
-											...newFurniture[index],
-											points: values.map((v) => ({
-												x: v.x,
-												y: v.y,
-											})),
-										};
-										return {
-											...prev,
-											furniture: newFurniture,
-										};
-									});
-								}}
-								values={value.points.map((f) => ({
-									x: f.x,
-									y: f.y,
-								}))}
-							/>
-							<View className="flex justify-around m-2 mt-6">
-								<Text className="m-auto mb-2">Height</Text>
-								<TextInput
-									keyboardType="decimal-pad"
-									className="border border-gray-300 rounded-md w-2/3 m-auto p-2"
-									placeholder="Mein toller Raum"
-									value={value.height.toString()}
-									onChange={(e) =>
+							<View
+								key={index}
+								className="bg-white rounded-xl gap-2 mb-2 px-4 py-2"
+							>
+								<MultiInput
+									labels={['x', 'y']}
+									onChange={(values) => {
 										setScene((prev) => {
 											const newFurniture = [
 												...prev.furniture,
 											];
 											newFurniture[index] = {
 												...newFurniture[index],
-												height: e.nativeEvent.text.replaceAll(
-													',',
-													'.'
-												),
+												points: values.map((v) => ({
+													x: v.x,
+													y: v.y,
+												})),
 											};
 											return {
 												...prev,
 												furniture: newFurniture,
 											};
-										})
-									}
+										});
+									}}
+									values={value.points.map((f) => ({
+										x: f.x,
+										y: f.y,
+									}))}
 								/>
+								<View className="flex justify-around m-2 mt-6">
+									<Text className="m-auto mb-2">Height</Text>
+									<TextInput
+										keyboardType="decimal-pad"
+										className="border border-gray-300 rounded-md w-2/3 m-auto p-2"
+										placeholder="Mein toller Raum"
+										value={value.height.toString()}
+										onChange={(e) =>
+											setScene((prev) => {
+												const newFurniture = [
+													...prev.furniture,
+												];
+												newFurniture[index] = {
+													...newFurniture[index],
+													height: e.nativeEvent.text.replaceAll(
+														',',
+														'.'
+													),
+												};
+												return {
+													...prev,
+													furniture: newFurniture,
+												};
+											})
+										}
+									/>
+								</View>
 							</View>
-						</View>
+						</Swipeable>
 					))}
 					<Button
 						label="Add"

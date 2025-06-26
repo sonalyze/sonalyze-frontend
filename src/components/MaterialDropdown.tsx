@@ -1,6 +1,5 @@
 import { FC, SetStateAction, useState } from 'react';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { materialKeys } from '../screens/CreateRoom.utils';
 import { View } from 'react-native';
 import rawMaterials from '../assets/materials.json';
 
@@ -26,13 +25,13 @@ type MaterialDropdownProps = {
 
 const MaterialDropdown: FC<MaterialDropdownProps> = (props) => {
 	const [open, setOpen] = useState<MaterialsOpenState>(
-		materialKeys.reduce((acc, key) => {
+		keys.reduce((acc, key) => {
 			acc[key] = false;
 			return acc;
 		}, {} as MaterialsOpenState)
 	);
 	const [value, setValue] = useState<MaterialsValueState>(
-		materialKeys.reduce((acc, key) => {
+		keys.reduce((acc, key) => {
 			acc[key] = null;
 			return acc;
 		}, {} as MaterialsValueState)
