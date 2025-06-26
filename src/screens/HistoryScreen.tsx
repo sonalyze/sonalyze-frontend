@@ -134,6 +134,10 @@ const HistoryScreen: FC<HistoryScreenProps> = ({ navigation }) => {
 												item: item.raw as Measurement,
 											}
 										);
+									} else {
+										navigation.push('RoomDetailScreen', {
+											roomId: (item.raw as Room).id,
+										});
 									}
 								}}
 							>

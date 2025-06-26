@@ -96,6 +96,7 @@
 	"imported": "Imported",
 	"dateLabel": "Date",
 	"notFoundError": "Item not found.",
+	"rerunSimulation": "Rerun Simulation",
 	"genericError": "An unexpected error occurred. Please try again.",
 	"room": "Room",
 	"measurement": "Measurement",
