@@ -117,5 +117,8 @@
 	"removeImportedRoomSuccess": "Successfully removed imported room.",
 	"deleteRoomSuccess": "Room deleted successfully.",
 	"unauthorizedError": "You are not authorized to perform this action.",
-	"validation": "Validation"
+	"validation": "Validation",
+	"tolerances": "Tolerances",
+	"validate": "Validate",
+	"value": "Value"
 }
