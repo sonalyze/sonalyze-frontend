@@ -21,10 +21,9 @@ type RoomScene = {
 		floor: string;
 		ceiling: string;
 	};
-	// Die eckigen Klammern [] stehen jetzt nach der geschweiften Klammer
 	furniture: {
 		height: number;
-		points: [{ x: number; y: number }];
+		points: { x: number; y: number }[];
 	}[];
 	microphones: {
 		x: number;
