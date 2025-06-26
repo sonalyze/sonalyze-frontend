@@ -59,12 +59,12 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 			>
 				<Card className="mt-5">
 					<Text className="text-lg font-semibold mb-2">
-						Room name
+						{t('createRoom.placeholders.roomName')}
 					</Text>
 					<TextInput
 						keyboardType="default"
 						className="border border-gray-300 rounded-md p-2"
-						placeholder="Mein toller Raum"
+						placeholder={t('createRoom.placeholders.roomName')}
 						value={roomName}
 						onChange={(e) => setRoomName(e.nativeEvent.text)}
 					/>
@@ -72,7 +72,7 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 
 				<Card className="mt-5">
 					<Text className="text-lg font-semibold mb-2">
-						Room Dimensions
+						{t('createRoom.sections.dimensions')}
 					</Text>
 					<MultiInput
 						labels={['Width', 'Height', 'Depth']}
@@ -99,7 +99,7 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 
 				<Card className="mt-5">
 					<Text className="text-lg font-semibold mb-2">
-						Furniture
+						{t('createRoom.sections.furniture')}
 					</Text>
 					{scene.furniture.map((value, index) => (
 						<Swipeable
@@ -156,11 +156,13 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 									}))}
 								/>
 								<View className="flex justify-around m-2 mt-6">
-									<Text className="m-auto mb-2">Height</Text>
+									<Text className="m-auto mb-2">
+										{t('common.height')}
+									</Text>
 									<TextInput
 										keyboardType="decimal-pad"
 										className="border border-gray-300 rounded-md w-2/3 m-auto p-2"
-										placeholder="Mein toller Raum"
+										placeholder={t('common.height')}
 										value={value.height.toString()}
 										onChange={(e) =>
 											setScene((prev) => {
@@ -186,7 +188,7 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 						</Swipeable>
 					))}
 					<Button
-						label="Add"
+						label={t('createRoom.buttons.addFurniture')}
 						onPress={() => {
 							setScene((prev) => ({
 								...prev,
@@ -205,7 +207,7 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 
 				<Card className="mt-5">
 					<Text className="text-lg font-semibold mb-2">
-						Microphones
+						{t('createRoom.sections.microphone')}
 					</Text>
 					<MultiInput
 						labels={['x', 'y', 'z']}
@@ -223,7 +225,9 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 					/>
 				</Card>
 				<Card className="mt-5">
-					<Text className="text-lg font-semibold mb-2">Speakers</Text>
+					<Text className="text-lg font-semibold mb-2">
+						{t('createRoom.sections.speaker')}
+					</Text>
 					<MultiInput
 						labels={['x', 'y', 'z']}
 						onChange={(values) => {
@@ -241,7 +245,7 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 				</Card>
 				<Card className="mt-5">
 					<Text className="text-lg font-semibold mb-2">
-						Materials
+						{t('createRoom.sections.materials')}
 					</Text>
 					<MaterialDropdown
 						onChange={(key, val) =>
@@ -267,7 +271,6 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 							showHapticErrorToast('Please enter a room name');
 							return;
 						}
-						console.log('1');
 						const validate = validateRoomScene(scene);
 						if (!validate.valid) {
 							showHapticErrorToast(validate.errors.join('\n'));
