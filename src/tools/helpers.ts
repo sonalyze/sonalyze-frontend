@@ -32,3 +32,21 @@ export function haveSameKeys(a: object, b: object): boolean {
 		aKeys.every((key, i) => key === bKeys[i])
 	);
 }
+
+export function createEmpyRoomScene(): RoomScene {
+	return {
+		dimensions: { width: 0, height: 0, depth: 0 },
+		microphones: [{ x: 0, y: 0, z: 0 }],
+		speakers: [{ x: 0, y: 0, z: 0 }],
+		furniture: [],
+		materials: {
+			ceiling: '',
+			floor: '',
+			north: '',
+			west: '',
+			east: '',
+			south: '',
+		},
+		roomId: '-1',
+	};
+}
