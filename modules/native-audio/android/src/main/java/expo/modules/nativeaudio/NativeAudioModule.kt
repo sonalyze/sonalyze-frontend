@@ -152,7 +152,7 @@ class NativeAudioModule : Module() {
          *   - Starts a background coroutine that writes audio data to disk
          *   - Sets isRecording state to true
          */
-        AsyncFunction("fileStartRecording") { fileName: String -> 
+        AsyncFunction("fileStartRecording") { fileName: String, calibrationFactor: Float -> 
             val activity = appContext.currentActivity
             val context = appContext.reactContext ?: run {
                 return@AsyncFunction mapOf(
@@ -251,7 +251,7 @@ class NativeAudioModule : Module() {
                                     .order(ByteOrder.LITTLE_ENDIAN)
                                 
                                 for (i in 0 until readResult) {
-                                    byteBuffer.putFloat(buffer[i])
+                                    byteBuffer.putFloat(buffer[i] * calibrationFactor)
                                 }
                                 
                                 outputStream.write(byteBuffer.array(), 0, readResult * 4)
