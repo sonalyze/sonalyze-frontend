@@ -223,16 +223,24 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 						</Card>
 						<View className="h-2" />
 
-						{/* History Card */}
-						<Card
-							title={t('simulationTitle')}
-							subtitle={t('simulationSubtitle')}
-						>
-							<View className="flex-row">
-								<Button label={t('start')} onPress={() => {}} />
-							</View>
-						</Card>
-						<View className="h-2" />
+					{/* History Card */}
+					<Card
+						title={t('simulationTitle')}
+						subtitle={t('simulationSubtitle')}
+					>
+						<View className="flex-row">
+							<Button
+								label={t('start')}
+								onPress={() =>
+									props.navigation.push(
+										'CreateRoomScreen',
+										{}
+									)
+								}
+							/>
+						</View>
+					</Card>
+					<View className="h-2" />
 
 						{/* History Card */}
 						<Card
@@ -245,33 +253,38 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 								</Text>
 							) : null}
 
-							{!isLoading &&
-								history.items.length > 0 &&
-								history.items.map((item) => (
-									<TouchableOpacity
-										key={`${item.id}-${item.createdAt}-${item.type}`}
-										onPress={() =>
+						{!isLoading &&
+							history.items.length > 0 &&
+							history.items.map((item) => (
+								<TouchableOpacity
+									key={`${item.id}-${item.createdAt}-${item.type}`}
+									onPress={() => {
+										if ('hasSimulation' in item.raw) {
+											props.navigation.push(
+												'RoomDetailScreen',
+												{ roomId: item.raw.id }
+											);
+										} else {
 											props.navigation.push(
 												'HistoryDetailScreen',
-												{
-													item: item.raw,
-												}
-											)
+												{ item: item.raw }
+											);
 										}
-									>
-										<HistoryItem
-											item={
-												item.type === 'room'
-													? ({
-															...(item.raw as Room),
-															createdAt:
-																item.createdAt,
-														} as any)
-													: (item.raw as Measurement)
-											}
-										/>
-									</TouchableOpacity>
-								))}
+									}}
+								>
+									<HistoryItem
+										item={
+											item.type === 'room'
+												? ({
+														...(item.raw as Room),
+														createdAt:
+															item.createdAt,
+													} as any)
+												: (item.raw as Measurement)
+										}
+									/>
+								</TouchableOpacity>
+							))}
 
 							<Button
 								label={t('viewAll')}

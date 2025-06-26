@@ -24,7 +24,7 @@
 	"copyError": "Clipboard is inaccessible.",
 	"cooperativeTitle": "Cooperative Measurement",
 	"cooperativeSubtitle": "Perform acoustic measurements using multiple devices as speakers or microphones for precise room analysis.",
-	"simulationTitle": "3D Acoustics Simulation",
+	"simulationTitle": "Room Acoustics Simulation",
 	"simulationSubtitle": "Simulate room acoustics in a virtual 3D space to analyze and optimize sound characteristics.",
 	"start": "Start",
 	"join": "Join",
@@ -122,5 +122,69 @@
 	"micPermissionError": "Failed to resolve microphone permission.",
 	"playing": "Playing sound...",
 	"recording": "Recording...",
-	"measurementActive": "Measurement in progress. Please wait."
+	"measurementActive": "Measurement in progress. Please wait.",
+	"common": {
+		"general": "General",
+		"width": "Width",
+		"height": "Height",
+		"depth": "Depth",
+		"positionX": "X",
+		"positionY": "Y",
+		"submitting": "Submitting...",
+		"unknownError": "An unknown error occurred.",
+		"backButtonPressed": "Back button pressed"
+	},
+	"createRoom": {
+		"title": "Create New Room",
+		"sections": {
+			"dimensions": "Room Dimensions (in m)",
+			"materials": "Wall Materials",
+			"furniture": "Furniture",
+			"microphone": "Microphone",
+			"speaker": "Speaker"
+		},
+		"placeholders": {
+			"roomName": "Name of the room",
+			"selectMaterialFor_east": "East wall",
+			"selectMaterialFor_west": "West wall",
+			"selectMaterialFor_north": "North wall",
+			"selectMaterialFor_south": "South wall",
+			"selectMaterialFor_floor": "Floor",
+			"selectMaterialFor_ceiling": "Ceiling"
+		},
+		"buttons": {
+			"create": "Create Room",
+			"addFurniture": "Add Furniture",
+			"addMicrophone": "Add Microphone",
+			"addSpeaker": "Add Speaker"
+		}
+	},
+
+	"materials": {
+		"woodenFloorVarnished": "Holzboden (lackiert)",
+		"acousticCeilingTiles": "Akustik-Deckenplatten",
+		"concreteWallPainted": "Betonwand (gestrichen)",
+		"heavyCurtains": "Schwere Vorhänge",
+		"carpetOnConcrete": "Teppich auf Beton"
+	},
+
+	"toasts": {
+		"incompleteInput": {
+			"title": "Incomplete Input",
+			"message": "Please fill in all required fields."
+		},
+		"invalidNumber": {
+			"message": "Invalid number input. Please check all fields."
+		},
+		"success": {
+			"title": "Success"
+		},
+		"createRoomSuccess": {
+			"message": "Room \"{{name}}\" created successfully."
+		},
+		"submitError": {
+			"title": "Submission Error"
+		}
+	},
+	"createNewSimulation": "Create New Simulation"
 }

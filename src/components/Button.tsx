@@ -6,7 +6,7 @@ type ButtonProps = {
 	leadingIcon?: ReactElement;
 	trailingIcon?: ReactElement;
 	onPress: () => void;
-	type?: 'primary' | 'secondary' | 'destructive' | 'ghost';
+	type?: 'primary' | 'secondary' | 'destructive' | 'ghost' | 'disabled';
 	expand?: boolean;
 	className?: string;
 	disabled?: boolean;
@@ -20,6 +20,7 @@ const Button: FC<ButtonProps> = (props: ButtonProps) => {
 	let backgroundColor: string;
 	let textColor: string;
 
+	// Prüft, ob der Button deaktiviert ist, und passt die Farben an
 	switch (type) {
 		case 'primary':
 			backgroundColor = 'bg-primary';
@@ -37,6 +38,9 @@ const Button: FC<ButtonProps> = (props: ButtonProps) => {
 			backgroundColor = 'bg-transparent';
 			textColor = 'text-foreground';
 			break;
+		case 'disabled':
+			backgroundColor = 'bg-gray-300';
+			textColor = 'text-gray-500';
 	}
 
 	return (
@@ -44,7 +48,7 @@ const Button: FC<ButtonProps> = (props: ButtonProps) => {
 			onPress={props.onPress}
 			disabled={props.disabled}
 			className={`rounded-xl px-4 py-3 ${width} ${backgroundColor} ${props.className}`}
-			activeOpacity={0.8}
+			activeOpacity={props.disabled ? 1 : 0.8}
 		>
 			<View className="flex-row items-center justify-center">
 				{props.leadingIcon ? (

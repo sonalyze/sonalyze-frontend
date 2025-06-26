@@ -1,41 +1,51 @@
 import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RouteProp } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner-native';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { copyToClipboard } from '../tools/clipboardAccess';
 import { Copy } from 'lucide-react-native';
 import { Trash2 } from 'lucide-react-native';
 import SecondaryHeader from '../components/SecondaryHeader';
+
 import {
-	deleteMeasurement,
-	removeImportedMeasurement,
-} from '../api/measurementRequests';
-import { deleteRoom, removeImportedRoom } from '../api/roomRequests';
+	deleteRoom,
+	getRoomScene,
+	importRoom,
+	removeImportedRoom,
+} from '../api/roomRequests';
 import { formatWithOptions } from 'date-fns/fp';
 import { enUS, de, fr, tr, it, es } from 'date-fns/locale';
 import { RootStackParamList } from '../App';
-import MeasurementDetail from '../components/MeasurementDetail';
 import RoomDetail from '../components/RoomDetail';
+import { FC } from 'react';
+import { RouteProp } from '@react-navigation/native';
+import Button from '../components/Button';
 
 // Typen für Navigation und Route
-type ScreenRouteProp = RouteProp<RootStackParamList, 'HistoryDetailScreen'>;
+type ScreenRouteProp = RouteProp<RootStackParamList, 'RoomDetailScreen'>;
 type ScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
-	'HistoryDetailScreen'
+	'RoomDetailScreen'
 >;
-type Props = {
-	route: ScreenRouteProp;
+type RoomDetailScreenProps = {
 	navigation: ScreenNavigationProp;
+	route: ScreenRouteProp;
 };
-const HistoryDetailScreen = ({ route, navigation }: Props) => {
+const RoomDetailScreen: FC<RoomDetailScreenProps> = (props) => {
 	const { t, i18n } = useTranslation();
 	const queryClient = useQueryClient();
-	const item = route.params.item as Measurement | Room;
-	const isMeasurement = (item as Measurement).values !== undefined;
-	const isOwner = item.isOwner;
+	const { roomId } = props.route.params;
+	const roomQuery = useQuery({
+		queryKey: ['room', roomId],
+		queryFn: () => importRoom(roomId),
+	});
+	const roomSceneQuery = useQuery({
+		queryKey: ['roomScene', roomId],
+		queryFn: () => getRoomScene(roomId),
+	});
+	const isOwner = roomQuery.data?.isOwner;
 
 	// Zeigt ein Bestätigungs-Popup vor dem Löschen
 	const confirmDelete = () => {
@@ -44,33 +54,24 @@ const HistoryDetailScreen = ({ route, navigation }: Props) => {
 			{
 				text: t('confirm'),
 				style: 'destructive',
-				onPress: () => handleDelete(item.id),
+				onPress: () => handleDelete(roomQuery.data?.id || ''),
 			},
 		]);
 	};
 
 	const handleDelete = async (id: string) => {
 		try {
-			if (isMeasurement) {
-				if (!isOwner) {
-					await removeImportedMeasurement(id);
-					toast.success(t('removeImportedSuccess'));
-				} else {
-					await deleteMeasurement(id);
-					toast.success(t('deleteSuccess'));
-				}
+			if (!isOwner) {
+				await removeImportedRoom(id);
+				toast.success(t('removeImportedRoomSuccess'));
 			} else {
-				if (!isOwner) {
-					await removeImportedRoom(id);
-					toast.success(t('removeImportedRoomSuccess'));
-				} else {
-					await deleteRoom(id);
-					toast.success(t('deleteRoomSuccess'));
-				}
+				await deleteRoom(id);
+				toast.success(t('deleteRoomSuccess'));
 			}
+
 			await queryClient.invalidateQueries({ queryKey: ['measurements'] });
 			await queryClient.invalidateQueries({ queryKey: ['rooms'] });
-			navigation.goBack();
+			props.navigation.goBack();
 		} catch (err: unknown) {
 			console.error('[Delete] failed:', err);
 			let status: number | undefined;
@@ -86,9 +87,6 @@ const HistoryDetailScreen = ({ route, navigation }: Props) => {
 		}
 	};
 
-	const dateValue = isMeasurement
-		? (item as Measurement).createdAt
-		: (item as Room).lastUpdatedAt;
 	const localeMap: Record<string, typeof enUS> = {
 		en: enUS,
 		de,
@@ -100,20 +98,20 @@ const HistoryDetailScreen = ({ route, navigation }: Props) => {
 	const formatLocale = formatWithOptions({
 		locale: localeMap[i18n.language] || enUS,
 	});
-	const formattedDate =
-		i18n.language === 'de'
-			? formatLocale("d. MMMM yyyy 'um' HH:mm 'Uhr'", new Date(dateValue))
-			: formatLocale('PPPp', new Date(dateValue));
-
-	const summary = isMeasurement
-		? (item as Measurement).values?.[0]?.[0] || null
-		: null;
+	const getFormattedDate = (value: string | undefined) => {
+		if (!value) {
+			return '';
+		}
+		return i18n.language === 'de'
+			? formatLocale("d. MMMM yyyy 'um' HH:mm 'Uhr'", new Date(value))
+			: formatLocale('PPPp', new Date(value));
+	};
 
 	return (
 		<SafeAreaView className="flex-1 bg-background">
 			<SecondaryHeader
-				title={item.name}
-				onBack={() => navigation.pop()}
+				title={roomQuery.data?.name || ''}
+				onBack={() => props.navigation.pop()}
 				suffix={
 					<TouchableOpacity onPress={confirmDelete}>
 						<Trash2 size={24} />
@@ -123,10 +121,12 @@ const HistoryDetailScreen = ({ route, navigation }: Props) => {
 
 			<ScrollView className="p-4">
 				<View className="flex-row items-center mb-2">
-					<Text className="text-base text-muted">ID: {item.id}</Text>
+					<Text className="text-base text-muted">
+						ID: {roomQuery.data?.id}
+					</Text>
 					<TouchableOpacity
 						onPress={() => {
-							copyToClipboard(item.id);
+							copyToClipboard(roomQuery.data?.id || '');
 							toast.success(t('copySuccess'));
 						}}
 						className="ml-2"
@@ -136,18 +136,28 @@ const HistoryDetailScreen = ({ route, navigation }: Props) => {
 				</View>
 
 				<Text className="text-base text-muted font-medium mb-2">
-					{formattedDate}
+					{getFormattedDate(roomQuery.data?.lastUpdatedAt)}
 				</Text>
 				<Text className="text-base text-muted font-medium mb-4">
-					{item.isOwner ? 'Owner' : 'Imported'}
+					{roomQuery.data?.isOwner ? 'Owner' : 'Imported'}
 				</Text>
-
-				{isMeasurement ? (
-					<MeasurementDetail summary={summary} />
-				) : (
+				<Button
+					label={'Edit Room'}
+					onPress={() =>
+						props.navigation.replace('CreateRoomScreen', {
+							roomId: roomQuery.data?.id,
+							roomScene: roomSceneQuery.data,
+							roomName: roomQuery.data?.name,
+						})
+					}
+					type="primary"
+					expand
+					disabled={false}
+				/>
+				{roomQuery.data && (
 					<RoomDetail
-						roomId={item.id}
-						hasSimulation={(item as Room).hasSimulation}
+						roomId={roomQuery.data?.id}
+						hasSimulation={roomQuery.data?.hasSimulation || false}
 					/>
 				)}
 			</ScrollView>
@@ -155,4 +165,4 @@ const HistoryDetailScreen = ({ route, navigation }: Props) => {
 	);
 };
 
-export default HistoryDetailScreen;
+export default RoomDetailScreen;
