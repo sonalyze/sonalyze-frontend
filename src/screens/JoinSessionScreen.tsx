@@ -9,6 +9,7 @@ import {
 	ActivityIndicator,
 	Alert,
 	FlatList,
+	Platform,
 	ScrollView,
 	Text,
 	View,
@@ -191,6 +192,10 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 
 	// Event handler for the back button.
 	function onBack() {
+		if (Platform.OS === 'web') {
+			props.navigation.pop();
+			return;
+		}
 		Alert.alert(t('popWarningTitle'), t('popWarningDescr'), [
 			{
 				text: t('cancel'),

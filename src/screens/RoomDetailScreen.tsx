@@ -22,6 +22,7 @@ import RoomDetail from '../components/RoomDetail';
 import { FC } from 'react';
 import { RouteProp } from '@react-navigation/native';
 import Button from '../components/Button';
+import { getSimulationResult, simulateRoom } from '../api/simulationRequests';
 
 // Typen für Navigation und Route
 type ScreenRouteProp = RouteProp<RootStackParamList, 'RoomDetailScreen'>;
@@ -45,7 +46,40 @@ const RoomDetailScreen: FC<RoomDetailScreenProps> = (props) => {
 		queryKey: ['roomScene', roomId],
 		queryFn: () => getRoomScene(roomId),
 	});
+	const simulationQuery = useQuery<Simulation, Error>({
+		queryKey: ['simulation', roomId],
+		queryFn: () => getSimulationResult(roomId),
+	});
 	const isOwner = roomQuery.data?.isOwner;
+
+	async function handleSimulation() {
+		const simulation = await simulateRoom(roomId);
+		queryClient.invalidateQueries({ queryKey: ['simulation', roomId] });
+		props.navigation.push('MeasurementDetailScreen', {
+			item: {
+				values: simulation.values,
+				id: roomId,
+				name: roomQuery.data?.name || '',
+				createdAt: roomQuery.data?.lastUpdatedAt || '',
+				isOwner: false,
+			},
+		});
+	}
+
+	function handleViewExistingSimulation() {
+		if (!roomQuery.data?.hasSimulation) {
+			return;
+		}
+		props.navigation.push('MeasurementDetailScreen', {
+			item: {
+				values: simulationQuery.data?.values || [],
+				id: roomId,
+				name: roomQuery.data?.name || '',
+				createdAt: roomQuery.data?.lastUpdatedAt || '',
+				isOwner: false,
+			},
+		});
+	}
 
 	// Zeigt ein Bestätigungs-Popup vor dem Löschen
 	const confirmDelete = () => {
@@ -158,6 +192,10 @@ const RoomDetailScreen: FC<RoomDetailScreenProps> = (props) => {
 					<RoomDetail
 						roomId={roomQuery.data?.id}
 						hasSimulation={roomQuery.data?.hasSimulation || false}
+						handleSimulation={handleSimulation}
+						handleViewExistingSimulation={
+							handleViewExistingSimulation
+						}
 					/>
 				)}
 			</ScrollView>

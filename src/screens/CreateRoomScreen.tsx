@@ -15,6 +15,7 @@ import { createRoom, updateRoomScene } from '../api/roomRequests';
 import MaterialDropdown from '../components/MaterialDropdown';
 import { X } from 'lucide-react-native';
 import { RouteProp } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
 
 type ScreenRouteProp = RouteProp<RootStackParamList, 'CreateRoomScreen'>;
 type CreateRoomNavigationProp = NativeStackNavigationProp<
@@ -32,6 +33,7 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 ) => {
 	const roomId = props.route.params.roomId;
 	const initialRoomScene = props.route.params.roomScene;
+	const queryClient = useQueryClient();
 
 	const [scene, setScene] = useState<RoomScene>(
 		initialRoomScene ?? createEmpyRoomScene()
@@ -275,6 +277,9 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 						if (!validate.valid) {
 							showHapticErrorToast(validate.errors.join('\n'));
 						}
+						queryClient.invalidateQueries({
+							queryKey: ['rooms', 'roomScene'],
+						});
 
 						if (roomId && initialRoomScene) {
 							await updateRoomScene(roomId, scene);

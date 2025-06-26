@@ -1,4 +1,11 @@
-import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
+import {
+	ActivityIndicator,
+	Alert,
+	Platform,
+	ScrollView,
+	Text,
+	View,
+} from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { FC, useEffect, useState } from 'react';
@@ -165,6 +172,11 @@ const StartSessionScreen: FC<StartSessionScreenProps> = (
 
 	// Event handler for the back button.
 	function onBack() {
+		if (Platform.OS === 'web') {
+			props.navigation.pop();
+			return;
+		}
+
 		Alert.alert(t('popWarningTitle'), t('popWarningDescr'), [
 			{
 				text: t('cancel'),
