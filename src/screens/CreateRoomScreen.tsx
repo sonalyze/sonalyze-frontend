@@ -286,6 +286,7 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 							props.navigation.replace('RoomDetailScreen', {
 								roomId: roomId,
 							});
+							return;
 						}
 
 						const result = await createRoom(roomName, scene);
