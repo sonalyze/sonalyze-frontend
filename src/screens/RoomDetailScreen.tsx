@@ -142,7 +142,7 @@ const RoomDetailScreen: FC<RoomDetailScreenProps> = (props) => {
 	};
 
 	return (
-		<SafeAreaView className="flex-1 bg-background">
+		<SafeAreaView className="flex-1 xl:w-1/3 xl:mx-auto bg-background">
 			<SecondaryHeader
 				title={roomQuery.data?.name || ''}
 				onBack={() => props.navigation.pop()}

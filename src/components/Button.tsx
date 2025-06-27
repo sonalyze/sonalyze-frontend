@@ -27,7 +27,7 @@ const Button: FC<ButtonProps> = (props: ButtonProps) => {
 			textColor = 'text-primaryForeground';
 			break;
 		case 'secondary':
-			backgroundColor = 'bg-secondary';
+			backgroundColor = 'bg-secondary border border-gray-300';
 			textColor = 'text-secondaryForeground';
 			break;
 		case 'destructive':

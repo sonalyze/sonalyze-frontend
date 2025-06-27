@@ -34,10 +34,10 @@ const QrCodeViewer: FC<QrCodeViewerProps> = (props: QrCodeViewerProps) => {
 			{/* Copy Button */}
 			{props.allowCopy && (
 				<Button
-					leadingIcon={<Link size={18} />}
+					leadingIcon={<Link color={'#fff'} size={18} />}
 					label={t('copyToClipboard')}
 					onPress={onCopyCode}
-					expand={false}
+					expand={true}
 					className="mt-3"
 				/>
 			)}

@@ -1,6 +1,6 @@
 import { FC } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
-import { Swipeable, TextInput } from 'react-native-gesture-handler';
+import { Text, TouchableOpacity, View, TextInput } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import Button from './Button';
 import { X } from 'lucide-react-native';
 

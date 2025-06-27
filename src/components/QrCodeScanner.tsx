@@ -83,7 +83,7 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
 	}
 
 	return (
-		<Card className="self-center items-center">
+		<Card className="self-center p-4 items-center">
 			{/* Missing Camera Permission */}
 			{permission?.granted !== true && (
 				<>
@@ -105,7 +105,7 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
 			{permission?.granted === true && (
 				<>
 					{isCameraActive ? (
-						<View className="items-center">
+						<View className="items-center p-4">
 							<CameraView
 								barcodeScannerSettings={{
 									barcodeTypes: ['qr'],
@@ -125,9 +125,9 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
 					) : (
 						<Button
 							label={t('scanQrCode')}
-							leadingIcon={<ScanLine size={18} />}
+							leadingIcon={<ScanLine color={'#fff'} size={18} />}
 							onPress={onScanCode}
-							expand={false}
+							expand={true}
 						/>
 					)}
 				</>
@@ -139,9 +139,11 @@ const QrCodeScanner: FC<QrCodeScannerProps> = (props: QrCodeScannerProps) => {
 					<Text className="text-base my-2">{t('or')}</Text>
 					<Button
 						label={t('pasteFromClipboard')}
-						leadingIcon={<ClipboardPaste size={18} />}
+						leadingIcon={
+							<ClipboardPaste color={'#fff'} size={18} />
+						}
 						onPress={onPasteCode}
-						expand={false}
+						expand={true}
 					/>
 				</>
 			)}

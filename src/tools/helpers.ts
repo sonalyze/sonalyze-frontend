@@ -125,3 +125,33 @@ export function validateRoomScene(scene: RoomScene): {
 
 	return { valid: errors.length === 0, errors };
 }
+
+export function timeAgo(date: Date | string): string {
+	const thenDate = typeof date === 'string' ? new Date(date) : date;
+	const thenUTCms = asUTC(thenDate);
+	const nowUTCms = Date.now();
+	let delta = Math.round((nowUTCms - thenUTCms) / 1000);
+	if (delta < 0) delta = 0;
+
+	const intervals: { label: string; seconds: number }[] = [
+		{ label: 'y', seconds: 31536000 },
+		{ label: 'mo', seconds: 2592000 },
+		{ label: 'w', seconds: 604800 },
+		{ label: 'd', seconds: 86400 },
+		{ label: 'h', seconds: 3600 },
+		{ label: 'm', seconds: 60 },
+		{ label: 's', seconds: 1 },
+	];
+
+	for (const { label, seconds } of intervals) {
+		const count = Math.floor(delta / seconds);
+		if (count >= 1) return `${count}${label} ago`;
+	}
+	return 'just now';
+}
+
+function asUTC(d: Date) {
+	// getTime() is UTC-ms, but if `new Date(str)` was parsed as local,
+	// adding the offset moves you back to the "true" UTC timestamp
+	return d.getTime() - d.getTimezoneOffset() * 60_000;
+}

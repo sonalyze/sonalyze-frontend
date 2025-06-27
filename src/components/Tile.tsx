@@ -11,7 +11,7 @@ type TileProps = {
 const Tile: FC<TileProps> = ({ title, subtitle, trailingIcon, onPress }) => {
 	return (
 		<TouchableOpacity onPress={onPress} disabled={!onPress}>
-			<View className="bg-cardBackground px-5 py-4 rounded-xl flex-row items-center">
+			<View className="bg-cardBackground px-5 py-4 border border-gray-300 rounded-xl flex-row items-center">
 				<View className="flex-1 px-1 py-1">
 					{/* Optional Title */}
 					{title && (

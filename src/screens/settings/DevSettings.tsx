@@ -126,7 +126,7 @@ const DevSettingsScreen: FC<DevSettingsScreenProps> = (
 	}
 
 	return (
-		<SafeAreaView className="flex-1 bg-background">
+		<SafeAreaView className="flex-1 xl:max-w-3xl lg:mx-auto bg-background">
 			{/* Header */}
 			<SecondaryHeader
 				title={t('devSettings')}
@@ -169,8 +169,8 @@ const DevSettingsScreen: FC<DevSettingsScreenProps> = (
 						<Button
 							label={t('addServer')}
 							onPress={onAddServer}
-							leadingIcon={<Plus size={24} />}
-							expand={false}
+							leadingIcon={<Plus color={'#fff'} size={24} />}
+							expand={true}
 						/>
 					</Center>
 				</View>
@@ -181,7 +181,7 @@ const DevSettingsScreen: FC<DevSettingsScreenProps> = (
 						label={t('purgeLocalStorage')}
 						onPress={onPurgeLocalStorage}
 						type="destructive"
-						expand={false}
+						expand={true}
 					/>
 				</Center>
 			</View>
