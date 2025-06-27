@@ -1,6 +1,6 @@
 import { FC, SetStateAction, useState } from 'react';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import rawMaterials from '../assets/materials.json';
 
 const materials = rawMaterials as {
@@ -97,7 +97,7 @@ const MaterialDropdown: FC<MaterialDropdownProps> = (props) => {
 							items={getMaterials(key)}
 							setOpen={(val) => setOpenByKey(key, val)}
 							setValue={(val) => setValueByKey(key, val)}
-							placeholder={'Choose a Material'}
+							placeholder={`${getCapitalizedKey(key)}: Choose a Material`}
 							listMode="SCROLLVIEW"
 							style={{
 								backgroundColor: '#f2f2f2',

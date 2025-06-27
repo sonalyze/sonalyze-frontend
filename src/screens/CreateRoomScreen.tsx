@@ -45,14 +45,14 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 	const { t } = useTranslation();
 
 	return (
-		<SafeAreaView className="flex-1 xl:max-w-3xl lg:mx-auto bg-background">
+		<SafeAreaView className="flex-1 p-2 xl:max-w-3xl xl:mx-auto bg-background">
 			<SecondaryHeader
 				title={t('createRoom.title')}
 				onBack={() => props.navigation.goBack()}
 			/>
 
 			<ScrollView
-				className="flex-1 px-5"
+				className="flex-1"
 				contentContainerStyle={{
 					flexGrow: 1,
 					paddingBottom: 20,

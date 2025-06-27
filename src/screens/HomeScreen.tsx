@@ -142,16 +142,6 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 				</TouchableOpacity>
 			</View>
 
-			{/* Loading Indicator. */}
-			{isLoading || history.isLoading ? (
-				<View className="flex-1 items-center justify-center m-10 mb-24">
-					<ActivityIndicator size="large" />
-					<Text className="text-center text-lg pt-2">
-						{t('connecting')}
-					</Text>
-				</View>
-			) : null}
-
 			{/* Connection Error. */}
 			{!isLoading && !history.isLoading && !isConnected ? (
 				<View className="flex-1 items-center justify-center m-10 mb-24">
@@ -172,10 +162,7 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 			) : null}
 
 			{/* Missing Microphone Permission. */}
-			{!isLoading &&
-			!history.isLoading &&
-			isConnected &&
-			!hasMicPermission ? (
+			{!isLoading && isConnected && !hasMicPermission ? (
 				<View className="flex-1 items-center justify-center m-10 mb-24">
 					<MicOff size={48} />
 					<Text className="text-center text-lg pt-2">
@@ -188,114 +175,116 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 			) : null}
 
 			{/* Page Content. */}
-			{!isLoading &&
-				!history.isLoading &&
-				isConnected &&
-				hasMicPermission && (
-					<ScrollView className="m-2">
-						{/* Cooperative Card */}
-						<Card
-							title={t('cooperativeTitle')}
-							subtitle={t('cooperativeSubtitle')}
-						>
-							<View className="flex-row gap-2">
-								<View className="flex-1">
-									<Button
-										label={t('start')}
-										onPress={() =>
-											props.navigation.push(
-												'StartSessionScreen'
-											)
-										}
-									/>
-								</View>
-								<View className="flex-1">
-									<Button
-										label={t('join')}
-										type="secondary"
-										onPress={() =>
-											props.navigation.push(
-												'JoinSessionScreen'
-											)
-										}
-									/>
-								</View>
-							</View>
-						</Card>
-						<View className="h-2" />
-
-						{/* History Card */}
-						<Card
-							title={t('simulationTitle')}
-							subtitle={t('simulationSubtitle')}
-						>
-							<View className="flex-row">
+			{hasMicPermission && (
+				<ScrollView className="m-2">
+					{/* Cooperative Card */}
+					<Card
+						title={t('cooperativeTitle')}
+						subtitle={t('cooperativeSubtitle')}
+					>
+						<View className="flex-row gap-2">
+							<View className="flex-1">
 								<Button
 									label={t('start')}
 									onPress={() =>
 										props.navigation.push(
-											'CreateRoomScreen',
-											{}
+											'StartSessionScreen'
 										)
 									}
 								/>
 							</View>
-						</Card>
-						<View className="h-2" />
+							<View className="flex-1">
+								<Button
+									label={t('join')}
+									type="secondary"
+									onPress={() =>
+										props.navigation.push(
+											'JoinSessionScreen'
+										)
+									}
+								/>
+							</View>
+						</View>
+					</Card>
+					<View className="h-2" />
 
-						{/* History Card */}
-						<Card
-							title={t('historyTitle')}
-							subtitle={t('historySubtitle')}
-						>
-							{history.error ? (
-								<Text className="text-center">
-									{t('history.errorLoad')}
-								</Text>
-							) : null}
-
-							{!isLoading &&
-								history.items.length > 0 &&
-								history.items.map((item) => (
-									<TouchableOpacity
-										key={`${item.id}-${item.createdAt}-${item.type}`}
-										onPress={() => {
-											if ('hasSimulation' in item.raw) {
-												props.navigation.push(
-													'RoomDetailScreen',
-													{ roomId: item.raw.id }
-												);
-											} else {
-												props.navigation.push(
-													'MeasurementDetailScreen',
-													{ item: item.raw }
-												);
-											}
-										}}
-									>
-										<HistoryItem
-											item={
-												item.type === 'room'
-													? ({
-															...(item.raw as Room),
-															createdAt:
-																item.createdAt,
-														} as any)
-													: (item.raw as Measurement)
-											}
-										/>
-									</TouchableOpacity>
-								))}
-
+					{/* History Card */}
+					<Card
+						title={t('simulationTitle')}
+						subtitle={t('simulationSubtitle')}
+					>
+						<View className="flex-row">
 							<Button
-								label={t('viewAll')}
+								label={t('start')}
 								onPress={() =>
-									props.navigation.push('HistoryScreen')
+									props.navigation.push(
+										'CreateRoomScreen',
+										{}
+									)
 								}
 							/>
-						</Card>
-					</ScrollView>
-				)}
+						</View>
+					</Card>
+					<View className="h-2" />
+
+					{/* History Card */}
+					<Card
+						title={t('historyTitle')}
+						subtitle={t('historySubtitle')}
+					>
+						{history.error ? (
+							<Text className="text-center">
+								{t('history.errorLoad')}
+							</Text>
+						) : null}
+
+						{!isLoading &&
+							history.items.length > 0 &&
+							history.items.map((item) => (
+								<TouchableOpacity
+									key={`${item.id}-${item.createdAt}-${item.type}`}
+									onPress={() => {
+										if ('hasSimulation' in item.raw) {
+											props.navigation.push(
+												'RoomDetailScreen',
+												{ roomId: item.raw.id }
+											);
+										} else {
+											props.navigation.push(
+												'MeasurementDetailScreen',
+												{ item: item.raw }
+											);
+										}
+									}}
+								>
+									<HistoryItem
+										item={
+											item.type === 'room'
+												? ({
+														...(item.raw as Room),
+														createdAt:
+															item.createdAt,
+													} as any)
+												: (item.raw as Measurement)
+										}
+									/>
+								</TouchableOpacity>
+							))}
+						{history.isLoading && (
+							<View className="flex-1 items-center justify-center">
+								<ActivityIndicator size="large" />
+							</View>
+						)}
+						<View className="h-4" />
+						<Button
+							label={t('viewAll')}
+							onPress={() =>
+								props.navigation.push('HistoryScreen')
+							}
+						/>
+					</Card>
+				</ScrollView>
+			)}
 		</SafeAreaView>
 	);
 };

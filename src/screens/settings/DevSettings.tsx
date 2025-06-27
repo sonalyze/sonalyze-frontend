@@ -169,8 +169,8 @@ const DevSettingsScreen: FC<DevSettingsScreenProps> = (
 						<Button
 							label={t('addServer')}
 							onPress={onAddServer}
-							leadingIcon={<Plus size={24} />}
-							expand={false}
+							leadingIcon={<Plus color={'#fff'} size={24} />}
+							expand={true}
 						/>
 					</Center>
 				</View>
@@ -181,7 +181,7 @@ const DevSettingsScreen: FC<DevSettingsScreenProps> = (
 						label={t('purgeLocalStorage')}
 						onPress={onPurgeLocalStorage}
 						type="destructive"
-						expand={false}
+						expand={true}
 					/>
 				</Center>
 			</View>
