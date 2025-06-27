@@ -45,7 +45,7 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 	const { t } = useTranslation();
 
 	return (
-		<SafeAreaView className="flex-1 bg-background">
+		<SafeAreaView className="flex-1 xl:max-w-3xl lg:mx-auto bg-background">
 			<SecondaryHeader
 				title={t('createRoom.title')}
 				onBack={() => props.navigation.goBack()}
@@ -276,6 +276,7 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 						const validate = validateRoomScene(scene);
 						if (!validate.valid) {
 							showHapticErrorToast(validate.errors.join('\n'));
+							return;
 						}
 						queryClient.invalidateQueries({
 							queryKey: ['rooms', 'roomScene'],

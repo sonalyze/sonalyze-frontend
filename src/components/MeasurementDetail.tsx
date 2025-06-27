@@ -19,7 +19,12 @@ const themeExtend = tailwindCfgAny.theme?.extend;
 const colors = themeExtend?.colors ?? {};
 
 // Chart-Konfiguration
-const screenWidth = Dimensions.get('window').width;
+let screenWidth = Dimensions.get('window').width;
+
+if (screenWidth > 768) {
+	screenWidth = 768; // Maximale Breite für Charts auf größeren Bildschirmen
+}
+
 const chartConfig = {
 	backgroundGradientFrom: colors.background,
 	backgroundGradientTo: colors.background,

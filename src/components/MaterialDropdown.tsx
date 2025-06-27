@@ -1,6 +1,6 @@
 import { FC, SetStateAction, useState } from 'react';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 import rawMaterials from '../assets/materials.json';
 
 const materials = rawMaterials as {
@@ -76,6 +76,9 @@ const MaterialDropdown: FC<MaterialDropdownProps> = (props) => {
 		});
 	}
 
+	function getCapitalizedKey(key: MaterialKey) {
+		return key.charAt(0).toUpperCase() + key.slice(1);
+	}
 	return (
 		<>
 			{keys.map((key) => {
@@ -83,6 +86,10 @@ const MaterialDropdown: FC<MaterialDropdownProps> = (props) => {
 					<View
 						className="bg-gray-100 rounded-lg mb-3 h-12 justify-center"
 						key={key}
+						style={{
+							zIndex: open[key] ? 1000 : 1,
+							elevation: open[key] ? 1000 : 1,
+						}}
 					>
 						<DropDownPicker
 							open={open[key]}
@@ -91,10 +98,20 @@ const MaterialDropdown: FC<MaterialDropdownProps> = (props) => {
 							setOpen={(val) => setOpenByKey(key, val)}
 							setValue={(val) => setValueByKey(key, val)}
 							placeholder={'Choose a Material'}
-							listMode="MODAL"
-							modalProps={{
-								animationType: 'slide',
-								presentationStyle: 'overFullScreen',
+							listMode="SCROLLVIEW"
+							style={{
+								backgroundColor: '#f2f2f2',
+								borderColor: '#d1d5db',
+							}}
+							dropDownContainerStyle={{
+								zIndex: 1000,
+								elevation: 1000,
+								backgroundColor: '#fff',
+								borderColor: '#d1d5db',
+							}}
+							itemSeparator
+							itemSeparatorStyle={{
+								backgroundColor: '#d1d5db',
 							}}
 							modalTitle="Select Material"
 						/>

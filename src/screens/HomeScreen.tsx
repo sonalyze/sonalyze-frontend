@@ -127,7 +127,7 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 	);
 
 	return (
-		<SafeAreaView className="flex-1 bg-background">
+		<SafeAreaView className="flex-1 xl:max-w-3xl lg:mx-auto bg-background">
 			{/* Header */}
 			<View className="relative h-[60px] flex-row items-center justify-between px-5 py-3 bg-card">
 				<Text className="text-2xl font-semibold text-foreground">
@@ -212,6 +212,7 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 								<View className="flex-1">
 									<Button
 										label={t('join')}
+										type="secondary"
 										onPress={() =>
 											props.navigation.push(
 												'JoinSessionScreen'
