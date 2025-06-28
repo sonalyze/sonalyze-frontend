@@ -1,18 +1,17 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { FC } from 'react';
-import Icon from '@react-native-vector-icons/lucide';
 
 type TileProps = {
 	title?: string;
 	subtitle?: string;
-	trailingIcon?: any;
+	trailingIcon?: React.ReactElement;
 	onPress?: () => void;
 };
 
 const Tile: FC<TileProps> = ({ title, subtitle, trailingIcon, onPress }) => {
 	return (
 		<TouchableOpacity onPress={onPress} disabled={!onPress}>
-			<View className="bg-cardBackground px-5 py-4 rounded-xl flex-row items-center">
+			<View className="bg-cardBackground px-5 py-4 border border-gray-300 rounded-xl flex-row items-center">
 				<View className="flex-1 px-1 py-1">
 					{/* Optional Title */}
 					{title && (
@@ -30,9 +29,7 @@ const Tile: FC<TileProps> = ({ title, subtitle, trailingIcon, onPress }) => {
 				</View>
 
 				{/* Trailing icon */}
-				<View className="pl-2">
-					<Icon name={trailingIcon} size={24} color="#2e2e2e" />
-				</View>
+				<View className="pl-2">{trailingIcon}</View>
 			</View>
 		</TouchableOpacity>
 	);

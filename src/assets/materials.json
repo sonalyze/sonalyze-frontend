@@ -1,0 +1,35 @@
+[
+	{ "label": "Teppich 6mm", "value": "Teppich 6mm", "type": ["floor"] },
+	{
+		"label": "Vorhangstoff, einfach, freihängend",
+		"value": "Vorhangstoff, einfach, freihängend",
+		"type": ["wall"]
+	},
+	{ "label": "Floors, wood", "value": "Floors, wood", "type": ["floor"] },
+	{
+		"label": "Floors,  Parkettfußboden",
+		"value": "Floors,  Parkettfußboden",
+		"type": ["floor"]
+	},
+	{
+		"label": "Walls, Akustik-Schaumstoffplatte",
+		"value": "Walls, Akustik-Schaumstoffplatte",
+		"type": ["wall"]
+	},
+	{
+		"label": "Harte Flächen (Putz, Mauerwerk, harte Fußböden)",
+		"value": "Harte Flächen (Putz, Mauerwerk, harte Fußböden)",
+		"type": ["floor", "wall", "ceiling"]
+	},
+	{
+		"label": "Windows, window glass",
+		"value": "Windows, window glass",
+		"type": ["wall"]
+	},
+	{ "label": "wood", "value": "wood", "type": ["floor", "wall", "ceiling"] },
+	{
+		"label": "Ceramic tiles with smooth surface",
+		"value": "Ceramic tiles with smooth surface",
+		"type": ["floor", "wall"]
+	}
+]

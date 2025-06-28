@@ -5,8 +5,8 @@ import { axiosClient } from '../tools/helpers';
  * @returns List of general room information
  */
 export async function getRooms(): Promise<Room[]> {
-	const data = await axiosClient.get<Room[]>('/rooms');
-	return data.data;
+	const res = await axiosClient.get<Room[]>('/room/');
+	return res.data;
 }
 
 /**
@@ -14,7 +14,25 @@ export async function getRooms(): Promise<Room[]> {
  * @param id - The id of the room to delete
  */
 export async function deleteRoom(id: string): Promise<void> {
-	await axiosClient.delete(`/rooms/${id}`);
+	await axiosClient.delete(`/room/${id}`);
+}
+
+/**
+ * Import room owned by another user
+ * @param id - The id of the room to import
+ * @returns The room information
+ */
+export async function importRoom(id: string): Promise<Room> {
+	const res = await axiosClient.get<Room>(`/room/imported/${id}`);
+	return res.data;
+}
+
+/**
+ * Remove subscription to an imported room
+ * @param id - The id of the room to remove
+ */
+export async function removeImportedRoom(id: string): Promise<void> {
+	await axiosClient.delete<Measurement>(`/room/imported/${id}`);
 }
 
 /**
@@ -27,7 +45,7 @@ export async function createRoom(
 	name: string,
 	scene: RoomScene
 ): Promise<Room> {
-	const data = await axiosClient.post<Room>('/rooms', {
+	const data = await axiosClient.post<Room>('/room/', {
 		name,
 		scene,
 	});
@@ -40,7 +58,7 @@ export async function createRoom(
  * @param name - The new name of the room
  */
 export async function updateRoom(id: string, name: string): Promise<void> {
-	await axiosClient.put(`/rooms/${id}`, {
+	await axiosClient.put(`/room/${id}`, {
 		name,
 	});
 }
@@ -51,8 +69,41 @@ export async function updateRoom(id: string, name: string): Promise<void> {
  * @returns The scene data of the room
  */
 export async function getRoomScene(id: string): Promise<RoomScene> {
-	const data = await axiosClient.get<RoomScene>(`/rooms/${id}/scene`);
-	return data.data;
+	const data = await axiosClient.get<RoomScene>(`/room/${id}/scene`);
+	const scene = data.data;
+	return {
+		roomId: scene.roomId,
+		dimensions: {
+			width: scene.dimensions.width.toString(),
+			height: scene.dimensions.height.toString(),
+			depth: scene.dimensions.depth.toString(),
+		},
+		materials: {
+			east: scene.materials.east.toString(),
+			west: scene.materials.west.toString(),
+			north: scene.materials.north.toString(),
+			south: scene.materials.south.toString(),
+			floor: scene.materials.floor.toString(),
+			ceiling: scene.materials.ceiling.toString(),
+		},
+		furniture: scene.furniture.map((f: any) => ({
+			height: f.height.toString(),
+			points: f.points.map((p: any) => ({
+				x: p.x.toString(),
+				y: p.y.toString(),
+			})),
+		})),
+		microphones: scene.microphones.map((m: any) => ({
+			x: m.x.toString(),
+			y: m.y.toString(),
+			z: m.z.toString(),
+		})),
+		speakers: scene.speakers.map((s: any) => ({
+			x: s.x.toString(),
+			y: s.y.toString(),
+			z: s.z.toString(),
+		})),
+	};
 }
 
 /**
@@ -64,26 +115,7 @@ export async function updateRoomScene(
 	id: string,
 	scene: RoomScene
 ): Promise<void> {
-	await axiosClient.put(`/rooms/${id}/scene`, {
+	await axiosClient.put(`/room/${id}/scene`, {
 		scene,
 	});
-}
-
-/**
- * Import room owned by another user
- * @param id - The id of the room to import
- * @returns The room information
- */
-export async function importRoom(id: string): Promise<Room> {
-	const res = await axiosClient.get(`/rooms/imported/${id}`);
-
-	return res.data;
-}
-
-/**
- * Remove subscription to an imported room
- * @param id - The id of the room to remove
- */
-export async function removeImportedMeasurement(id: string): Promise<void> {
-	await axiosClient.delete<Measurement>(`/rooms/imported/${id}`);
 }

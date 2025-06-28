@@ -17,6 +17,11 @@ import LanguageScreen from './screens/settings/LanguageScreen';
 import JoinSessionScreen from './screens/JoinSessionScreen';
 import StartSessionScreen from './screens/StartSessionScreen';
 import DevSettingsScreen from './screens/settings/DevSettings';
+import MeasurementScreen from './screens/MeasurementScreen';
+import MeasurementDetailScreen from './screens/MeasurementDetailScreen';
+import HistoryScreen from './screens/HistoryScreen';
+import CreateRoomScreen from './screens/CreateRoomScreen';
+import RoomDetailScreen from './screens/RoomDetailScreen';
 
 enableScreens();
 
@@ -57,10 +62,25 @@ const RootStack = () => (
 			}}
 		/>
 		<Stack.Screen
+			name="MeasurementDetailScreen"
+			component={MeasurementDetailScreen}
+			options={{
+				headerShown: false,
+			}}
+		/>
+		<Stack.Screen
+			name="HistoryScreen"
+			component={HistoryScreen}
+			options={{
+				headerShown: false,
+			}}
+		/>
+		<Stack.Screen
 			name="StartSessionScreen"
 			component={StartSessionScreen}
 			options={{
 				headerShown: false,
+				gestureEnabled: false,
 			}}
 		/>
 		<Stack.Screen
@@ -68,6 +88,15 @@ const RootStack = () => (
 			component={JoinSessionScreen}
 			options={{
 				headerShown: false,
+				gestureEnabled: false,
+			}}
+		/>
+		<Stack.Screen
+			name="MeasurementScreen"
+			component={MeasurementScreen}
+			options={{
+				headerShown: false,
+				gestureEnabled: false,
 			}}
 		/>
 		<Stack.Screen
@@ -105,16 +134,39 @@ const RootStack = () => (
 				headerShown: false,
 			}}
 		/>
+		<Stack.Screen
+			name="CreateRoomScreen"
+			component={CreateRoomScreen}
+			options={{
+				headerShown: false,
+			}}
+		/>
+		<Stack.Screen
+			name="RoomDetailScreen"
+			component={RoomDetailScreen}
+			options={{
+				headerShown: false,
+			}}
+		/>
 	</Stack.Navigator>
 );
 
 export type RootStackParamList = {
 	HomeScreen: undefined;
+	HistoryScreen: undefined;
+	MeasurementDetailScreen: { item: Measurement };
 	StartSessionScreen: undefined;
 	JoinSessionScreen: undefined;
+	MeasurementScreen: { deviceType: 'microphone' | 'speaker' };
 	SettingsScreen: undefined;
 	QrScanScreen: undefined;
 	QrViewScreen: undefined;
 	LanguageScreen: undefined;
 	DevSettingsScreen: undefined;
+	CreateRoomScreen: {
+		roomId?: string;
+		roomScene?: RoomScene;
+		roomName?: string;
+	};
+	RoomDetailScreen: { roomId: string };
 };

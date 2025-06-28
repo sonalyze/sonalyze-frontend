@@ -60,13 +60,17 @@ src/
 ```
 
 ## IOS Build and Run on Device
+
 1. Prebuild the App:
+
 ```bash
 npm run prebuild
 ```
+
 2. (On First Deploy Only) Open ios/aalfrontend.xcodeproj in XCode and run the app on your device
 
 3. (Further Deployments)
+
 ```bash
 npm run ios
 ```

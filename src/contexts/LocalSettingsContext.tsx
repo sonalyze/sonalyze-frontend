@@ -2,8 +2,8 @@ import React, {
 	createContext,
 	useContext,
 	useState,
-	useEffect,
 	ReactNode,
+	useEffect,
 } from 'react';
 import { LocalSettings } from '../types/LocalSettings';
 import {
@@ -11,16 +11,13 @@ import {
 	writeLocalSettings,
 } from '../tools/localSettingsAccess';
 import i18n from '../i18n';
-import { axiosClient, haveSameKeys } from '../tools/helpers';
-import { register } from '../api/userRequests';
+import { haveSameKeys } from '../tools/helpers';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Haptics from 'expo-haptics';
-import { toast } from 'sonner-native';
-import { useTranslation } from 'react-i18next';
 
 type LocalSettingsContextType = {
 	settings: LocalSettings;
 	updateSettings: (newSettings: Partial<LocalSettings>) => Promise<void>;
+	initial: boolean;
 };
 
 export const LocalSettingsContext = createContext<
@@ -34,31 +31,31 @@ type LocalSettingsProviderProps = {
 export const LocalSettingsProvider: React.FC<LocalSettingsProviderProps> = (
 	props: LocalSettingsProviderProps
 ) => {
+	const [isInitial, setInitial] = useState(true);
 	const [settings, setSettings] = useState<LocalSettings>({
 		userToken: '',
 		locale: 'en',
 		servers: ['https://api.sonalyze.de', 'https://api.dev.sonalyze.de'],
-		currentServer: 'https://api.dev.sonalyze.de', // @TODO for now dev api is default
+		// @TODO for now dev api is default
+		currentServer: 'https://api.dev.sonalyze.de',
 	});
-	const { t } = useTranslation();
 
 	useEffect(() => {
 		readLocalSettings().then(async (loadedSettings) => {
-			if (loadedSettings && haveSameKeys(loadedSettings, settings)) {
-				setSettings(loadedSettings);
-				i18n.changeLanguage(loadedSettings.locale);
-				axiosClient.defaults.headers.common['Authorization'] =
-					`Bearer ${loadedSettings.userToken}`;
-				axiosClient.defaults.baseURL = loadedSettings.currentServer;
-			} else {
-				AsyncStorage.clear();
-				const res = await register();
-				const newSettings = { ...settings, ...{ userToken: res.id } };
-				axiosClient.defaults.headers.common['Authorization'] =
-					`Bearer ${res.id}`;
+			// If the settings have changed, clear storage and apply defaults.
+			if (!loadedSettings || !haveSameKeys(loadedSettings, settings)) {
+				await AsyncStorage.clear();
+				const newSettings = { ...settings };
 				writeLocalSettings(newSettings);
 				setSettings(newSettings);
+				setInitial(false);
+				return;
 			}
+
+			setInitial(false);
+			setSettings(loadedSettings);
+
+			i18n.changeLanguage(loadedSettings.locale);
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
@@ -67,40 +64,12 @@ export const LocalSettingsProvider: React.FC<LocalSettingsProviderProps> = (
 		const updatedSettings = { ...settings, ...newSettings };
 
 		await writeLocalSettings(updatedSettings);
+		setSettings(updatedSettings);
 
 		// Update i18n language if locale is changed
-		if (newSettings.locale && newSettings.locale !== settings.locale) {
-			i18n.changeLanguage(newSettings.locale);
+		if (settings.locale !== updatedSettings.locale) {
+			i18n.changeLanguage(updatedSettings.locale);
 		}
-
-		if (
-			newSettings.currentServer &&
-			newSettings.currentServer !== settings.currentServer
-		) {
-			axiosClient.defaults.baseURL = newSettings.currentServer;
-			try {
-				const res = await register();
-				updatedSettings.userToken = res.id;
-				axiosClient.defaults.headers.common['Authorization'] =
-					`Bearer ${res.id}`;
-			} catch (err) {
-				console.error(err);
-				updatedSettings.currentServer = settings.currentServer;
-				toast.error(t('serverMigrationError'));
-				Haptics.notificationAsync(
-					Haptics.NotificationFeedbackType.Error
-				);
-			}
-		}
-
-		if (
-			newSettings.servers &&
-			!newSettings.servers.includes(settings.currentServer)
-		) {
-			updatedSettings.currentServer = newSettings.servers[0];
-		}
-
-		setSettings(updatedSettings);
 	};
 
 	return (
@@ -108,6 +77,7 @@ export const LocalSettingsProvider: React.FC<LocalSettingsProviderProps> = (
 			value={{
 				settings: settings,
 				updateSettings: updateLocalSettings,
+				initial: isInitial,
 			}}
 		>
 			{props.children}

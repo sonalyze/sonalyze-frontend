@@ -10,10 +10,12 @@ type CardProps = {
 
 const Card: FC<CardProps> = (props: CardProps) => {
 	return (
-		<View className={`px-4 py-3 rounded-xl bg-cardBackground ${props.className}`}>
+		<View
+			className={`px-4 border border-gray-300 py-3 rounded-xl bg-cardBackground  ${props.className}`}
+		>
 			{/* Title + Subtitle Group with space around */}
 			{(props.title || props.subtitle) && (
-				<View className="mb-2 px-2 py-2">
+				<View className="mb-2 px-2 py-2 ">
 					{props.title && (
 						<Text className="text-xl font-bold pb-1 color-cardForeground">
 							{props.title}

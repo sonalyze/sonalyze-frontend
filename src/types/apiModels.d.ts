@@ -3,15 +3,15 @@ type Room = {
 	name: string;
 	hasSimulation: boolean;
 	isOwner: boolean;
-	createdAt: string;
+	lastUpdatedAt: string;
 };
 
 type RoomScene = {
 	roomId: string;
 	dimensions: {
-		width: number;
-		height: number;
-		depth: number;
+		width: string;
+		height: string;
+		depth: string;
 	};
 	materials: {
 		east: string;
@@ -21,26 +21,20 @@ type RoomScene = {
 		floor: string;
 		ceiling: string;
 	};
-	furniture: [
-		{
-			height: number;
-			points: [{ x: number; y: number }];
-		},
-	];
-	microphones: [
-		{
-			x: number;
-			y: number;
-			z: number;
-		},
-	];
-	speakers: [
-		{
-			x: number;
-			y: number;
-			z: number;
-		},
-	];
+	furniture: {
+		height: string;
+		points: { x: string; y: string }[];
+	}[];
+	microphones: {
+		x: string;
+		y: string;
+		z: string;
+	}[];
+	speakers: {
+		x: string;
+		y: string;
+		z: string;
+	}[];
 };
 
 type AcousticParameters = {
@@ -49,6 +43,7 @@ type AcousticParameters = {
 	c80: number[];
 	g: number[];
 	d50: number[];
+	ir: number[];
 };
 
 type Simulation = {
