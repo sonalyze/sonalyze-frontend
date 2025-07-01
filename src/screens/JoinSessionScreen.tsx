@@ -194,21 +194,21 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 	function onBack() {
 		if (Platform.OS === 'web') {
 			props.navigation.pop();
-			return;
-		}
-		Alert.alert(t('popWarningTitle'), t('popWarningDescr'), [
-			{
-				text: t('cancel'),
-				style: 'cancel',
-			},
-			{
-				text: t('proceed'),
-				style: 'destructive',
-				onPress: async () => {
-					props.navigation.pop();
+		} else {
+			Alert.alert(t('popWarningTitle'), t('popWarningDescr'), [
+				{
+					text: t('cancel'),
+					style: 'cancel',
 				},
-			},
-		]);
+				{
+					text: t('proceed'),
+					style: 'destructive',
+					onPress: async () => {
+						props.navigation.pop();
+					},
+				},
+			]);
+		}
 	}
 
 	useEffect(
@@ -230,7 +230,7 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 	);
 
 	return (
-		<SafeAreaView className="flex-1 xl:max-w-3xl lg:mx-auto bg-background">
+		<SafeAreaView className="flex-1 bg-background">
 			<SecondaryHeader title={t('joinSession')} onBack={onBack} />
 
 			{/* Loading Indicator. */}
@@ -303,7 +303,16 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 												? 'primary'
 												: 'secondary'
 										}
-										leadingIcon={<Volume2 size={24} />}
+										leadingIcon={
+											<Volume2
+												color={
+													deviceType === 'speaker'
+														? '#fff'
+														: '#000'
+												}
+												size={24}
+											/>
+										}
 										label={t('speaker')}
 										onPress={() =>
 											onSelectDeviceType('speaker')
@@ -318,7 +327,16 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 												? 'primary'
 												: 'secondary'
 										}
-										leadingIcon={<Mic size={24} />}
+										leadingIcon={
+											<Mic
+												color={
+													deviceType === 'microphone'
+														? '#fff'
+														: '#000'
+												}
+												size={24}
+											/>
+										}
 										label={t('microphone')}
 										onPress={() =>
 											onSelectDeviceType('microphone')

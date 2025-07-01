@@ -6,17 +6,13 @@ import SecondaryHeader from '../components/SecondaryHeader';
 import { useTranslation } from 'react-i18next';
 import { useSocket } from '../hooks/useSocket';
 import { showHapticErrorToast } from '../tools/hapticToasts';
-import {
-	ActivityIndicator,
-	Alert,
-	EmitterSubscription,
-	View,
-} from 'react-native';
-import SoundPlayer from 'react-native-sound-player';
+import { ActivityIndicator, Alert, View } from 'react-native';
+import { useAudioPlayer } from 'expo-audio';
 import { RouteProp } from '@react-navigation/native';
 import { Text } from 'react-native';
 import { Mic, Volume2 } from 'lucide-react-native';
 import NativeAudio from '../../modules/native-audio';
+import { useQueryClient } from '@tanstack/react-query';
 
 type MeasurementScreenRouteProp = RouteProp<
 	RootStackParamList,
@@ -37,12 +33,13 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 	props: MeasurementScreenProps
 ) => {
 	const { t } = useTranslation();
-	const [isLoading, setIsLoading] = useState(false);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [isRecording, setIsRecording] = useState(false);
-	const playSubRef = useRef<EmitterSubscription | undefined>(undefined);
-	const loadSubRef = useRef<EmitterSubscription | undefined>(undefined);
-	const deviceType = props.route.params.deviceType;
+	const playSubRef = useRef<any | undefined>(undefined);
+	const queryClient = useQueryClient();
+	const audioPlayer = useAudioPlayer(
+		require('../../assets/measurement_sound.wav')
+	);
 
 	const socket = useSocket(
 		[
@@ -50,7 +47,7 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 				event: 'play_sound',
 				handler: () => {
 					setIsPlaying(true);
-					SoundPlayer.play();
+					audioPlayer.play();
 				},
 			},
 			{
@@ -109,7 +106,7 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 			},
 			{
 				event: 'results',
-				handler: (data) => {
+				handler: async (data) => {
 					const { results, id, name } = data as {
 						results: AcousticParameters[][];
 						id: string;
@@ -124,6 +121,13 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 							createdAt: `${Date.now()}`,
 							isOwner: false,
 						},
+					});
+
+					await queryClient.invalidateQueries({
+						queryKey: ['measurements'],
+					});
+					await queryClient.invalidateQueries({
+						queryKey: ['rooms'],
 					});
 				},
 			},
@@ -190,32 +194,12 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 
 	useEffect(
 		() => {
-			// If this device is a speaker, load the sound file from server.
-			if (deviceType === 'speaker') {
-				setIsLoading(true);
-
-				SoundPlayer.loadUrl(
-					'https://cloud.lukasengel.net/public.php/dav/files/sBk9HoNM86HmMcA/'
-				);
-
-				loadSubRef.current = SoundPlayer.addEventListener(
-					'FinishedLoading',
-					async (data) => {
-						await new Promise((resolve) =>
-							setTimeout(resolve, 200)
-						);
-
-						setIsLoading(false);
-					}
-				);
-
-				playSubRef.current = SoundPlayer.addEventListener(
-					'FinishedPlaying',
-					async (data) => {
-						setIsPlaying(false);
-					}
-				);
-			}
+			playSubRef.current = audioPlayer.addListener(
+				'playbackStatusUpdate',
+				(data: any) => {
+					setIsPlaying(data.playing);
+				}
+			);
 		},
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[]
@@ -223,28 +207,17 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 
 	useEffect(() => {
 		const unsubscribe = props.navigation.addListener('beforeRemove', () => {
-			SoundPlayer.stop();
+			audioPlayer.remove();
 			socket.disconnect();
-			loadSubRef.current?.remove();
 			playSubRef.current?.remove();
 		});
 
 		return unsubscribe;
-	}, [props.navigation, socket]);
+	}, [audioPlayer, props.navigation, socket]);
 
 	return (
-		<SafeAreaView className="flex-1 xl:max-w-3xl lg:mx-auto bg-background">
+		<SafeAreaView className="flex-1 bg-background">
 			<SecondaryHeader title={t('ongoingMeasurement')} onBack={onBack} />
-
-			{/* Loading Indicator. */}
-			{isLoading ? (
-				<View className="flex-1 items-center justify-center m-10 mb-24">
-					<ActivityIndicator size="large" />
-					<Text className="text-center text-lg pt-2">
-						{t('loading')}
-					</Text>
-				</View>
-			) : null}
 
 			{/* Loading Indicator. */}
 			{isPlaying ? (
@@ -267,7 +240,7 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 			) : null}
 
 			{/* Measurement Content */}
-			{!isLoading && !isPlaying && !isRecording ? (
+			{!isPlaying && !isRecording ? (
 				<View className="flex-1 items-center justify-center m-10 mb-24">
 					<ActivityIndicator size="large" />
 					<Text className="text-center text-lg pt-2">

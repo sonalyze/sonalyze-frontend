@@ -45,7 +45,7 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 	const { t } = useTranslation();
 
 	return (
-		<SafeAreaView className="flex-1 p-2 xl:max-w-3xl xl:mx-auto bg-background">
+		<SafeAreaView className="flex-1 p-2 bg-background">
 			<SecondaryHeader
 				title={t('createRoom.title')}
 				onBack={() => props.navigation.goBack()}

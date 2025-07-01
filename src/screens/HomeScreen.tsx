@@ -4,6 +4,7 @@ import {
 	TouchableOpacity,
 	View,
 	ActivityIndicator,
+	Platform,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
@@ -127,7 +128,7 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 	);
 
 	return (
-		<SafeAreaView className="flex-1 xl:max-w-3xl lg:mx-auto bg-background">
+		<SafeAreaView className="flex-1 bg-background">
 			{/* Header */}
 			<View className="relative h-[60px] flex-row items-center justify-between px-5 py-3 bg-card">
 				<Text className="text-2xl font-semibold text-foreground">
@@ -186,6 +187,12 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 							<View className="flex-1">
 								<Button
 									label={t('start')}
+									type={
+										Platform.OS === 'web'
+											? 'disabled'
+											: 'primary'
+									}
+									disabled={Platform.OS === 'web'}
 									onPress={() =>
 										props.navigation.push(
 											'StartSessionScreen'
@@ -196,7 +203,12 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 							<View className="flex-1">
 								<Button
 									label={t('join')}
-									type="secondary"
+									type={
+										Platform.OS === 'web'
+											? 'disabled'
+											: 'secondary'
+									}
+									disabled={Platform.OS === 'web'}
 									onPress={() =>
 										props.navigation.push(
 											'JoinSessionScreen'
@@ -205,10 +217,15 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 								/>
 							</View>
 						</View>
+						{Platform.OS === 'web' && (
+							<Text className="text text-foreground/60 mt-2 mx-auto">
+								{t('notOnWeb')}
+							</Text>
+						)}
 					</Card>
 					<View className="h-2" />
 
-					{/* History Card */}
+					{/* Simulation Card */}
 					<Card
 						title={t('simulationTitle')}
 						subtitle={t('simulationSubtitle')}
@@ -232,50 +249,51 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 						title={t('historyTitle')}
 						subtitle={t('historySubtitle')}
 					>
+						{history.isLoading ? (
+							<View className="flex-1 items-center justify-center">
+								<ActivityIndicator size="large" />
+							</View>
+						) : null}
+
 						{history.error ? (
-							<Text className="text-center">
+							<Text className="text-center pb-2">
 								{t('history.errorLoad')}
 							</Text>
 						) : null}
 
-						{!isLoading &&
-							history.items.length > 0 &&
-							history.items.map((item) => (
-								<TouchableOpacity
-									key={`${item.id}-${item.createdAt}-${item.type}`}
-									onPress={() => {
-										if ('hasSimulation' in item.raw) {
-											props.navigation.push(
-												'RoomDetailScreen',
-												{ roomId: item.raw.id }
-											);
-										} else {
-											props.navigation.push(
-												'MeasurementDetailScreen',
-												{ item: item.raw }
-											);
-										}
-									}}
-								>
-									<HistoryItem
-										item={
-											item.type === 'room'
-												? ({
-														...(item.raw as Room),
-														createdAt:
-															item.createdAt,
-													} as any)
-												: (item.raw as Measurement)
-										}
-									/>
-								</TouchableOpacity>
-							))}
-						{history.isLoading && (
-							<View className="flex-1 items-center justify-center">
-								<ActivityIndicator size="large" />
-							</View>
-						)}
-						<View className="h-4" />
+						{!isLoading && history.items.length > 0
+							? history.items.map((item) => (
+									<TouchableOpacity
+										key={`${item.id}-${item.createdAt}-${item.type}`}
+										onPress={() => {
+											if ('hasSimulation' in item.raw) {
+												props.navigation.push(
+													'RoomDetailScreen',
+													{ roomId: item.raw.id }
+												);
+											} else {
+												props.navigation.push(
+													'MeasurementDetailScreen',
+													{ item: item.raw }
+												);
+											}
+										}}
+									>
+										<HistoryItem
+											item={
+												item.type === 'room'
+													? ({
+															...(item.raw as Room),
+															createdAt:
+																item.createdAt,
+														} as any)
+													: (item.raw as Measurement)
+											}
+										/>
+									</TouchableOpacity>
+								))
+							: null}
+
 						<Button
 							label={t('viewAll')}
 							onPress={() =>

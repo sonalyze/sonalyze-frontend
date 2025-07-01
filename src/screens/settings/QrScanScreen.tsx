@@ -56,7 +56,7 @@ const QrScanScreen: FC<QrScanScreenProps> = (props: QrScanScreenProps) => {
 	}
 
 	return (
-		<SafeAreaView className="flex-1 xl:max-w-3xl lg:mx-auto bg-background">
+		<SafeAreaView className="flex-1 bg-background">
 			{/* Header */}
 			<SecondaryHeader
 				title={t('scanQrTitle')}
