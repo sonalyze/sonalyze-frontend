@@ -4,6 +4,7 @@ import {
 	TouchableOpacity,
 	View,
 	ActivityIndicator,
+	Platform,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
@@ -186,6 +187,12 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 							<View className="flex-1">
 								<Button
 									label={t('start')}
+									type={
+										Platform.OS === 'web'
+											? 'disabled'
+											: 'primary'
+									}
+									disabled={Platform.OS === 'web'}
 									onPress={() =>
 										props.navigation.push(
 											'StartSessionScreen'
@@ -196,7 +203,12 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 							<View className="flex-1">
 								<Button
 									label={t('join')}
-									type="secondary"
+									type={
+										Platform.OS === 'web'
+											? 'disabled'
+											: 'secondary'
+									}
+									disabled={Platform.OS === 'web'}
 									onPress={() =>
 										props.navigation.push(
 											'JoinSessionScreen'
@@ -205,6 +217,9 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 								/>
 							</View>
 						</View>
+						<Text className="text text-foreground/60 mt-2 mx-auto">
+							{t('notOnWeb')}
+						</Text>
 					</Card>
 					<View className="h-2" />
 
