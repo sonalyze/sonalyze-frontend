@@ -250,7 +250,7 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 						subtitle={t('historySubtitle')}
 					>
 						{history.isLoading ? (
-							<View className="flex-1 items-center justify-center">
+							<View className="flex-1 items-center mb-4 justify-center">
 								<ActivityIndicator size="large" />
 							</View>
 						) : null}
@@ -280,6 +280,7 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 										}}
 									>
 										<HistoryItem
+											type={item.type}
 											item={
 												item.type === 'room'
 													? ({
