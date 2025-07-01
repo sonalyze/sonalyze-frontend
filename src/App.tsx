@@ -2,7 +2,7 @@ import './globals.css';
 import './i18n';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { enableScreens } from 'react-native-screens';
+import { enableScreens, ScreenContainer } from 'react-native-screens';
 import { NavigationContainer } from '@react-navigation/native';
 import { SocketProvider } from './contexts/SocketContext';
 import HomeScreen from './screens/HomeScreen';
@@ -30,18 +30,22 @@ const queryClient = new QueryClient();
 export default function App() {
 	return (
 		<SafeAreaProvider>
-			<GestureHandlerRootView style={{ flex: 1 }}>
+			<GestureHandlerRootView
+				style={{ flex: 1, backgroundColor: '#f2f2f2' }}
+			>
 				<LocalSettingsProvider>
 					<QueryClientProvider client={queryClient}>
 						<SocketProvider>
-							<NavigationContainer>
-								<RootStack />
-							</NavigationContainer>
-							<Toaster
-								position="bottom-center"
-								closeButton={true}
-								swipeToDismissDirection="left"
-							/>
+							<ScreenContainer className="w-[100%] lg:w-[1024px] md:w-[769px] mx-auto flex-1">
+								<NavigationContainer>
+									<RootStack />
+								</NavigationContainer>
+								<Toaster
+									position="bottom-center"
+									closeButton={true}
+									swipeToDismissDirection="left"
+								/>
+							</ScreenContainer>
 						</SocketProvider>
 					</QueryClientProvider>
 				</LocalSettingsProvider>
