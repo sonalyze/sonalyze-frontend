@@ -254,7 +254,7 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 						) : null}
 
 						{history.error ? (
-							<Text className="text-center">
+							<Text className="text-center pb-2">
 								{t('history.errorLoad')}
 							</Text>
 						) : null}

@@ -6,13 +6,8 @@ import SecondaryHeader from '../components/SecondaryHeader';
 import { useTranslation } from 'react-i18next';
 import { useSocket } from '../hooks/useSocket';
 import { showHapticErrorToast } from '../tools/hapticToasts';
-import {
-	ActivityIndicator,
-	Alert,
-	EmitterSubscription,
-	View,
-} from 'react-native';
-import SoundPlayer from 'react-native-sound-player';
+import { ActivityIndicator, Alert, View } from 'react-native';
+import { useAudioPlayer } from 'expo-audio';
 import { RouteProp } from '@react-navigation/native';
 import { Text } from 'react-native';
 import { Mic, Volume2 } from 'lucide-react-native';
@@ -40,9 +35,11 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 	const { t } = useTranslation();
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [isRecording, setIsRecording] = useState(false);
-	const playSubRef = useRef<EmitterSubscription | undefined>(undefined);
-	const loadSubRef = useRef<EmitterSubscription | undefined>(undefined);
+	const playSubRef = useRef<any | undefined>(undefined);
 	const queryClient = useQueryClient();
+	const audioPlayer = useAudioPlayer(
+		require('../../assets/measurement_sound.wav')
+	);
 
 	const socket = useSocket(
 		[
@@ -50,9 +47,7 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 				event: 'play_sound',
 				handler: () => {
 					setIsPlaying(true);
-					SoundPlayer.playAsset(
-						require('../../assets/measurement_sound.wav')
-					);
+					audioPlayer.play();
 				},
 			},
 			{
@@ -199,10 +194,10 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 
 	useEffect(
 		() => {
-			playSubRef.current = SoundPlayer.addEventListener(
-				'FinishedPlaying',
-				async (data) => {
-					setIsPlaying(false);
+			playSubRef.current = audioPlayer.addListener(
+				'playbackStatusUpdate',
+				(data) => {
+					setIsPlaying(data.playing);
 				}
 			);
 		},
@@ -212,14 +207,13 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 
 	useEffect(() => {
 		const unsubscribe = props.navigation.addListener('beforeRemove', () => {
-			SoundPlayer.stop();
+			audioPlayer.remove();
 			socket.disconnect();
-			loadSubRef.current?.remove();
 			playSubRef.current?.remove();
 		});
 
 		return unsubscribe;
-	}, [props.navigation, socket]);
+	}, [audioPlayer, props.navigation, socket]);
 
 	return (
 		<SafeAreaView className="flex-1 xl:max-w-3xl lg:mx-auto bg-background">
