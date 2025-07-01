@@ -1,4 +1,11 @@
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import {
+	View,
+	Text,
+	ScrollView,
+	TouchableOpacity,
+	Alert,
+	Platform,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
@@ -83,6 +90,13 @@ const RoomDetailScreen: FC<RoomDetailScreenProps> = (props) => {
 
 	// Zeigt ein Bestätigungs-Popup vor dem Löschen
 	const confirmDelete = () => {
+		if (Platform.OS === 'web') {
+			const confirm = window.confirm(t('confirmDeletionMessage'));
+			if (confirm) {
+				handleDelete(roomQuery.data?.id || '');
+			}
+			return;
+		}
 		Alert.alert(t('confirmDeletionTitle'), t('confirmDeletionMessage'), [
 			{ text: t('cancel'), style: 'cancel' },
 			{

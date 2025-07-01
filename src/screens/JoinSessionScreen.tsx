@@ -194,21 +194,21 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 	function onBack() {
 		if (Platform.OS === 'web') {
 			props.navigation.pop();
-			return;
-		}
-		Alert.alert(t('popWarningTitle'), t('popWarningDescr'), [
-			{
-				text: t('cancel'),
-				style: 'cancel',
-			},
-			{
-				text: t('proceed'),
-				style: 'destructive',
-				onPress: async () => {
-					props.navigation.pop();
+		} else {
+			Alert.alert(t('popWarningTitle'), t('popWarningDescr'), [
+				{
+					text: t('cancel'),
+					style: 'cancel',
 				},
-			},
-		]);
+				{
+					text: t('proceed'),
+					style: 'destructive',
+					onPress: async () => {
+						props.navigation.pop();
+					},
+				},
+			]);
+		}
 	}
 
 	useEffect(

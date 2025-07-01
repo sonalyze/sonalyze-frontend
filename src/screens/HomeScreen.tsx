@@ -217,9 +217,11 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 								/>
 							</View>
 						</View>
-						<Text className="text text-foreground/60 mt-2 mx-auto">
-							{t('notOnWeb')}
-						</Text>
+						{Platform.OS === 'web' && (
+							<Text className="text text-foreground/60 mt-2 mx-auto">
+								{t('notOnWeb')}
+							</Text>
+						)}
 					</Card>
 					<View className="h-2" />
 

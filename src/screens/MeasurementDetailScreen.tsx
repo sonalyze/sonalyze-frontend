@@ -1,4 +1,11 @@
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import {
+	View,
+	Text,
+	ScrollView,
+	TouchableOpacity,
+	Alert,
+	Platform,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -41,17 +48,28 @@ const MeasurementDetailScreen = (props: MeasurementDetailScreenProps) => {
 	const item = props.route.params.item;
 
 	function confirmDelete() {
-		Alert.alert(t('confirmDeletionTitle'), t('confirmDeletionMessage'), [
-			{ text: t('cancel'), style: 'cancel' },
-			{
-				text: t('confirm'),
-				style: 'destructive',
-				onPress: () => handleDelete(item.id),
-			},
-		]);
+		if (Platform.OS === 'web') {
+			const confirm = window.confirm(t('confirmDeletionMessage'));
+			if (confirm) {
+				handleDelete(item.id);
+			}
+		} else {
+			Alert.alert(
+				t('confirmDeletionTitle'),
+				t('confirmDeletionMessage'),
+				[
+					{ text: t('cancel'), style: 'cancel' },
+					{
+						text: t('confirm'),
+						style: 'destructive',
+						onPress: () => handleDelete(item.id),
+					},
+				]
+			);
+		}
 	}
 
-	const handleDelete = async (id: string) => {
+	async function handleDelete(id: string) {
 		try {
 			if (!item.isOwner) {
 				await removeImportedMeasurement(id);
@@ -77,7 +95,7 @@ const MeasurementDetailScreen = (props: MeasurementDetailScreenProps) => {
 			else if (status === 422) toast.error(t('invalidIdError'));
 			else toast.error(t('genericError'));
 		}
-	};
+	}
 
 	async function onCopy() {
 		const success = await copyToClipboard(item.id);

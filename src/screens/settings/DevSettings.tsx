@@ -1,5 +1,12 @@
 import { FC } from 'react';
-import { View, FlatList, Text, TouchableHighlight, Alert } from 'react-native';
+import {
+	View,
+	FlatList,
+	Text,
+	TouchableHighlight,
+	Alert,
+	Platform,
+} from 'react-native';
 import SecondaryHeader from '../../components/SecondaryHeader';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
@@ -65,6 +72,18 @@ const DevSettingsScreen: FC<DevSettingsScreenProps> = (
 	}
 
 	async function onPurgeLocalStorage() {
+		if (Platform.OS === 'web') {
+			const confirm = window.confirm(t('purgeLocalStorageInfo'));
+			if (confirm) {
+				await AsyncStorage.clear();
+				Haptics.notificationAsync(
+					Haptics.NotificationFeedbackType.Warning
+				);
+				toast.warning(t('purgeSuccess'));
+			}
+			return;
+		}
+
 		Alert.alert(t('purgeLocalStorageTitle'), t('purgeLocalStorageInfo'), [
 			{
 				text: t('cancel'),
