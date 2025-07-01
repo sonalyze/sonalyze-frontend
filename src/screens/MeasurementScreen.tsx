@@ -17,6 +17,7 @@ import { RouteProp } from '@react-navigation/native';
 import { Text } from 'react-native';
 import { Mic, Volume2 } from 'lucide-react-native';
 import NativeAudio from '../../modules/native-audio';
+import { useQueryClient } from '@tanstack/react-query';
 
 type MeasurementScreenRouteProp = RouteProp<
 	RootStackParamList,
@@ -41,6 +42,7 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 	const [isRecording, setIsRecording] = useState(false);
 	const playSubRef = useRef<EmitterSubscription | undefined>(undefined);
 	const loadSubRef = useRef<EmitterSubscription | undefined>(undefined);
+	const queryClient = useQueryClient();
 
 	const socket = useSocket(
 		[
@@ -109,7 +111,7 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 			},
 			{
 				event: 'results',
-				handler: (data) => {
+				handler: async (data) => {
 					const { results, id, name } = data as {
 						results: AcousticParameters[][];
 						id: string;
@@ -124,6 +126,13 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 							createdAt: `${Date.now()}`,
 							isOwner: false,
 						},
+					});
+
+					await queryClient.invalidateQueries({
+						queryKey: ['measurements'],
+					});
+					await queryClient.invalidateQueries({
+						queryKey: ['rooms'],
 					});
 				},
 			},

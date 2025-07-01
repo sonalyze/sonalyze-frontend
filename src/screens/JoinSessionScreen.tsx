@@ -303,7 +303,16 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 												? 'primary'
 												: 'secondary'
 										}
-										leadingIcon={<Volume2 size={24} />}
+										leadingIcon={
+											<Volume2
+												color={
+													deviceType === 'speaker'
+														? '#fff'
+														: '#000'
+												}
+												size={24}
+											/>
+										}
 										label={t('speaker')}
 										onPress={() =>
 											onSelectDeviceType('speaker')
@@ -318,7 +327,16 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 												? 'primary'
 												: 'secondary'
 										}
-										leadingIcon={<Mic size={24} />}
+										leadingIcon={
+											<Mic
+												color={
+													deviceType === 'microphone'
+														? '#fff'
+														: '#000'
+												}
+												size={24}
+											/>
+										}
 										label={t('microphone')}
 										onPress={() =>
 											onSelectDeviceType('microphone')
