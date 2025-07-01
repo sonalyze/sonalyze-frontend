@@ -89,6 +89,7 @@
 	"history.errorLoad": "Error loading history",
 	"enterMeasurementId": "Enter measurement ID",
 	"measurementId": "Measurement ID",
+	"roomView": "In the future, you will be able to see a 3D view of your room here.",
 	"import": "Import",
 	"importSuccess": "Measurement imported successfully.",
 	"invalidIdError": "Please enter a valid measurement ID.",

@@ -123,6 +123,7 @@
 	"micPermissionError": "Fehler beim Abrufen der Mikrofonberechtigung.",
 	"playing": "Ton wird abgespielt...",
 	"recording": "Aufnahme läuft...",
+	"roomView": "In Zukunft verfügbar: Raumansicht",
 	"measurementActive": "Messung im Gange. Bitte warten.",
 	"common": {
 		"general": "Allgemein",
