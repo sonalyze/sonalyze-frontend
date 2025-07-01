@@ -196,7 +196,7 @@ const MeasurementScreen: FC<MeasurementScreenProps> = (
 		() => {
 			playSubRef.current = audioPlayer.addListener(
 				'playbackStatusUpdate',
-				(data) => {
+				(data: any) => {
 					setIsPlaying(data.playing);
 				}
 			);
