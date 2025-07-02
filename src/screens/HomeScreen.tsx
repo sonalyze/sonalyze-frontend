@@ -24,8 +24,6 @@ import HistoryItem from '../components/HistoryItem';
 import NativeAudio from '../../modules/native-audio';
 import { showHapticErrorToast } from '../tools/hapticToasts';
 import { useFocusEffect } from '@react-navigation/native';
-import { AxiosError } from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,

@@ -22,7 +22,6 @@ import ImportModal from '../components/ImportModal';
 import { importMeasurement } from '../api/measurementRequests';
 import { importRoom } from '../api/roomRequests';
 import { useUnifiedHistory } from '../hooks/useUnifiedHistory';
-import { se } from 'date-fns/locale';
 
 type HistoryScreenNavigationProps = NativeStackNavigationProp<
 	RootStackParamList,
