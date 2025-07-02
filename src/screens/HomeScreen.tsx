@@ -23,6 +23,7 @@ import { useUnifiedHistory } from '../hooks/useUnifiedHistory';
 import HistoryItem from '../components/HistoryItem';
 import NativeAudio from '../../modules/native-audio';
 import { showHapticErrorToast } from '../tools/hapticToasts';
+import { useFocusEffect } from '@react-navigation/native';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -41,6 +42,12 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 	const [hasMicPermission, setHasMicPermission] = useState(false);
 	const { settings, updateSettings, initial } = useLocalSettings();
 	const history = useUnifiedHistory(3);
+
+	useFocusEffect(
+		useCallback(() => {
+			history.refresh();
+		}, [history])
+	);
 
 	const refreshConnectionState = useCallback(async () => {
 		// If the settings have not been loaded yet, do not do anything.
@@ -250,7 +257,7 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 						subtitle={t('historySubtitle')}
 					>
 						{history.isLoading ? (
-							<View className="flex-1 items-center justify-center">
+							<View className="flex-1 items-center mb-4 justify-center">
 								<ActivityIndicator size="large" />
 							</View>
 						) : null}
@@ -280,6 +287,7 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 										}}
 									>
 										<HistoryItem
+											type={item.type}
 											item={
 												item.type === 'room'
 													? ({

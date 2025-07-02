@@ -84,7 +84,7 @@
 	"popWarningDescr": "If you go back, the current measurement will be cancelled. This cannot be undone. Do you really want to proceed?",
 	"proceed": "Proceed",
 	"historyTitle": "History",
-	"historySubtitle": "Here you can see previously performed measurements.",
+	"historySubtitle": "Here you can see your rooms and measurements.",
 	"viewAll": "View All",
 	"history.errorLoad": "Error loading history",
 	"enterMeasurementId": "Enter measurement ID",
@@ -125,6 +125,7 @@
 	"micPermissionError": "Failed to resolve microphone permission.",
 	"playing": "Playing sound...",
 	"recording": "Recording...",
+	"owned": "Owned",
 	"measurementActive": "Measurement in progress. Please wait.",
 	"common": {
 		"general": "General",
@@ -188,5 +189,6 @@
 		}
 	},
 	"createNewSimulation": "Create New Simulation",
-	"dateFormat": "{{datetime, MM/DD/YYYY}}"
+	"dateFormat": "{{datetime, MM/DD/YYYY}}",
+	"simulation": "Simulation"
 }

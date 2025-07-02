@@ -11,9 +11,17 @@ import MultiInput from '../components/MutliInput';
 import { createEmpyRoomScene, validateRoomScene } from '../tools/helpers';
 import Button from '../components/Button';
 import { showHapticErrorToast } from '../tools/hapticToasts';
-import { createRoom, updateRoomScene } from '../api/roomRequests';
+import { createRoom, updateRoom, updateRoomScene } from '../api/roomRequests';
 import MaterialDropdown from '../components/MaterialDropdown';
-import { X } from 'lucide-react-native';
+import {
+	Armchair,
+	BrickWall,
+	Mic,
+	Move3D,
+	Speaker,
+	TextCursor,
+	X,
+} from 'lucide-react-native';
 import { RouteProp } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -60,9 +68,12 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 				keyboardShouldPersistTaps="handled"
 			>
 				<Card className="mt-5">
-					<Text className="text-lg font-semibold mb-2">
-						{t('createRoom.placeholders.roomName')}
-					</Text>
+					<View className="flex flex-row items-center gap-2 mb-2">
+						<TextCursor size={20} className="text-muted" />
+						<Text className="text-lg font-semibold my-auto">
+							{t('createRoom.placeholders.roomName')}
+						</Text>
+					</View>
 					<TextInput
 						keyboardType="default"
 						className="border border-gray-300 rounded-md p-2"
@@ -73,9 +84,12 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 				</Card>
 
 				<Card className="mt-5">
-					<Text className="text-lg font-semibold mb-2">
-						{t('createRoom.sections.dimensions')}
-					</Text>
+					<View className="flex flex-row items-center gap-2 mb-2">
+						<Move3D size={20} className="text-muted" />
+						<Text className="text-lg font-semibold my-auto">
+							{t('createRoom.sections.dimensions')}
+						</Text>
+					</View>
 					<MultiInput
 						labels={['Width', 'Height', 'Depth']}
 						onChange={(values) => {
@@ -100,9 +114,12 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 				</Card>
 
 				<Card className="mt-5">
-					<Text className="text-lg font-semibold mb-2">
-						{t('createRoom.sections.furniture')}
-					</Text>
+					<View className="flex flex-row items-center gap-2 mb-2">
+						<Armchair size={20} className="text-muted" />
+						<Text className="text-lg font-semibold my-auto">
+							{t('createRoom.sections.furniture')}
+						</Text>
+					</View>
 					{scene.furniture.map((value, index) => (
 						<Swipeable
 							overshootLeft={false}
@@ -208,9 +225,12 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 				</Card>
 
 				<Card className="mt-5">
-					<Text className="text-lg font-semibold mb-2">
-						{t('createRoom.sections.microphone')}
-					</Text>
+					<View className="flex flex-row items-center gap-2 mb-2">
+						<Mic size={20} className="text-muted" />
+						<Text className="text-lg font-semibold my-auto">
+							{t('createRoom.sections.microphone')}
+						</Text>
+					</View>
 					<MultiInput
 						labels={['x', 'y', 'z']}
 						onChange={(values) => {
@@ -227,9 +247,12 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 					/>
 				</Card>
 				<Card className="mt-5">
-					<Text className="text-lg font-semibold mb-2">
-						{t('createRoom.sections.speaker')}
-					</Text>
+					<View className="flex flex-row items-center gap-2 mb-2">
+						<Speaker size={20} className="text-muted" />
+						<Text className="text-lg font-semibold my-auto">
+							{t('createRoom.sections.speaker')}
+						</Text>
+					</View>
 					<MultiInput
 						labels={['x', 'y', 'z']}
 						onChange={(values) => {
@@ -246,9 +269,12 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 					/>
 				</Card>
 				<Card className="mt-5">
-					<Text className="text-lg font-semibold mb-2">
-						{t('createRoom.sections.materials')}
-					</Text>
+					<View className="flex flex-row items-center gap-2 mb-2">
+						<BrickWall size={20} className="text-muted" />
+						<Text className="text-lg font-semibold my-auto">
+							{t('createRoom.sections.materials')}
+						</Text>
+					</View>
 					<MaterialDropdown
 						onChange={(key, val) =>
 							setScene((prev) => {
@@ -284,6 +310,8 @@ const CreateRoomScreen: React.FC<CreateRoomScreenProps> = (
 
 						if (roomId && initialRoomScene) {
 							await updateRoomScene(roomId, scene);
+							console.log(roomName);
+							await updateRoom(roomId, roomName);
 							props.navigation.replace('RoomDetailScreen', {
 								roomId: roomId,
 							});

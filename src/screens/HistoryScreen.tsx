@@ -35,6 +35,9 @@ type HistoryScreenProps = {
 const HistoryScreen: FC<HistoryScreenProps> = ({ navigation }) => {
 	const { t } = useTranslation();
 	const [showModal, setShowModal] = useState(false);
+	const [selected, setSelected] = useState<'all' | 'room' | 'measurement'>(
+		'all'
+	);
 	const queryClient = useQueryClient();
 
 	// Hook lädt Messungen + Räume, liefert Items, Loading, Error
@@ -102,50 +105,83 @@ const HistoryScreen: FC<HistoryScreenProps> = ({ navigation }) => {
 
 			{/* List */}
 			{!isLoading && !error && (
-				<FlatList
-					contentContainerStyle={{ padding: 8 }}
-					data={combined}
-					keyExtractor={(item) =>
-						`${item.id}-${item.createdAt}-${item.type}`
-					}
-					refreshControl={
-						<RefreshControl
-							refreshing={isLoading}
-							onRefresh={refresh}
-						/>
-					}
-					renderItem={({ item }) => {
-						const displayItem =
-							item.type === 'room'
-								? {
-										...(item.raw as Room),
-										createdAt: item.createdAt,
-									}
-								: (item.raw as Measurement);
+				<>
+					<View className="flex flex-row items-center justify-center gap-2 p-4">
+						<TouchableOpacity
+							onPress={() => setSelected('all')}
+							className={`text-center p-2 px-8 ${selected === 'all' ? 'bg-primary text-primaryForeground' : 'bg-white border border-gray-300'}  rounded-xl`}
+						>
+							All
+						</TouchableOpacity>
+						<TouchableOpacity
+							onPress={() => setSelected('room')}
+							className={`text-center p-2 px-4 ${selected === 'room' ? 'bg-primary text-primaryForeground' : 'bg-white border border-gray-300'}  rounded-xl`}
+						>
+							Rooms
+						</TouchableOpacity>
+						<TouchableOpacity
+							onPress={() => setSelected('measurement')}
+							className={`text-center p-2 ${selected === 'measurement' ? 'bg-primary text-primaryForeground' : 'bg-white border border-gray-300'}  rounded-xl`}
+						>
+							Measurements
+						</TouchableOpacity>
+					</View>
+					<FlatList
+						contentContainerStyle={{ padding: 8 }}
+						data={combined}
+						keyExtractor={(item) =>
+							`${item.id}-${item.createdAt}-${item.type}`
+						}
+						refreshControl={
+							<RefreshControl
+								refreshing={isLoading}
+								onRefresh={refresh}
+							/>
+						}
+						renderItem={({ item }) => {
+							const displayItem =
+								item.type === 'room'
+									? {
+											...(item.raw as Room),
+											createdAt: item.createdAt,
+										}
+									: (item.raw as Measurement);
 
-						return (
-							<TouchableOpacity
-								className="active-opacity-80"
-								onPress={() => {
-									if (item.type === 'measurement') {
-										navigation.push(
-											'MeasurementDetailScreen',
-											{
-												item: item.raw as Measurement,
+							if (selected === 'all' || selected === item.type) {
+								return (
+									<TouchableOpacity
+										className="active-opacity-80"
+										onPress={() => {
+											if (item.type === 'measurement') {
+												navigation.push(
+													'MeasurementDetailScreen',
+													{
+														item: item.raw as Measurement,
+													}
+												);
+											} else {
+												navigation.push(
+													'RoomDetailScreen',
+													{
+														roomId: (
+															item.raw as Room
+														).id,
+													}
+												);
 											}
-										);
-									} else {
-										navigation.push('RoomDetailScreen', {
-											roomId: (item.raw as Room).id,
-										});
-									}
-								}}
-							>
-								<HistoryItem item={displayItem} />
-							</TouchableOpacity>
-						);
-					}}
-				/>
+										}}
+									>
+										<HistoryItem
+											type={item.type}
+											item={displayItem}
+										/>
+									</TouchableOpacity>
+								);
+							}
+							return <></>;
+						}}
+					/>
+				</>
 			)}
 
 			{/* Import Modal */}
