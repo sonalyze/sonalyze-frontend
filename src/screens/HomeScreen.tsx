@@ -23,6 +23,9 @@ import { useUnifiedHistory } from '../hooks/useUnifiedHistory';
 import HistoryItem from '../components/HistoryItem';
 import NativeAudio from '../../modules/native-audio';
 import { showHapticErrorToast } from '../tools/hapticToasts';
+import { useFocusEffect } from '@react-navigation/native';
+import { AxiosError } from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -41,6 +44,12 @@ const HomeScreen: FC<HomeScreenProps> = (props: HomeScreenProps) => {
 	const [hasMicPermission, setHasMicPermission] = useState(false);
 	const { settings, updateSettings, initial } = useLocalSettings();
 	const history = useUnifiedHistory(3);
+
+	useFocusEffect(
+		useCallback(() => {
+			history.refresh();
+		}, [history])
+	);
 
 	const refreshConnectionState = useCallback(async () => {
 		// If the settings have not been loaded yet, do not do anything.
