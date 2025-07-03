@@ -64,13 +64,13 @@ const ImportModal: FC<ImportModalProps> = ({ visible, onClose, onImport }) => {
 		<Modal
 			visible={visible}
 			transparent
-			animationType="slide"
+			animationType="none"
 			onRequestClose={handleCancel}
 		>
 			<View className="flex-1 bg-black/50 justify-center items-center">
 				<KeyboardAvoidingView
 					behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-					className="w-11/12"
+					className="w-11/12 max-w-[712px]"
 				>
 					<View className="bg-white rounded-xl p-6">
 						{/* Selektor */}
