@@ -5,6 +5,7 @@ import {
 	TouchableOpacity,
 	Alert,
 	Platform,
+	ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -26,10 +27,13 @@ import { formatWithOptions } from 'date-fns/fp';
 import { enUS, de, fr, tr, it, es } from 'date-fns/locale';
 import { RootStackParamList } from '../App';
 import RoomDetail from '../components/RoomDetail';
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { RouteProp } from '@react-navigation/native';
 import Button from '../components/Button';
 import { getSimulationResult, simulateRoom } from '../api/simulationRequests';
+import { set } from 'date-fns/set';
+import { showHapticErrorToast } from '../tools/hapticToasts';
+import axios, { AxiosError } from 'axios';
 
 // Typen für Navigation und Route
 type ScreenRouteProp = RouteProp<RootStackParamList, 'RoomDetailScreen'>;
@@ -45,6 +49,7 @@ const RoomDetailScreen: FC<RoomDetailScreenProps> = (props) => {
 	const { t, i18n } = useTranslation();
 	const queryClient = useQueryClient();
 	const { roomId } = props.route.params;
+	const [loadingSimulation, setLoadingSimulation] = useState(false);
 	const roomQuery = useQuery({
 		queryKey: ['room', roomId],
 		queryFn: () => importRoom(roomId),
@@ -60,7 +65,25 @@ const RoomDetailScreen: FC<RoomDetailScreenProps> = (props) => {
 	const isOwner = roomQuery.data?.isOwner;
 
 	async function handleSimulation() {
-		const simulation = await simulateRoom(roomId);
+		setLoadingSimulation(true);
+		let simulation: Simulation | undefined = undefined;
+		try {
+			simulation = await simulateRoom(roomId);
+		} catch (err: AxiosError | unknown) {
+			console.error('[Simulation] failed:', err);
+			if (axios.isAxiosError(err)) {
+				showHapticErrorToast(err.message);
+			} else {
+				showHapticErrorToast(
+					'Simulation failed. Please try again later.'
+				);
+			}
+		} finally {
+			setLoadingSimulation(false);
+		}
+		if (!simulation) {
+			return;
+		}
 		queryClient.invalidateQueries({ queryKey: ['simulation', roomId] });
 		props.navigation.push('MeasurementDetailScreen', {
 			item: {
@@ -203,14 +226,43 @@ const RoomDetailScreen: FC<RoomDetailScreenProps> = (props) => {
 					disabled={false}
 				/>
 				{roomQuery.data && (
-					<RoomDetail
-						roomId={roomQuery.data?.id}
-						hasSimulation={roomQuery.data?.hasSimulation || false}
-						handleSimulation={handleSimulation}
-						handleViewExistingSimulation={
-							handleViewExistingSimulation
-						}
-					/>
+					<View className="mb-4">
+						<Text className="text-lg font-semibold ml-1 px-2 py-2">
+							{t('room')}
+						</Text>
+						<View className="w-full h-[200px] rounded-xl bg-gray-200 justify-center items-center mb-2">
+							<Text className="text-base">{t('roomView')}</Text>
+						</View>
+
+						<Text className="text-lg font-semibold ml-1 px-2 py-2 ">
+							{t('simulation')}
+						</Text>
+						<Button
+							label={
+								roomQuery.data.hasSimulation
+									? t('rerunSimulation')
+									: t('createNewSimulation')
+							}
+							trailingIcon={
+								loadingSimulation ? (
+									<ActivityIndicator />
+								) : undefined
+							}
+							onPress={handleSimulation}
+							type="primary"
+							expand
+						/>
+
+						{simulationQuery.isSuccess && (
+							<Button
+								label="View Existing Simulation"
+								onPress={handleViewExistingSimulation}
+								className="mt-2"
+								type="primary"
+								expand
+							/>
+						)}
+					</View>
 				)}
 			</ScrollView>
 		</SafeAreaView>

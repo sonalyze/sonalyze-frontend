@@ -111,19 +111,31 @@ const HistoryScreen: FC<HistoryScreenProps> = ({ navigation }) => {
 							onPress={() => setSelected('all')}
 							className={`text-center p-2 px-8 ${selected === 'all' ? 'bg-primary text-primaryForeground' : 'bg-white border border-gray-300'}  rounded-xl`}
 						>
-							All
+							<Text
+								className={`${selected === 'all' ? ' text-primaryForeground' : ''}`}
+							>
+								All
+							</Text>
 						</TouchableOpacity>
 						<TouchableOpacity
 							onPress={() => setSelected('room')}
 							className={`text-center p-2 px-4 ${selected === 'room' ? 'bg-primary text-primaryForeground' : 'bg-white border border-gray-300'}  rounded-xl`}
 						>
-							Rooms
+							<Text
+								className={`${selected === 'room' ? ' text-primaryForeground' : ''}`}
+							>
+								Rooms
+							</Text>
 						</TouchableOpacity>
 						<TouchableOpacity
 							onPress={() => setSelected('measurement')}
 							className={`text-center p-2 ${selected === 'measurement' ? 'bg-primary text-primaryForeground' : 'bg-white border border-gray-300'}  rounded-xl`}
 						>
-							Measurements
+							<Text
+								className={`${selected === 'measurement' ? ' text-primaryForeground' : ''}`}
+							>
+								Measurements
+							</Text>
 						</TouchableOpacity>
 					</View>
 					<FlatList
