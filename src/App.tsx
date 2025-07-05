@@ -22,6 +22,7 @@ import MeasurementDetailScreen from './screens/MeasurementDetailScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import CreateRoomScreen from './screens/CreateRoomScreen';
 import RoomDetailScreen from './screens/RoomDetailScreen';
+import { View } from 'react-native';
 
 enableScreens();
 
@@ -36,7 +37,7 @@ export default function App() {
 				<LocalSettingsProvider>
 					<QueryClientProvider client={queryClient}>
 						<SocketProvider>
-							<ScreenContainer className="w-[100%] lg:w-[1024px] md:w-[769px] mx-auto flex-1">
+							<View className="w-[100%] xl:w-[1024px] mx-auto flex-1">
 								<NavigationContainer>
 									<RootStack />
 								</NavigationContainer>
@@ -45,7 +46,7 @@ export default function App() {
 									closeButton={true}
 									swipeToDismissDirection="left"
 								/>
-							</ScreenContainer>
+							</View>
 						</SocketProvider>
 					</QueryClientProvider>
 				</LocalSettingsProvider>
