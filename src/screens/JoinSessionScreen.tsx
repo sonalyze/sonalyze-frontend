@@ -92,6 +92,9 @@ const JoinSessionScreen: FC<JoinSessionScreenProps> = (
 			{
 				event: 'start_measurement',
 				handler: () => {
+                    socket.emit('received_start_measurement', {
+                    			timestamp: Date.now()
+                    		});
 					props.navigation.replace('MeasurementScreen', {
 						deviceType: deviceType!,
 					});
